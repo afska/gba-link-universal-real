@@ -21,10 +21,12 @@ class StartScene : public Scene {
   bn::fixed videoFrame = 0;
   int lastBeat = 0;
   bn::fixed extraSpeed = 0;
-  bool credits = false;
+  bool isConnected = false;
 
+  void onConnected();
+  void onDisconnected();
   void updateVideo();
-  void start();
+  void print(bn::string<128> text);
 };
 
 #endif  // START_SCENE_H

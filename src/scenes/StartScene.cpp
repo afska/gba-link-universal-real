@@ -5,6 +5,7 @@
 #include "../assets/fonts/common_fixed_8x16_sprite_font_accent.h"
 #include "../player/player.h"
 #include "../utils/Math.h"
+#include "../utils/gba-link-connection/LinkUniversal.hpp"
 #include "bn_memory.h"
 
 #include "bn_blending.h"
@@ -28,32 +29,47 @@ StartScene::StartScene(const GBFS_FILE* _fs)
 }
 
 void StartScene::init() {
-  textGenerator.generate(
-      {0, -30},
-      "DMA enabled: " +
-          bn::string<32>(bn::memory::dma_enabled() ? "yes" : "no"),
-      textSprites);
   player_playGSM("lazer.gsm");
   player_setLoop(true);
+  onDisconnected();
 }
 
 void StartScene::update() {
+  // Horse
   horse->setPosition({HORSE_X, HORSE_Y}, true);
   horse->update();
 
+  // Rhythm
   const int PER_MINUTE = 71583;  // (1/60000) * 0xffffffff
   int audioLag = 0;              // (0 on real hardware)
   int msecs = PlaybackState.msecs - audioLag + BEAT_PREDICTION_WINDOW;
   int beat = Math::fastDiv(msecs * BPM, PER_MINUTE);
   bool isNewBeat = beat != lastBeat;
   lastBeat = beat;
-  if (isNewBeat && !credits)
+  if (isNewBeat)
     extraSpeed = 10;
-
   if (isNewBeat)
     horse->jump();
 
+  // Video
   updateVideo();
+
+  // Link
+  if (!isConnected && linkUniversal->isConnected()) {
+    isConnected = true;
+    onConnected();
+  } else if (isConnected && !linkUniversal->isConnected()) {
+    isConnected = false;
+    onDisconnected();
+  }
+}
+
+void StartScene::onConnected() {
+  print("Whoa! Connected!");
+}
+
+void StartScene::onDisconnected() {
+  print("Waiting...");
 }
 
 void StartScene::updateVideo() {
@@ -73,4 +89,9 @@ void StartScene::updateVideo() {
   if (alpha < 0)
     alpha = 0;
   bn::blending::set_transparency_alpha(alpha);
+}
+
+void StartScene::print(bn::string<128> text) {
+  textSprites.clear();
+  textGenerator.generate({0, -30}, text, textSprites);
 }

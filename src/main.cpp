@@ -17,20 +17,7 @@
 #include "bn_sprites_mosaic.h"
 #include "bn_unique_ptr.h"
 
-// (1) Create a LinkUniversal instance
-LinkUniversal* linkUniversal = new LinkUniversal(
-    LinkUniversal::Protocol::AUTODETECT,
-    "LinkUNI",
-    {.baudRate = LinkCable::BAUD_RATE_1,
-     .timeout = LINK_CABLE_DEFAULT_TIMEOUT,
-     .interval = LINK_CABLE_DEFAULT_INTERVAL,
-     .sendTimerId = 1},
-    {.retransmission = true,
-     .maxPlayers = 2,
-     .timeout = LINK_WIRELESS_DEFAULT_TIMEOUT,
-     .interval = LINK_WIRELESS_DEFAULT_INTERVAL,
-     .sendTimerId = LINK_WIRELESS_DEFAULT_SEND_TIMER_ID,
-     .asyncACKTimerId = LINK_WIRELESS_DEFAULT_ASYNC_ACK_TIMER_ID});
+LinkUniversal* linkUniversal = nullptr;
 
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 bn::optional<bn::unique_ptr<Scene>> scene;
@@ -45,14 +32,26 @@ void update() {
 int main() {
   bn::core::init(ISR_VBlank);  // << call LINK_UNIVERSAL_ISR_VBLANK()
 
-  // (2) Add the required interrupt service routines
-  bn::hw::irq::set_isr(bn::hw::irq::id::SERIAL, LINK_UNIVERSAL_ISR_SERIAL);
-  bn::hw::irq::set_isr(bn::hw::irq::id::TIMER1, LINK_UNIVERSAL_ISR_TIMER);
-  bn::hw::irq::enable(bn::hw::irq::id::SERIAL);
-  bn::hw::irq::enable(bn::hw::irq::id::TIMER1);
+  // (1) Create a LinkUniversal instance
+  linkUniversal = new LinkUniversal(
+      LinkUniversal::Protocol::CABLE, "LinkUNI",
+      {.baudRate = LinkCable::BAUD_RATE_1,
+       .timeout = LINK_CABLE_DEFAULT_TIMEOUT,
+       .interval = LINK_CABLE_DEFAULT_INTERVAL,
+       .sendTimerId = 0},
+      {.retransmission = true,
+       .maxPlayers = 2,
+       .timeout = LINK_WIRELESS_DEFAULT_TIMEOUT,
+       .interval = LINK_WIRELESS_DEFAULT_INTERVAL,
+       .sendTimerId = 0,
+       .asyncACKTimerId = LINK_WIRELESS_DEFAULT_ASYNC_ACK_TIMER_ID});
 
-  // (3) Initialize the library
-  linkUniversal->activate();
+  // (2) Add the required interrupt service routines
+  bn::memory::set_dma_enabled(true);  // < THIS IS NOT RECOMMENDED! JUST TESTING
+  bn::hw::irq::set_isr(bn::hw::irq::id::SERIAL, LINK_UNIVERSAL_ISR_SERIAL);
+  bn::hw::irq::set_isr(bn::hw::irq::id::TIMER0, LINK_UNIVERSAL_ISR_TIMER);
+  bn::hw::irq::enable(bn::hw::irq::id::SERIAL);
+  bn::hw::irq::enable(bn::hw::irq::id::TIMER0);
 
   BN_ASSERT(fs != NULL,
             "GBFS file not found.\nUse the ROM that ends with .out.gba!");
@@ -62,14 +61,20 @@ int main() {
   scene = bn::unique_ptr{(Scene*)new StartScene(fs)};
   scene->get()->init();
 
+  // (3) Initialize the library
+  linkUniversal->activate();
+
   while (true) {
+    // (4) Sync
+    linkUniversal->sync();
+
     scene->get()->update();
     update();
   }
 }
 
 BN_CODE_IWRAM void ISR_VBlank() {
-  player_onVBlank();
   LINK_UNIVERSAL_ISR_VBLANK();
+  player_onVBlank();
   bn::core::default_vblank_handler();
 }
