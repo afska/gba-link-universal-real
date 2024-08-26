@@ -1,0 +1,235 @@
+#include "StartVideo.h"
+
+#include "bn_array.h"
+
+#include "bn_regular_bg_items_output_00001.h"
+#include "bn_regular_bg_items_output_00002.h"
+#include "bn_regular_bg_items_output_00003.h"
+#include "bn_regular_bg_items_output_00004.h"
+#include "bn_regular_bg_items_output_00005.h"
+#include "bn_regular_bg_items_output_00006.h"
+#include "bn_regular_bg_items_output_00007.h"
+#include "bn_regular_bg_items_output_00008.h"
+#include "bn_regular_bg_items_output_00009.h"
+#include "bn_regular_bg_items_output_00010.h"
+#include "bn_regular_bg_items_output_00011.h"
+#include "bn_regular_bg_items_output_00012.h"
+#include "bn_regular_bg_items_output_00013.h"
+#include "bn_regular_bg_items_output_00014.h"
+#include "bn_regular_bg_items_output_00015.h"
+#include "bn_regular_bg_items_output_00016.h"
+#include "bn_regular_bg_items_output_00017.h"
+#include "bn_regular_bg_items_output_00018.h"
+#include "bn_regular_bg_items_output_00019.h"
+#include "bn_regular_bg_items_output_00020.h"
+#include "bn_regular_bg_items_output_00021.h"
+#include "bn_regular_bg_items_output_00022.h"
+#include "bn_regular_bg_items_output_00023.h"
+#include "bn_regular_bg_items_output_00024.h"
+#include "bn_regular_bg_items_output_00025.h"
+#include "bn_regular_bg_items_output_00026.h"
+#include "bn_regular_bg_items_output_00027.h"
+#include "bn_regular_bg_items_output_00028.h"
+#include "bn_regular_bg_items_output_00029.h"
+#include "bn_regular_bg_items_output_00030.h"
+#include "bn_regular_bg_items_output_00031.h"
+#include "bn_regular_bg_items_output_00032.h"
+#include "bn_regular_bg_items_output_00033.h"
+#include "bn_regular_bg_items_output_00034.h"
+#include "bn_regular_bg_items_output_00035.h"
+#include "bn_regular_bg_items_output_00036.h"
+#include "bn_regular_bg_items_output_00037.h"
+#include "bn_regular_bg_items_output_00038.h"
+#include "bn_regular_bg_items_output_00039.h"
+#include "bn_regular_bg_items_output_00040.h"
+#include "bn_regular_bg_items_output_00041.h"
+#include "bn_regular_bg_items_output_00042.h"
+#include "bn_regular_bg_items_output_00043.h"
+#include "bn_regular_bg_items_output_00044.h"
+#include "bn_regular_bg_items_output_00045.h"
+#include "bn_regular_bg_items_output_00046.h"
+#include "bn_regular_bg_items_output_00047.h"
+#include "bn_regular_bg_items_output_00048.h"
+#include "bn_regular_bg_items_output_00049.h"
+#include "bn_regular_bg_items_output_00050.h"
+#include "bn_regular_bg_items_output_00051.h"
+#include "bn_regular_bg_items_output_00052.h"
+#include "bn_regular_bg_items_output_00053.h"
+#include "bn_regular_bg_items_output_00054.h"
+#include "bn_regular_bg_items_output_00055.h"
+#include "bn_regular_bg_items_output_00056.h"
+#include "bn_regular_bg_items_output_00057.h"
+#include "bn_regular_bg_items_output_00058.h"
+#include "bn_regular_bg_items_output_00059.h"
+#include "bn_regular_bg_items_output_00060.h"
+#include "bn_regular_bg_items_output_00061.h"
+#include "bn_regular_bg_items_output_00062.h"
+#include "bn_regular_bg_items_output_00063.h"
+#include "bn_regular_bg_items_output_00064.h"
+#include "bn_regular_bg_items_output_00065.h"
+#include "bn_regular_bg_items_output_00066.h"
+#include "bn_regular_bg_items_output_00067.h"
+#include "bn_regular_bg_items_output_00068.h"
+#include "bn_regular_bg_items_output_00069.h"
+#include "bn_regular_bg_items_output_00070.h"
+#include "bn_regular_bg_items_output_00071.h"
+#include "bn_regular_bg_items_output_00072.h"
+#include "bn_regular_bg_items_output_00073.h"
+#include "bn_regular_bg_items_output_00074.h"
+#include "bn_regular_bg_items_output_00075.h"
+#include "bn_regular_bg_items_output_00076.h"
+#include "bn_regular_bg_items_output_00077.h"
+#include "bn_regular_bg_items_output_00078.h"
+#include "bn_regular_bg_items_output_00079.h"
+#include "bn_regular_bg_items_output_00080.h"
+#include "bn_regular_bg_items_output_00081.h"
+#include "bn_regular_bg_items_output_00082.h"
+#include "bn_regular_bg_items_output_00083.h"
+#include "bn_regular_bg_items_output_00084.h"
+#include "bn_regular_bg_items_output_00085.h"
+#include "bn_regular_bg_items_output_00086.h"
+#include "bn_regular_bg_items_output_00087.h"
+#include "bn_regular_bg_items_output_00088.h"
+#include "bn_regular_bg_items_output_00089.h"
+#include "bn_regular_bg_items_output_00090.h"
+#include "bn_regular_bg_items_output_00091.h"
+#include "bn_regular_bg_items_output_00092.h"
+#include "bn_regular_bg_items_output_00093.h"
+#include "bn_regular_bg_items_output_00094.h"
+#include "bn_regular_bg_items_output_00095.h"
+#include "bn_regular_bg_items_output_00096.h"
+#include "bn_regular_bg_items_output_00097.h"
+#include "bn_regular_bg_items_output_00098.h"
+#include "bn_regular_bg_items_output_00099.h"
+#include "bn_regular_bg_items_output_00100.h"
+#include "bn_regular_bg_items_output_00101.h"
+#include "bn_regular_bg_items_output_00102.h"
+#include "bn_regular_bg_items_output_00103.h"
+#include "bn_regular_bg_items_output_00104.h"
+#include "bn_regular_bg_items_output_00105.h"
+#include "bn_regular_bg_items_output_00106.h"
+#include "bn_regular_bg_items_output_00107.h"
+#include "bn_regular_bg_items_output_00108.h"
+#include "bn_regular_bg_items_output_00109.h"
+#include "bn_regular_bg_items_output_00110.h"
+#include "bn_regular_bg_items_output_00111.h"
+#include "bn_regular_bg_items_output_00112.h"
+#include "bn_regular_bg_items_output_00113.h"
+#include "bn_regular_bg_items_output_00114.h"
+#include "bn_regular_bg_items_output_00115.h"
+#include "bn_regular_bg_items_output_00116.h"
+#include "bn_regular_bg_items_output_00117.h"
+#include "bn_regular_bg_items_output_00118.h"
+#include "bn_regular_bg_items_output_00119.h"
+#include "bn_regular_bg_items_output_00120.h"
+#include "bn_regular_bg_items_output_00121.h"
+#include "bn_regular_bg_items_output_00122.h"
+#include "bn_regular_bg_items_output_00123.h"
+#include "bn_regular_bg_items_output_00124.h"
+#include "bn_regular_bg_items_output_00125.h"
+#include "bn_regular_bg_items_output_00126.h"
+#include "bn_regular_bg_items_output_00127.h"
+#include "bn_regular_bg_items_output_00128.h"
+#include "bn_regular_bg_items_output_00129.h"
+#include "bn_regular_bg_items_output_00130.h"
+#include "bn_regular_bg_items_output_00131.h"
+#include "bn_regular_bg_items_output_00132.h"
+#include "bn_regular_bg_items_output_00133.h"
+#include "bn_regular_bg_items_output_00134.h"
+#include "bn_regular_bg_items_output_00135.h"
+#include "bn_regular_bg_items_output_00136.h"
+#include "bn_regular_bg_items_output_00137.h"
+#include "bn_regular_bg_items_output_00138.h"
+#include "bn_regular_bg_items_output_00139.h"
+#include "bn_regular_bg_items_output_00140.h"
+#include "bn_regular_bg_items_output_00141.h"
+#include "bn_regular_bg_items_output_00142.h"
+#include "bn_regular_bg_items_output_00143.h"
+#include "bn_regular_bg_items_output_00144.h"
+#include "bn_regular_bg_items_output_00145.h"
+#include "bn_regular_bg_items_output_00146.h"
+#include "bn_regular_bg_items_output_00147.h"
+#include "bn_regular_bg_items_output_00148.h"
+#include "bn_regular_bg_items_output_00149.h"
+#include "bn_regular_bg_items_output_00150.h"
+
+const bn::array<bn::regular_bg_item, 150> frames = {
+    bn::regular_bg_items::output_00001, bn::regular_bg_items::output_00002,
+    bn::regular_bg_items::output_00003, bn::regular_bg_items::output_00004,
+    bn::regular_bg_items::output_00005, bn::regular_bg_items::output_00006,
+    bn::regular_bg_items::output_00007, bn::regular_bg_items::output_00008,
+    bn::regular_bg_items::output_00009, bn::regular_bg_items::output_00010,
+    bn::regular_bg_items::output_00011, bn::regular_bg_items::output_00012,
+    bn::regular_bg_items::output_00013, bn::regular_bg_items::output_00014,
+    bn::regular_bg_items::output_00015, bn::regular_bg_items::output_00016,
+    bn::regular_bg_items::output_00017, bn::regular_bg_items::output_00018,
+    bn::regular_bg_items::output_00019, bn::regular_bg_items::output_00020,
+    bn::regular_bg_items::output_00021, bn::regular_bg_items::output_00022,
+    bn::regular_bg_items::output_00023, bn::regular_bg_items::output_00024,
+    bn::regular_bg_items::output_00025, bn::regular_bg_items::output_00026,
+    bn::regular_bg_items::output_00027, bn::regular_bg_items::output_00028,
+    bn::regular_bg_items::output_00029, bn::regular_bg_items::output_00030,
+    bn::regular_bg_items::output_00031, bn::regular_bg_items::output_00032,
+    bn::regular_bg_items::output_00033, bn::regular_bg_items::output_00034,
+    bn::regular_bg_items::output_00035, bn::regular_bg_items::output_00036,
+    bn::regular_bg_items::output_00037, bn::regular_bg_items::output_00038,
+    bn::regular_bg_items::output_00039, bn::regular_bg_items::output_00040,
+    bn::regular_bg_items::output_00041, bn::regular_bg_items::output_00042,
+    bn::regular_bg_items::output_00043, bn::regular_bg_items::output_00044,
+    bn::regular_bg_items::output_00045, bn::regular_bg_items::output_00046,
+    bn::regular_bg_items::output_00047, bn::regular_bg_items::output_00048,
+    bn::regular_bg_items::output_00049, bn::regular_bg_items::output_00050,
+    bn::regular_bg_items::output_00051, bn::regular_bg_items::output_00052,
+    bn::regular_bg_items::output_00053, bn::regular_bg_items::output_00054,
+    bn::regular_bg_items::output_00055, bn::regular_bg_items::output_00056,
+    bn::regular_bg_items::output_00057, bn::regular_bg_items::output_00058,
+    bn::regular_bg_items::output_00059, bn::regular_bg_items::output_00060,
+    bn::regular_bg_items::output_00061, bn::regular_bg_items::output_00062,
+    bn::regular_bg_items::output_00063, bn::regular_bg_items::output_00064,
+    bn::regular_bg_items::output_00065, bn::regular_bg_items::output_00066,
+    bn::regular_bg_items::output_00067, bn::regular_bg_items::output_00068,
+    bn::regular_bg_items::output_00069, bn::regular_bg_items::output_00070,
+    bn::regular_bg_items::output_00071, bn::regular_bg_items::output_00072,
+    bn::regular_bg_items::output_00073, bn::regular_bg_items::output_00074,
+    bn::regular_bg_items::output_00075, bn::regular_bg_items::output_00076,
+    bn::regular_bg_items::output_00077, bn::regular_bg_items::output_00078,
+    bn::regular_bg_items::output_00079, bn::regular_bg_items::output_00080,
+    bn::regular_bg_items::output_00081, bn::regular_bg_items::output_00082,
+    bn::regular_bg_items::output_00083, bn::regular_bg_items::output_00084,
+    bn::regular_bg_items::output_00085, bn::regular_bg_items::output_00086,
+    bn::regular_bg_items::output_00087, bn::regular_bg_items::output_00088,
+    bn::regular_bg_items::output_00089, bn::regular_bg_items::output_00090,
+    bn::regular_bg_items::output_00091, bn::regular_bg_items::output_00092,
+    bn::regular_bg_items::output_00093, bn::regular_bg_items::output_00094,
+    bn::regular_bg_items::output_00095, bn::regular_bg_items::output_00096,
+    bn::regular_bg_items::output_00097, bn::regular_bg_items::output_00098,
+    bn::regular_bg_items::output_00099, bn::regular_bg_items::output_00100,
+    bn::regular_bg_items::output_00101, bn::regular_bg_items::output_00102,
+    bn::regular_bg_items::output_00103, bn::regular_bg_items::output_00104,
+    bn::regular_bg_items::output_00105, bn::regular_bg_items::output_00106,
+    bn::regular_bg_items::output_00107, bn::regular_bg_items::output_00108,
+    bn::regular_bg_items::output_00109, bn::regular_bg_items::output_00110,
+    bn::regular_bg_items::output_00111, bn::regular_bg_items::output_00112,
+    bn::regular_bg_items::output_00113, bn::regular_bg_items::output_00114,
+    bn::regular_bg_items::output_00115, bn::regular_bg_items::output_00116,
+    bn::regular_bg_items::output_00117, bn::regular_bg_items::output_00118,
+    bn::regular_bg_items::output_00119, bn::regular_bg_items::output_00120,
+    bn::regular_bg_items::output_00121, bn::regular_bg_items::output_00122,
+    bn::regular_bg_items::output_00123, bn::regular_bg_items::output_00124,
+    bn::regular_bg_items::output_00125, bn::regular_bg_items::output_00126,
+    bn::regular_bg_items::output_00127, bn::regular_bg_items::output_00128,
+    bn::regular_bg_items::output_00129, bn::regular_bg_items::output_00130,
+    bn::regular_bg_items::output_00131, bn::regular_bg_items::output_00132,
+    bn::regular_bg_items::output_00133, bn::regular_bg_items::output_00134,
+    bn::regular_bg_items::output_00135, bn::regular_bg_items::output_00136,
+    bn::regular_bg_items::output_00137, bn::regular_bg_items::output_00138,
+    bn::regular_bg_items::output_00139, bn::regular_bg_items::output_00140,
+    bn::regular_bg_items::output_00141, bn::regular_bg_items::output_00142,
+    bn::regular_bg_items::output_00143, bn::regular_bg_items::output_00144,
+    bn::regular_bg_items::output_00145, bn::regular_bg_items::output_00146,
+    bn::regular_bg_items::output_00147, bn::regular_bg_items::output_00148,
+    bn::regular_bg_items::output_00149, bn::regular_bg_items::output_00150};
+
+bn::regular_bg_item StartVideo::getFrame(unsigned frame) {
+  return frames[frame];
+}

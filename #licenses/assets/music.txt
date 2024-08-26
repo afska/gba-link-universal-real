@@ -1,0 +1,11 @@
+Licenses for each *.pcm/*.gsm MUSIC file in the gbfs_files/ directory.
+
+---------
+lazer.gsm
+---------
+
+by Synthenia
+
+CC BY-NC-SA 3.0
+
+https://soundcloud.com/synthenia/lazer-idols
