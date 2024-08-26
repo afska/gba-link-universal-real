@@ -37,12 +37,14 @@ int main() {
       LinkUniversal::Protocol::AUTODETECT, "LinkUNI",
       {.baudRate = LinkCable::BAUD_RATE_3,
        .timeout = LINK_CABLE_DEFAULT_TIMEOUT,
-       .interval = Link::perFrame(4),
+       .remoteTimeout = LINK_CABLE_DEFAULT_REMOTE_TIMEOUT,
+       .interval = 50,
        .sendTimerId = 0},
       {.retransmission = true,
        .maxPlayers = 2,
        .timeout = LINK_WIRELESS_DEFAULT_TIMEOUT,
-       .interval = Link::perFrame(4),
+       .remoteTimeout = LINK_WIRELESS_DEFAULT_REMOTE_TIMEOUT,
+       .interval = 50,
        .sendTimerId = 0,
        .asyncACKTimerId = LINK_WIRELESS_DEFAULT_ASYNC_ACK_TIMER_ID});
 
