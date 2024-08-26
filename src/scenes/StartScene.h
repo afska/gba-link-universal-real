@@ -22,11 +22,16 @@ class StartScene : public Scene {
   bn::fixed videoFrame = 0;
   int lastBeat = 0;
   bn::fixed extraSpeed = 0;
-  bool isConnected = false;
   bn::unique_ptr<PixelBlink> pixelBlink;
+
+  bool isConnected = false;
+  unsigned counter = 0;
+  unsigned received = 0;
+  bool error = false;
 
   void onConnected();
   void onDisconnected();
+  void onError(unsigned expected, unsigned actual);
   void updateVideo();
   void print(bn::string<128> text);
 };
