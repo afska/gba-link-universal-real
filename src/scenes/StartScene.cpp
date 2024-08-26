@@ -31,7 +31,7 @@ StartScene::StartScene(const GBFS_FILE* _fs)
 }
 
 void StartScene::init() {
-  textGenerator.generate({0, 0}, "Hello world", textSprites);
+  textGenerator.generate({0, -30}, "Hello world", textSprites);
   player_playGSM("lazer.gsm");
   player_setLoop(true);
 }
