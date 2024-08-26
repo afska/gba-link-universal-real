@@ -20,7 +20,8 @@ StartScene::StartScene(const GBFS_FILE* _fs)
     : Scene(_fs),
       horse(bn::unique_ptr{new Horse({0, 0})}),
       textGenerator(common_fixed_8x16_sprite_font),
-      textGeneratorAccent(common_fixed_8x16_sprite_font_accent) {
+      textGeneratorAccent(common_fixed_8x16_sprite_font_accent),
+      pixelBlink(bn::unique_ptr{new PixelBlink(0.5)}) {
   horse->showGun = false;
   horse->setPosition({HORSE_X, HORSE_Y}, true);
   horse->update();
@@ -66,6 +67,8 @@ void StartScene::update() {
 
 void StartScene::onConnected() {
   print("Whoa! Connected!");
+  pixelBlink->blink();
+  player_seek(0);
 }
 
 void StartScene::onDisconnected() {

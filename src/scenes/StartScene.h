@@ -4,6 +4,7 @@
 #include "Scene.h"
 
 #include "../objects/Horse.h"
+#include "../utils/PixelBlink.h"
 
 class StartScene : public Scene {
  public:
@@ -22,6 +23,7 @@ class StartScene : public Scene {
   int lastBeat = 0;
   bn::fixed extraSpeed = 0;
   bool isConnected = false;
+  bn::unique_ptr<PixelBlink> pixelBlink;
 
   void onConnected();
   void onDisconnected();
