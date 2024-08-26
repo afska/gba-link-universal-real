@@ -34,20 +34,20 @@ int main() {
 
   // (1) Create a LinkUniversal instance
   linkUniversal = new LinkUniversal(
-      LinkUniversal::Protocol::AUTODETECT, "LinkUNI",
-      {.baudRate = LinkCable::BAUD_RATE_3,
+      LinkUniversal::Protocol::CABLE, "LinkUNI",
+      {.baudRate = LinkCable::BAUD_RATE_1,
        .timeout = LINK_CABLE_DEFAULT_TIMEOUT,
-       .interval = Link::perFrame(4),
+       .interval = Link::perFrame(3),
        .sendTimerId = 0},
       {.retransmission = true,
        .maxPlayers = 2,
        .timeout = LINK_WIRELESS_DEFAULT_TIMEOUT,
-       .interval = Link::perFrame(4),
+       .interval = Link::perFrame(3),
        .sendTimerId = 0,
        .asyncACKTimerId = LINK_WIRELESS_DEFAULT_ASYNC_ACK_TIMER_ID});
 
   // (2) Add the required interrupt service routines
-  bn::memory::set_dma_enabled(false);
+  bn::memory::set_dma_enabled(true);  // < THIS IS NOT RECOMMENDED! JUST TESTING
   bn::hw::irq::set_isr(bn::hw::irq::id::SERIAL, LINK_UNIVERSAL_ISR_SERIAL);
   bn::hw::irq::set_isr(bn::hw::irq::id::TIMER0, LINK_UNIVERSAL_ISR_TIMER);
   bn::hw::irq::enable(bn::hw::irq::id::SERIAL);
@@ -74,7 +74,7 @@ int main() {
 }
 
 BN_CODE_IWRAM void ISR_VBlank() {
-  player_onVBlank();
   LINK_UNIVERSAL_ISR_VBLANK();
+  player_onVBlank();
   bn::core::default_vblank_handler();
 }

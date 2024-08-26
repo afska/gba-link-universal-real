@@ -13,7 +13,7 @@
 
 #define HORSE_X 40
 #define HORSE_Y 90
-#define BPM 115
+#define BPM 85
 #define BEAT_PREDICTION_WINDOW 100
 
 StartScene::StartScene(const GBFS_FILE* _fs)
@@ -30,7 +30,7 @@ StartScene::StartScene(const GBFS_FILE* _fs)
 }
 
 void StartScene::init() {
-  player_playPCM("dj.pcm");
+  player_playGSM("lazer.gsm");
   player_setLoop(true);
   onDisconnected();
 }
@@ -52,41 +52,16 @@ void StartScene::update() {
   if (isNewBeat)
     horse->jump();
 
-  // Background
-  pixelBlink->update();
+  // Video
   updateVideo();
 
   // Link
-  if (!error) {
-    if (!isConnected && linkUniversal->isConnected()) {
-      isConnected = true;
-      onConnected();
-    } else if (isConnected && !linkUniversal->isConnected()) {
-      isConnected = false;
-      onDisconnected();
-    }
-  }
-
-  if (isConnected) {
-    unsigned otherPlayerId = !linkUniversal->currentPlayerId();
-
-    if (!error) {
-      linkUniversal->send(++counter);
-      linkUniversal->send(++counter);
-      linkUniversal->send(++counter);
-
-      while (linkUniversal->canRead(otherPlayerId)) {
-        unsigned receivedNumber = linkUniversal->read(otherPlayerId);
-        if (receivedNumber > received + 1) {
-          error = true;
-          onError(received + 1, receivedNumber);
-          break;
-        } else {
-          received = receivedNumber;
-          print(bn::to_string<128>(received));
-        }
-      }
-    }
+  if (!isConnected && linkUniversal->isConnected()) {
+    isConnected = true;
+    onConnected();
+  } else if (isConnected && !linkUniversal->isConnected()) {
+    isConnected = false;
+    onDisconnected();
   }
 }
 
@@ -96,17 +71,8 @@ void StartScene::onConnected() {
   player_seek(0);
 }
 
-void StartScene::onError(unsigned expected, unsigned actual) {
-  print("Expected " + bn::to_string<128>(expected) + " but got " +
-        bn::to_string<128>(actual));
-  pixelBlink->blink();
-}
-
 void StartScene::onDisconnected() {
   print("Waiting...");
-  error = false;
-  counter = 0;
-  received = 0;
 }
 
 void StartScene::updateVideo() {
