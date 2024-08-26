@@ -1,13 +1,12 @@
 #include "Explosion.h"
-
-#include "../assets/SpriteProvider.h"
+#include "bn_sprite_items_explosion.h"
 
 Explosion::Explosion(bn::fixed_point position)
-    : sprite(SpriteProvider::explosion().create_sprite(position)),
+    : sprite(bn::sprite_items::explosion.create_sprite(position)),
       animation(bn::create_sprite_animate_action_once(
           sprite,
           2,
-          SpriteProvider::explosion().tiles_item(),
+          bn::sprite_items::explosion.tiles_item(),
           0,
           1,
           2,

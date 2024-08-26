@@ -5,13 +5,10 @@
 #include "../assets/fonts/common_fixed_8x16_sprite_font_accent.h"
 #include "../player/player.h"
 #include "../utils/Math.h"
+#include "bn_memory.h"
 
 #include "bn_blending.h"
 #include "bn_keypad.h"
-#include "bn_sprite_items_start_logo1.h"
-#include "bn_sprite_items_start_logo2.h"
-#include "bn_sprite_items_start_logo3.h"
-#include "bn_sprite_items_start_logo4.h"
 
 #define HORSE_X 40
 #define HORSE_Y 90
@@ -31,7 +28,11 @@ StartScene::StartScene(const GBFS_FILE* _fs)
 }
 
 void StartScene::init() {
-  textGenerator.generate({0, -30}, "Hello world", textSprites);
+  textGenerator.generate(
+      {0, -30},
+      "DMA enabled: " +
+          bn::string<32>(bn::memory::dma_enabled() ? "yes" : "no"),
+      textSprites);
   player_playGSM("lazer.gsm");
   player_setLoop(true);
 }

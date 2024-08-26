@@ -79,10 +79,10 @@ class LinkSPI {
 
   /**
    * @brief Activates the library in a specific `mode`.
-   * @param mode One of the enum values from `LinkSPI::Mode`.
-   * @param dataSize One of the enum values from `LinkSPI::DataSize`.
+   * @param mode_ One of the enum values from `LinkSPI::Mode`.
+   * @param dataSize_ One of the enum values from `LinkSPI::DataSize`.
    */
-  void activate(Mode mode, DataSize dataSize = SIZE_32BIT) {
+  void activate(Mode mode_, DataSize dataSize_ = SIZE_32BIT) {
     this->mode = mode;
     this->dataSize = dataSize;
     this->waitMode = false;

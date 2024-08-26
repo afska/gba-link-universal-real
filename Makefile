@@ -40,6 +40,7 @@ SOURCES     	:=  src \
 					src/scenes \
 					src/objects \
 					src/utils \
+					src/utils/gba-link-connection \
 					src/utils/gbfs
 INCLUDES    	:=  include
 DATA        	:=
@@ -48,7 +49,7 @@ AUDIO       	:=  audio
 DMGAUDIO    	:=  dmg_audio
 ROMTITLE    	:=  LinkUni
 ROMCODE     	:=  LINK
-USERFLAGS   	:=  -Ofast -Wno-unused-parameter
+USERFLAGS   	:=  -Ofast -Wno-unused-parameter -DLINK_WIRELESS_PUT_ISR_IN_IWRAM=1 -DLINK_WIRELESS_ENABLE_NESTED_IRQ=1
 USERCXXFLAGS	:=  
 USERASFLAGS 	:=  
 USERLDFLAGS 	:= -Wl,--print-memory-usage

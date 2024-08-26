@@ -128,7 +128,7 @@ class LinkUniversal {
    * @param cableOptions All the LinkCable constructor parameters in one struct.
    * @param wirelessOptions All the LinkWireless constructor parameters in one
    * struct.
-   * @param randomSeed Random seed used for waits to prevent livelocks. If you
+   * @param randomSeed_ Random seed used for waits to prevent livelocks. If you
    * use _libtonc_, pass `__qran_seed`.
    */
   explicit LinkUniversal(Protocol protocol = AUTODETECT,
@@ -145,7 +145,7 @@ class LinkUniversal {
                                  LINK_WIRELESS_DEFAULT_INTERVAL,
                                  LINK_WIRELESS_DEFAULT_SEND_TIMER_ID,
                                  LINK_WIRELESS_DEFAULT_ASYNC_ACK_TIMER_ID},
-                         int randomSeed = 123) {
+                         int randomSeed_ = 123) {
     this->linkCable =
         new LinkCable(cableOptions.baudRate, cableOptions.timeout,
                       cableOptions.interval, cableOptions.sendTimerId);
@@ -272,6 +272,8 @@ class LinkUniversal {
         }
 
         break;
+      }
+      default: {
       }
     }
   }
@@ -526,6 +528,8 @@ class LinkUniversal {
         // (should not happen)
         break;
       }
+      default: {
+      }
     }
 
     return true;
@@ -594,6 +598,8 @@ class LinkUniversal {
         setMode(LINK_WIRELESS);
         break;
       }
+      default: {
+      }
     }
   }
 
@@ -620,13 +626,15 @@ class LinkUniversal {
         setMode(LINK_WIRELESS);
         break;
       }
+      default: {
+      }
     }
   }
 
-  void setMode(Mode mode) {
+  void setMode(Mode mode_) {
     stop();
     this->state = INITIALIZING;
-    this->mode = mode;
+    this->mode = mode_;
     resetState();
   }
 
