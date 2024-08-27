@@ -30,7 +30,7 @@ void update() {
 }
 
 int main() {
-  bn::core::init(ISR_VBlank);  // << call LINK_UNIVERSAL_ISR_VBLANK()
+  bn::core::init(ISR_VBlank);  // << ISR_VBlank calls LINK_UNIVERSAL_ISR_VBLANK
 
   // (1) Create a LinkUniversal instance
   linkUniversal = new LinkUniversal(
