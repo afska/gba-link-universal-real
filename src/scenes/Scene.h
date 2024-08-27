@@ -29,6 +29,18 @@ class Scene {
 
  protected:
   const GBFS_FILE* fs;
+
+  template <typename F, typename Type, int MaxSize>
+  inline void iterate(bn::vector<Type, MaxSize>& vector, F action) {
+    for (auto it = vector.begin(); it != vector.end();) {
+      bool erase = action(it->get());
+
+      if (erase)
+        it = vector.erase(it);
+      else
+        ++it;
+    }
+  }
 };
 
 #endif  // SCENE_H

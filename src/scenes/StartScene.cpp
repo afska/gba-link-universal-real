@@ -49,12 +49,18 @@ void StartScene::update() {
   lastBeat = beat;
   if (isNewBeat)
     extraSpeed = 10;
-  if (isNewBeat)
+  if (isNewBeat) {
     horse->jump();
+    explosions.push_back(bn::unique_ptr{
+        new Explosion({random.get_fixed(-50, 50), random.get_fixed(-50, 50)})});
+  }
 
   // Background
   pixelBlink->update();
   updateVideo();
+
+  // Explosions
+  iterate(explosions, [](Explosion* it) { return it->update(); });
 
   // Link
   if (!error) {

@@ -3,6 +3,7 @@
 
 #include "Scene.h"
 
+#include "../objects/Explosion.h"
 #include "../objects/Horse.h"
 #include "../utils/PixelBlink.h"
 
@@ -23,6 +24,8 @@ class StartScene : public Scene {
   int lastBeat = 0;
   bn::fixed extraSpeed = 0;
   bn::unique_ptr<PixelBlink> pixelBlink;
+  bn::vector<bn::unique_ptr<Explosion>, 64> explosions;
+  bn::random random;
 
   bool isConnected = false;
   unsigned counter = 0;
