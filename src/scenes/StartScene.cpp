@@ -68,6 +68,7 @@ void StartScene::update() {
   }
 
   if (isConnected) {
+    // Send/receive/test
     unsigned otherPlayerId = !linkUniversal->currentPlayerId();
 
     if (!error) {
@@ -88,6 +89,7 @@ void StartScene::update() {
       }
     }
   } else {
+    // Debug output
     bn::string<128> output1 =
         "Waiting... [" + bn::to_string<128>(linkUniversal->getState()) + "]";
     output1 += "<" + bn::to_string<128>(linkUniversal->getMode()) + ">";
@@ -101,7 +103,7 @@ void StartScene::update() {
     textSprites.clear();
     textGenerator.generate({0, -30}, output1, textSprites);
     textGenerator.generate({0, -10}, output2, textSprites);
-    textGenerator.generate({0, 20}, output3, textSprites);
+    textGenerator.generate({0, 10}, output3, textSprites);
   }
 }
 
