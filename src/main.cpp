@@ -33,18 +33,17 @@ int main() {
   bn::core::init(ISR_VBlank);  // << ISR_VBlank calls LINK_UNIVERSAL_ISR_VBLANK
 
   // (1) Create a LinkUniversal instance
-  linkUniversal = new LinkUniversal(
-      LinkUniversal::Protocol::AUTODETECT, "LinkUNI",
-      {.baudRate = LinkCable::BAUD_RATE_3,
-       .timeout = LINK_CABLE_DEFAULT_TIMEOUT,
-       .interval = Link::perFrame(4),
-       .sendTimerId = 0},
-      {.retransmission = true,
-       .maxPlayers = 2,
-       .timeout = LINK_WIRELESS_DEFAULT_TIMEOUT,
-       .interval = Link::perFrame(4),
-       .sendTimerId = 0,
-       .asyncACKTimerId = LINK_WIRELESS_DEFAULT_ASYNC_ACK_TIMER_ID});
+  linkUniversal =
+      new LinkUniversal(LinkUniversal::Protocol::AUTODETECT, "LinkUNI",
+                        {.baudRate = LinkCable::BAUD_RATE_3,
+                         .timeout = LINK_CABLE_DEFAULT_TIMEOUT,
+                         .interval = Link::perFrame(4),
+                         .sendTimerId = 0},
+                        {.retransmission = true,
+                         .maxPlayers = 2,
+                         .timeout = LINK_WIRELESS_DEFAULT_TIMEOUT,
+                         .interval = Link::perFrame(4),
+                         .sendTimerId = 0});
 
   // (2) Add the required interrupt service routines
   bn::memory::set_dma_enabled(false);
