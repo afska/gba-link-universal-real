@@ -300,8 +300,6 @@ class LinkCable {
     if (!isEnabled)
       return;
 
-    Link::_REG_SIOMLT_SEND = LINK_CABLE_NO_DATA;
-
     if (!isReady() || hasError()) {
       reset();
       return;
@@ -332,6 +330,8 @@ class LinkCable {
     state.playerCount = newPlayerCount;
     state.currentPlayerId =
         (Link::_REG_SIOCNT & (0b11 << BITS_PLAYER_ID)) >> BITS_PLAYER_ID;
+
+    Link::_REG_SIOMLT_SEND = LINK_CABLE_NO_DATA;
 
     if (!isMaster())
       sendPendingData();
@@ -434,6 +434,7 @@ class LinkCable {
   }
 
   void stop() {
+    Link::_REG_SIOMLT_SEND = LINK_CABLE_NO_DATA;
     stopTimer();
     setGeneralPurposeMode();
   }
