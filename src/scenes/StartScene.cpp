@@ -136,6 +136,7 @@ void StartScene::update() {
   // Horse
   horse->setPosition({horse->getPosition().x(), HORSE_Y}, true);
   horse->update();
+  horse->setFlipX(horse->getCenteredPosition().x() > 0);
 }
 
 void StartScene::send() {
@@ -184,8 +185,8 @@ void StartScene::updateVideo() {
 }
 
 void StartScene::addExplosion() {
-  explosions.push_back(bn::unique_ptr{
-      new Explosion({random.get_fixed(-50, 50), random.get_fixed(-50, 50)})});
+  explosions.push_back(bn::unique_ptr{new Explosion(
+      {random.get_fixed(-100, 100), random.get_fixed(-100, 100)})});
 }
 
 void StartScene::print(bn::string<128> text) {
