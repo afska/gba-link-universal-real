@@ -87,6 +87,21 @@ void StartScene::update() {
         }
       }
     }
+  } else {
+    bn::string<128> output1 =
+        "Waiting... [" + bn::to_string<128>(linkUniversal->getState()) + "]";
+    output1 += "<" + bn::to_string<128>(linkUniversal->getMode()) + ">";
+    if (linkUniversal->getMode() == LinkUniversal::Mode::LINK_WIRELESS)
+      output1 +=
+          " (" + bn::to_string<128>(linkUniversal->getWirelessState()) + ")";
+    bn::string<128> output2 =
+        "_wait: " + bn::to_string<128>(linkUniversal->_getWaitCount());
+    bn::string<128> output3 =
+        "_subW: " + bn::to_string<128>(linkUniversal->_getSubWaitCount());
+    textSprites.clear();
+    textGenerator.generate({0, -30}, output1, textSprites);
+    textGenerator.generate({0, -10}, output2, textSprites);
+    textGenerator.generate({0, 20}, output3, textSprites);
   }
 }
 
