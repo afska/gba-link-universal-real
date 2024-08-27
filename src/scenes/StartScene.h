@@ -17,7 +17,8 @@ class StartScene : public Scene {
  private:
   bn::optional<bn::regular_bg_ptr> background;
   bn::unique_ptr<Horse> horse;
-  bn::vector<bn::sprite_ptr, 64> textSprites;
+  bn::vector<bn::sprite_ptr, 256> textSprites;
+  bn::vector<bn::sprite_ptr, 256> creditsSprites;
   bn::sprite_text_generator textGenerator;
   bn::sprite_text_generator textGeneratorAccent;
   bn::fixed videoFrame = 0;
@@ -31,6 +32,7 @@ class StartScene : public Scene {
   unsigned counter = 0;
   unsigned received = 0;
   bool error = false;
+  bool credits = false;
 
   void send();
   void onConnected();
@@ -39,6 +41,9 @@ class StartScene : public Scene {
   void updateVideo();
   void addExplosion();
   void print(bn::string<128> text);
+  void printCredits();
+  void showCredits();
+  void hideCredits();
 };
 
 #endif  // START_SCENE_H
