@@ -24,11 +24,6 @@ bn::optional<bn::unique_ptr<Scene>> scene;
 
 void ISR_VBlank();
 
-void update() {
-  bn::core::update();
-  player_update(0, [](unsigned current) {});
-}
-
 int main() {
   bn::core::init(ISR_VBlank);  // << ISR_VBlank calls LINK_UNIVERSAL_ISR_VBLANK
 
@@ -70,12 +65,15 @@ int main() {
     linkUniversal->sync();
 
     scene->get()->update();
-    update();
+    bn::core::update();
   }
 }
 
 BN_CODE_IWRAM void ISR_VBlank() {
   player_onVBlank();
+  Link::_REG_IME = 1;
+  player_update(0, [](unsigned current) {});
+  Link::_REG_IME = 0;
   LINK_UNIVERSAL_ISR_VBLANK();
   bn::core::default_vblank_handler();
 }
