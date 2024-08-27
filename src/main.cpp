@@ -47,8 +47,9 @@ int main() {
        .asyncACKTimerId = LINK_WIRELESS_DEFAULT_ASYNC_ACK_TIMER_ID});
 
   // (2) Add the required interrupt service routines
-  bn::memory::set_dma_enabled(true);  // << NOT RECOMMENDED! JUST TESTING
-  // Always set `false` here ^^^^^^
+  bn::memory::set_dma_enabled(false);
+  // ^^^ DMA screws up interrupts and might cause packet loss!
+  // ^^^ Most audio players also use DMA but it's not too terrible.
   bn::hw::irq::set_isr(bn::hw::irq::id::SERIAL, LINK_UNIVERSAL_ISR_SERIAL);
   bn::hw::irq::set_isr(bn::hw::irq::id::TIMER0, LINK_UNIVERSAL_ISR_TIMER);
   bn::hw::irq::enable(bn::hw::irq::id::SERIAL);
