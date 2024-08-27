@@ -80,7 +80,6 @@ void StartScene::update() {
       // Send counter
       send();
       send();
-      send();
 
       // Send commands
       if (bn::keypad::left_held()) {
