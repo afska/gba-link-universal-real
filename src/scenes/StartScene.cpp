@@ -84,7 +84,8 @@ void StartScene::update() {
 
       while (linkUniversal->canRead(otherPlayerId)) {
         unsigned receivedNumber = linkUniversal->read(otherPlayerId);
-        if (receivedNumber != received + 1) {
+        unsigned expectedNumber = received + 1;
+        if (expectedNumber != (1 << 15) && receivedNumber != expectedNumber) {
           error = true;
           onError(received + 1, receivedNumber);
           break;

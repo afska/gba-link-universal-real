@@ -300,6 +300,8 @@ class LinkCable {
     if (!isEnabled)
       return;
 
+    Link::_REG_SIOMLT_SEND = LINK_CABLE_NO_DATA;
+
     if (!isReady() || hasError()) {
       reset();
       return;
