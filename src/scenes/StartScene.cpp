@@ -78,13 +78,13 @@ void StartScene::update() {
     unsigned otherPlayerId = !linkUniversal->currentPlayerId();
 
     if (!error) {
-      linkUniversal->send(++counter);
-      linkUniversal->send(++counter);
-      linkUniversal->send(++counter);
+      send();
+      send();
+      send();
 
       while (linkUniversal->canRead(otherPlayerId)) {
         unsigned receivedNumber = linkUniversal->read(otherPlayerId);
-        if (receivedNumber > received + 1) {
+        if (receivedNumber != received + 1) {
           error = true;
           onError(received + 1, receivedNumber);
           break;
@@ -111,6 +111,13 @@ void StartScene::update() {
     textGenerator.generate({0, -10}, output2, textSprites);
     textGenerator.generate({0, 10}, output3, textSprites);
   }
+}
+
+void StartScene::send() {
+  counter = (counter + 1) & ~(1 << 15);
+  // (^^ we'll use bit 15 for special commands for this demo)
+
+  linkUniversal->send(counter);
 }
 
 void StartScene::onConnected() {

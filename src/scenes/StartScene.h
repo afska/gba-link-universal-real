@@ -32,6 +32,7 @@ class StartScene : public Scene {
   unsigned received = 0;
   bool error = false;
 
+  void send();
   void onConnected();
   void onDisconnected();
   void onError(unsigned expected, unsigned actual);
