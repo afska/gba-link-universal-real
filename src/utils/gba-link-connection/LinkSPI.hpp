@@ -40,6 +40,10 @@
 // - returns 0xFFFFFFFF (or 0xFF) on misuse or cancelled transfers!
 // --------------------------------------------------------------------------
 
+#ifndef LINK_DEVELOPMENT
+#pragma GCC system_header
+#endif
+
 #include "_link_common.hpp"
 
 static volatile char LINK_SPI_VERSION[] = "LinkSPI/v7.0.0";
@@ -79,10 +83,10 @@ class LinkSPI {
 
   /**
    * @brief Activates the library in a specific `mode`.
-   * @param mode_ One of the enum values from `LinkSPI::Mode`.
-   * @param dataSize_ One of the enum values from `LinkSPI::DataSize`.
+   * @param mode One of the enum values from `LinkSPI::Mode`.
+   * @param dataSize One of the enum values from `LinkSPI::DataSize`.
    */
-  void activate(Mode mode_, DataSize dataSize_ = SIZE_32BIT) {
+  void activate(Mode mode, DataSize dataSize = SIZE_32BIT) {
     this->mode = mode;
     this->dataSize = dataSize;
     this->waitMode = false;
