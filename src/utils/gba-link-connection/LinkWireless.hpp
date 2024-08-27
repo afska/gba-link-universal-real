@@ -54,6 +54,10 @@
 // - 0xFFFF is a reserved value, so don't use it!
 // --------------------------------------------------------------------------
 
+#ifndef LINK_DEVELOPMENT
+#pragma GCC system_header
+#endif
+
 #include "_link_common.hpp"
 
 #include <cstring>
@@ -194,7 +198,7 @@ class LinkWireless {
   static constexpr int PING_WAIT = 50;
   static constexpr int TRANSFER_WAIT = 15;
   static constexpr int BROADCAST_SEARCH_WAIT_FRAMES = 60;
-  static constexpr int CMD_TIMEOUT = 100;
+  static constexpr int CMD_TIMEOUT = 10;
   static constexpr int LOGIN_STEPS = 9;
   static constexpr int COMMAND_HEADER_VALUE = 0x9966;
   static constexpr int RESPONSE_ACK_VALUE = 0x80;
@@ -352,10 +356,16 @@ class LinkWireless {
    * @brief Puts the adapter into a low consumption mode and then deactivates
    * the library. It returns a boolean indicating whether the transition to low
    * consumption mode was successful.
+   * @param turnOff Whether the library should put the adapter in the low
+   * consumption mode or not before deactivation. Defaults to `true`.
    */
-  bool deactivate() {
-    activate();
-    bool success = sendCommand(COMMAND_BYE).success;
+  bool deactivate(bool turnOff = true) {
+    bool success = true;
+
+    if (turnOff) {
+      activate();
+      success = sendCommand(COMMAND_BYE).success;
+    }
 
     lastError = NONE;
     isEnabled = false;
@@ -1600,13 +1610,16 @@ class LinkWireless {
 
     resetState();
     stop();
-    bool result = start();
+    bool success = start();
+
+    if (!success)
+      stop();
 
     LINK_WIRELESS_BARRIER;
     isEnabled = wasEnabled;
     LINK_WIRELESS_BARRIER;
 
-    return result;
+    return success;
   }
 
   void resetState() {

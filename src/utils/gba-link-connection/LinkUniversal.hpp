@@ -45,6 +45,10 @@
 //   (they mean 'disconnected' and 'no data' respectively)
 // --------------------------------------------------------------------------
 
+#ifndef LINK_DEVELOPMENT
+#pragma GCC system_header
+#endif
+
 #include "_link_common.hpp"
 
 #include <cstdio>
@@ -128,7 +132,7 @@ class LinkUniversal {
    * @param cableOptions All the LinkCable constructor parameters in one struct.
    * @param wirelessOptions All the LinkWireless constructor parameters in one
    * struct.
-   * @param randomSeed_ Random seed used for waits to prevent livelocks. If you
+   * @param randomSeed Random seed used for waits to prevent livelocks. If you
    * use _libtonc_, pass `__qran_seed`.
    */
   explicit LinkUniversal(Protocol protocol = AUTODETECT,
@@ -145,7 +149,7 @@ class LinkUniversal {
                                  LINK_WIRELESS_DEFAULT_INTERVAL,
                                  LINK_WIRELESS_DEFAULT_SEND_TIMER_ID,
                                  LINK_WIRELESS_DEFAULT_ASYNC_ACK_TIMER_ID},
-                         int randomSeed_ = 123) {
+                         int randomSeed = 123) {
     this->linkCable =
         new LinkCable(cableOptions.baudRate, cableOptions.timeout,
                       cableOptions.interval, cableOptions.sendTimerId);
@@ -607,7 +611,7 @@ class LinkUniversal {
     if (mode == LINK_CABLE)
       linkCable->deactivate();
     else
-      linkWireless->deactivate();
+      linkWireless->deactivate(false);
   }
 
   void toggleMode() {
@@ -631,18 +635,22 @@ class LinkUniversal {
     }
   }
 
-  void setMode(Mode mode_) {
+  void setMode(Mode mode) {
     stop();
     this->state = INITIALIZING;
-    this->mode = mode_;
+    this->mode = mode;
     resetState();
   }
 
   void start() {
     if (mode == LINK_CABLE)
       linkCable->activate();
-    else
-      linkWireless->activate();
+    else {
+      if (!linkWireless->activate()) {
+        toggleMode();
+        return;
+      }
+    }
 
     state = WAITING;
     resetState();
