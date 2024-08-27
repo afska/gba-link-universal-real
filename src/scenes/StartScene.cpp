@@ -62,14 +62,12 @@ void StartScene::update() {
   iterate(explosions, [](Explosion* it) { return it->update(); });
 
   // Link
-  if (!error) {
-    if (!isConnected && linkUniversal->isConnected()) {
-      isConnected = true;
-      onConnected();
-    } else if (isConnected && !linkUniversal->isConnected()) {
-      isConnected = false;
-      onDisconnected();
-    }
+  if (!isConnected && linkUniversal->isConnected()) {
+    isConnected = true;
+    onConnected();
+  } else if (isConnected && !linkUniversal->isConnected()) {
+    isConnected = false;
+    onDisconnected();
   }
 
   if (isConnected) {
