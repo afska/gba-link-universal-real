@@ -37,6 +37,7 @@ class StartScene : public Scene {
   void onDisconnected();
   void onError(unsigned expected, unsigned actual);
   void updateVideo();
+  void addExplosion();
   void print(bn::string<128> text);
 };
 

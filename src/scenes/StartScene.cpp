@@ -36,10 +36,6 @@ void StartScene::init() {
 }
 
 void StartScene::update() {
-  // Horse
-  horse->setPosition({HORSE_X, HORSE_Y}, true);
-  horse->update();
-
   // Rhythm
   const int PER_MINUTE = 71583;  // (1/60000) * 0xffffffff
   int audioLag = 0;              // (0 on real hardware)
@@ -51,8 +47,11 @@ void StartScene::update() {
     extraSpeed = 10;
   if (isNewBeat) {
     horse->jump();
-    explosions.push_back(bn::unique_ptr{
-        new Explosion({random.get_fixed(-50, 50), random.get_fixed(-50, 50)})});
+    addExplosion();
+    addExplosion();
+    addExplosion();
+    addExplosion();
+    addExplosion();
   }
 
   // Background
@@ -78,20 +77,44 @@ void StartScene::update() {
     unsigned otherPlayerId = !linkUniversal->currentPlayerId();
 
     if (!error) {
+      // Send counter
       send();
       send();
       send();
 
+      // Send commands
+      if (bn::keypad::left_held()) {
+        // send <move left> command
+        linkUniversal->send((1 << 15) | 1);
+      } else if (bn::keypad::right_held()) {
+        // send <move right> command
+        linkUniversal->send((1 << 15) | 2);
+      }
+
       while (linkUniversal->canRead(otherPlayerId)) {
         unsigned receivedNumber = linkUniversal->read(otherPlayerId);
-        unsigned expectedNumber = received + 1;
-        if (expectedNumber != (1 << 15) && receivedNumber != expectedNumber) {
-          error = true;
-          onError(received + 1, receivedNumber);
-          break;
+
+        if (receivedNumber & (1 << 15)) {
+          // received command (move horse)
+          unsigned direction = receivedNumber & ~(1 << 15);
+          horse->setPosition(
+              {horse->getPosition().x() + (direction == 1 ? -5 : 5), HORSE_Y},
+              true);
+          if (horse->getPosition().x() < 0)
+            horse->setPosition({0, HORSE_Y}, true);
+          if (horse->getPosition().x() > 240)
+            horse->setPosition({240, HORSE_Y}, true);
         } else {
-          received = receivedNumber;
-          print(bn::to_string<128>(received));
+          // received counter
+          unsigned expectedNumber = received + 1;
+          if (expectedNumber != (1 << 15) && receivedNumber != expectedNumber) {
+            error = true;
+            onError(received + 1, receivedNumber);
+            break;
+          } else {
+            received = receivedNumber;
+            print(bn::to_string<128>(received));
+          }
         }
       }
     }
@@ -112,6 +135,10 @@ void StartScene::update() {
     textGenerator.generate({0, -10}, output2, textSprites);
     textGenerator.generate({0, 10}, output3, textSprites);
   }
+
+  // Horse
+  horse->setPosition({horse->getPosition().x(), HORSE_Y}, true);
+  horse->update();
 }
 
 void StartScene::send() {
@@ -157,6 +184,11 @@ void StartScene::updateVideo() {
   if (alpha < 0)
     alpha = 0;
   bn::blending::set_transparency_alpha(alpha);
+}
+
+void StartScene::addExplosion() {
+  explosions.push_back(bn::unique_ptr{
+      new Explosion({random.get_fixed(-50, 50), random.get_fixed(-50, 50)})});
 }
 
 void StartScene::print(bn::string<128> text) {
