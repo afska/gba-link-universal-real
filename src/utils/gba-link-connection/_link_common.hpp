@@ -12,6 +12,22 @@
 #define LINK_ENABLE_DEBUG_LOGS 0
 #endif
 
+/**
+ * @brief strlen(...) implementation (by default, std::strlen)
+ */
+#ifndef LINK_STRLEN
+#include <cstring>
+#define LINK_STRLEN std::strlen
+#endif
+
+/**
+ * @brief memcpy(...) implementation (by default, std::memcpy)
+ */
+#ifndef LINK_MEMCPY
+#include <cstring>
+#define LINK_MEMCPY std::memcpy
+#endif
+
 #if LINK_ENABLE_DEBUG_LOGS != 0
 #include <stdarg.h>
 #include <stdio.h>
@@ -127,8 +143,9 @@ static inline __attribute__((always_inline)) void _IntrWait(
                       : "+r"(r0), "+r"(r1)::"r3");
 }
 
-static inline auto _MultiBoot(const _MultiBootParam* param,
-                              u32 mbmode) noexcept {
+static inline __attribute__((always_inline)) auto _MultiBoot(
+    const _MultiBootParam* param,
+    u32 mbmode) noexcept {
   register union {
     const _MultiBootParam* ptr;
     int res;
@@ -147,6 +164,18 @@ static inline int _max(int a, int b) {
 
 static inline int _min(int a, int b) {
   return (a < b) ? (a) : (b);
+}
+
+static inline void wait(u32 verticalLines) {
+  u32 count = 0;
+  u32 vCount = Link::_REG_VCOUNT;
+
+  while (count < verticalLines) {
+    if (Link::_REG_VCOUNT != vCount) {
+      count++;
+      vCount = Link::_REG_VCOUNT;
+    }
+  };
 }
 
 // Queue
@@ -266,6 +295,12 @@ class Queue {
   volatile bool _isWriting = false;
   volatile bool _needsClear = false;
 };
+
+// Reset communication registers
+static inline void reset() {
+  _REG_RCNT = (1 << 15);
+  _REG_SIOCNT = 0;
+}
 
 // Packets per frame -> Timer interval
 static inline u16 perFrame(u16 packets) {

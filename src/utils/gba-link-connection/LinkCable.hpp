@@ -55,13 +55,13 @@
  * most games.
  * \warning This affects how much memory is allocated. With the default value,
  * it's around `390` bytes. There's a double-buffered pending queue (to avoid
- * data races), 1 incoming queue and 1 outgoing queue. \warning You can
- * approximate the usage with `LINK_CABLE_QUEUE_SIZE * 26`.
+ * data races), 1 incoming queue and 1 outgoing queue.
+ * \warning You can approximate the usage with `LINK_CABLE_QUEUE_SIZE * 26`.
  */
 #define LINK_CABLE_QUEUE_SIZE 15
 #endif
 
-static volatile char LINK_CABLE_VERSION[] = "LinkCable/v7.0.1";
+static volatile char LINK_CABLE_VERSION[] = "LinkCable/v7.1.0";
 
 #define LINK_CABLE_MAX_PLAYERS 4
 #define LINK_CABLE_DEFAULT_TIMEOUT 3
@@ -267,6 +267,17 @@ class LinkCable {
   }
 
   /**
+   * @brief Restarts the send timer without disconnecting.
+   */
+  void resetTimer() {
+    if (!isEnabled)
+      return;
+
+    stopTimer();
+    startTimer();
+  }
+
+  /**
    * @brief This method is called by the VBLANK interrupt handler.
    * \warning This is internal API!
    */
@@ -355,9 +366,9 @@ class LinkCable {
 
   struct Config {
     BaudRate baudRate;
-    u32 timeout;
-    u32 interval;
-    u8 sendTimerId;
+    u32 timeout;     // can be changed in realtime
+    u16 interval;    // can be changed in realtime, but call `resetTimer()`
+    u8 sendTimerId;  // can be changed in realtime, but call `resetTimer()`
   };
 
   /**

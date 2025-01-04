@@ -70,7 +70,7 @@
 #define LINK_UNIVERSAL_GAME_ID_FILTER 0
 #endif
 
-static volatile char LINK_UNIVERSAL_VERSION[] = "LinkUniversal/v7.0.1";
+static volatile char LINK_UNIVERSAL_VERSION[] = "LinkUniversal/v7.1.0";
 
 #define LINK_UNIVERSAL_DISCONNECTED LINK_CABLE_DISCONNECTED
 #define LINK_UNIVERSAL_NO_DATA LINK_CABLE_NO_DATA
@@ -102,7 +102,8 @@ class LinkUniversal {
     CABLE,
     WIRELESS_AUTO,
     WIRELESS_SERVER,
-    WIRELESS_CLIENT
+    WIRELESS_CLIENT,
+    WIRELESS_RESTORE_EXISTING
   };
 
   struct CableOptions {
@@ -157,6 +158,7 @@ class LinkUniversal {
 
     this->config.protocol = protocol;
     this->config.gameName = gameName;
+    this->randomSeed = randomSeed;
   }
 
   /**
@@ -386,6 +388,19 @@ class LinkUniversal {
    */
   void setProtocol(Protocol protocol) { this->config.protocol = protocol; }
 
+  /**
+   * @brief Restarts the send timer without disconnecting.
+   */
+  void resetTimer() {
+    if (!isEnabled)
+      return;
+
+    if (linkCable->isActive())
+      linkCable->resetTimer();
+    if (linkWireless->isActive())
+      linkWireless->resetTimer();
+  }
+
   ~LinkUniversal() {
     delete linkCable;
     delete linkWireless;
@@ -436,7 +451,14 @@ class LinkUniversal {
       linkWireless->_onTimer();
   }
 
+  /**
+   * @brief The internal `LinkCable` instance.
+   */
   LinkCable* linkCable;
+
+  /**
+   * @brief The internal `LinkWireless` instance.
+   */
   LinkWireless* linkWireless;
 
  private:
@@ -585,7 +607,8 @@ class LinkUniversal {
       }
       case WIRELESS_AUTO:
       case WIRELESS_SERVER:
-      case WIRELESS_CLIENT: {
+      case WIRELESS_CLIENT:
+      case WIRELESS_RESTORE_EXISTING: {
         setMode(LINK_WIRELESS);
         break;
       }
@@ -597,7 +620,7 @@ class LinkUniversal {
   void stop() {
     if (mode == LINK_CABLE)
       linkCable->deactivate();
-    else
+    else if (config.protocol != WIRELESS_RESTORE_EXISTING)
       linkWireless->deactivate(false);
   }
 
@@ -613,7 +636,8 @@ class LinkUniversal {
       }
       case WIRELESS_AUTO:
       case WIRELESS_SERVER:
-      case WIRELESS_CLIENT: {
+      case WIRELESS_CLIENT:
+      case WIRELESS_RESTORE_EXISTING: {
         setMode(LINK_WIRELESS);
         break;
       }
@@ -630,10 +654,13 @@ class LinkUniversal {
   }
 
   void start() {
-    if (mode == LINK_CABLE)
+    if (mode == LINK_CABLE) {
       linkCable->activate();
-    else {
-      if (!linkWireless->activate()) {
+    } else {
+      bool success = config.protocol == WIRELESS_RESTORE_EXISTING
+                         ? linkWireless->restoreExistingConnection()
+                         : linkWireless->activate();
+      if (!success) {
         toggleMode();
         return;
       }
@@ -693,7 +720,7 @@ inline void LINK_UNIVERSAL_ISR_SERIAL() {
 }
 
 /**
- * @brief TIMER interrupt handler used for sending.
+ * @brief TIMER interrupt handler.
  */
 inline void LINK_UNIVERSAL_ISR_TIMER() {
   linkUniversal->_onTimer();
