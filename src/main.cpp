@@ -23,6 +23,8 @@ static const GBFS_FILE* fs = find_first_gbfs_file(0);
 bn::optional<bn::unique_ptr<Scene>> scene;
 
 void ISR_VBlank();
+bn::unique_ptr<Scene> setNextScene(Screen nextScreen);
+void transitionToNextScene();
 
 int main() {
   bn::core::init(ISR_VBlank);  // << ISR_VBlank calls LINK_UNIVERSAL_ISR_VBLANK
@@ -65,6 +67,10 @@ int main() {
     linkUniversal->sync();
 
     scene->get()->update();
+
+    if (scene->get()->hasNextScreen())
+      transitionToNextScene();
+
     bn::core::update();
   }
 }
@@ -76,4 +82,56 @@ BN_CODE_IWRAM void ISR_VBlank() {
   Link::_REG_IME = 0;
   LINK_UNIVERSAL_ISR_VBLANK();
   bn::core::default_vblank_handler();
+}
+
+void transitionToNextScene() {
+  auto nextScreen = scene->get()->getNextScreen();
+
+  bn::bg_palettes::set_fade_intensity(0);
+  bn::sprite_palettes::set_fade_intensity(0);
+  bn::fixed alpha = 0;
+  for (int i = 0; i < 10; i++) {
+    alpha += 0.1;
+    bn::bg_palettes::set_fade_intensity(alpha);
+    bn::sprite_palettes::set_fade_intensity(alpha);
+
+    bn::core::update();
+  }
+
+  scene.reset();
+  bn::core::update();
+
+  bn::bgs_mosaic::set_stretch(0);
+  bn::sprites_mosaic::set_stretch(0);
+  bn::blending::restore();
+
+  scene = setNextScene(nextScreen);
+  scene->get()->init();
+  bn::core::update();
+
+  for (int i = 0; i < 10; i++) {
+    alpha -= 0.1;
+    bn::bg_palettes::set_fade_intensity(alpha);
+    bn::sprite_palettes::set_fade_intensity(alpha);
+
+    scene->get()->update();
+    bn::core::update();
+  }
+}
+
+bn::unique_ptr<Scene> setNextScene(Screen nextScreen) {
+  linkUniversal->deactivate();
+
+  switch (nextScreen) {
+    case Screen::MAIN:
+      return bn::unique_ptr{(Scene*)new StartScene(fs)};
+    case Screen::MULTIBOOT_CABLE:
+      return bn::unique_ptr{(Scene*)new StartScene(fs)};
+    case Screen::MULTIBOOT_WIRELESS:
+      return bn::unique_ptr{(Scene*)new StartScene(fs)};
+    default: {
+      BN_ERROR("Next screen not found?");
+      return bn::unique_ptr{(Scene*)new StartScene(fs)};
+    }
+  }
 }

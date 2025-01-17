@@ -3,10 +3,6 @@
 
 #include "VideoScene.h"
 
-#include "../objects/Explosion.h"
-#include "../objects/Horse.h"
-#include "../utils/PixelBlink.h"
-
 class StartScene : public VideoScene {
  public:
   StartScene(const GBFS_FILE* _fs);
@@ -15,6 +11,7 @@ class StartScene : public VideoScene {
   void update() override;
 
  private:
+  bn::vector<bn::sprite_ptr, 256> uiTextSprites;
   bn::vector<bn::sprite_ptr, 256> creditsSprites;
 
   bool isConnected = false;
@@ -27,7 +24,6 @@ class StartScene : public VideoScene {
   void onConnected();
   void onDisconnected();
   void onError(unsigned expected, unsigned actual);
-  void addExplosion();
   void print(bn::string<128> text);
   void printCredits();
   void showCredits();

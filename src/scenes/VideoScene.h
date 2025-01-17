@@ -32,7 +32,6 @@ class VideoScene : public Scene {
 
   void updateVideo();
   void addExplosion();
-  void print(bn::string<128> text);
 };
 
 #endif  // VIDEO_SCENE_H

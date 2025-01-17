@@ -14,9 +14,14 @@ Explosion::Explosion(bn::fixed_point position)
           2,
           1,
           0,
-          0)) {}
+          0)) {
+  sprite.set_blending_enabled(true);
+}
 
 bool Explosion::update() {
+  sprite.set_y(sprite.y() + speed);
+  speed += 0.1;
+
   if (animation.done())
     return true;
   else {

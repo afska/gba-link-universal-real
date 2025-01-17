@@ -18,6 +18,13 @@
 #include "bn_unique_ptr.h"
 #include "bn_vector.h"
 
+enum Screen {
+  NO,
+  MAIN,
+  MULTIBOOT_CABLE,
+  MULTIBOOT_WIRELESS,
+};
+
 class Scene {
  public:
   Scene(const GBFS_FILE* _fs) : fs(_fs) {}
@@ -27,8 +34,14 @@ class Scene {
 
   virtual ~Scene() = default;
 
+  bool hasNextScreen() { return nextScreen != Screen::NO; }
+  Screen getNextScreen() { return nextScreen; }
+
  protected:
   const GBFS_FILE* fs;
+  Screen nextScreen = Screen::NO;
+
+  void setNextScreen(Screen screen) { nextScreen = screen; }
 
   template <typename F, typename Type, int MaxSize>
   inline void iterate(bn::vector<Type, MaxSize>& vector, F action) {

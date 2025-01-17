@@ -6,9 +6,10 @@
 #include "../player/player.h"
 #include "../utils/Math.h"
 
-#include "bn_memory.h"
 #include "bn_blending.h"
+#include "bn_memory.h"
 
+#define NUM_EXPLOSIONS 30
 #define BPM 85
 #define BEAT_PREDICTION_WINDOW 100
 
@@ -47,7 +48,7 @@ void VideoScene::update() {
     extraSpeed = 10;
   if (isNewBeat) {
     horse->jump();
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < NUM_EXPLOSIONS; i++)
       addExplosion();
   }
 

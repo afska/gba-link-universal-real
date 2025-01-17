@@ -26,6 +26,7 @@ Horse::Horse(bn::fixed_point _topLeftPosition)
   setPosition(_topLeftPosition, false);
   setIdleState();
   mainSprite.set_bg_priority(1);
+  mainSprite.set_blending_enabled(true);
 }
 
 void Horse::update() {

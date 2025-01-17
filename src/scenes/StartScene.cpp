@@ -1,14 +1,12 @@
 #include "StartScene.h"
 
+#include "../player/player.h"
 #include "../utils/Math.h"
 #include "../utils/gba-link-connection/LinkUniversal.hpp"
-#include "../player/player.h"
 
 #include "bn_keypad.h"
 
-StartScene::StartScene(const GBFS_FILE* _fs)
-    : VideoScene(_fs) {
-}
+StartScene::StartScene(const GBFS_FILE* _fs) : VideoScene(_fs) {}
 
 void StartScene::init() {
   VideoScene::init();
@@ -22,13 +20,19 @@ void StartScene::update() {
   VideoScene::update();
 
   // Credits
-  if (bn::keypad::l_pressed()) {
+  if (bn::keypad::select_pressed()) {
     credits = !credits;
     if (credits)
       showCredits();
     else
       hideCredits();
   }
+
+  // Multiboot
+  if (bn::keypad::l_pressed()) {
+    setNextScreen(Screen::MULTIBOOT_CABLE);
+  } else if (bn::keypad::r_pressed())
+    setNextScreen(Screen::MULTIBOOT_WIRELESS);
 
   // Connect/disconnect detection
   if (!isConnected && linkUniversal->isConnected()) {
@@ -100,7 +104,6 @@ void StartScene::update() {
       bn::string<128> output3 =
           "_subW: " + bn::to_string<128>(linkUniversal->_getSubWaitCount());
       textSprites.clear();
-      textGeneratorAccent.generate({0, -70}, "L: Toggle credits", textSprites);
       textGenerator.generate({0, -30}, output1, textSprites);
       textGenerator.generate({0, -10}, output2, textSprites);
       textGenerator.generate({0, 10}, output3, textSprites);
@@ -134,11 +137,6 @@ void StartScene::onDisconnected() {
   received = 0;
 }
 
-void StartScene::addExplosion() {
-  explosions.push_back(bn::unique_ptr{new Explosion(
-      {random.get_fixed(-100, 100), random.get_fixed(-100, 100)})});
-}
-
 void StartScene::print(bn::string<128> text) {
   if (credits)
     return;
@@ -151,6 +149,8 @@ void StartScene::showCredits() {
     it.set_visible(false);
   for (auto& it : creditsSprites)
     it.set_visible(true);
+
+  uiTextSprites.clear();
 }
 
 void StartScene::hideCredits() {
@@ -158,27 +158,31 @@ void StartScene::hideCredits() {
     it.set_visible(true);
   for (auto& it : creditsSprites)
     it.set_visible(false);
+
+  textGeneratorAccent.generate({0, -70}, "SELECT: Toggle credits",
+                               uiTextSprites);
+  textGeneratorAccent.generate({0, -70 + 10}, "L/R: Multiboot", uiTextSprites);
 }
 
 void StartScene::printCredits() {
   creditsSprites.clear();
-  textGenerator.generate({0, -70 - 5}, "github.com/afska/", creditsSprites);
-  textGeneratorAccent.generate({0, -60 - 5}, "gba-link-universal-test",
+  textGenerator.generate({0, -70 - 4}, "github.com/afska/", creditsSprites);
+  textGeneratorAccent.generate({0, -60 - 4}, "gba-link-universal-test",
                                creditsSprites);
 
-  textGenerator.generate({0, -40 - 5}, "Game engine:", creditsSprites);
-  textGeneratorAccent.generate({0, -30 - 5}, "Butano (@GValiente)",
+  textGenerator.generate({0, -40 - 4}, "Game engine:", creditsSprites);
+  textGeneratorAccent.generate({0, -30 - 4}, "Butano (@GValiente)",
                                creditsSprites);
 
-  textGenerator.generate({0, -10 - 5}, "Background music:", creditsSprites);
-  textGeneratorAccent.generate({0, 0 - 5}, "Lazer Idols (@Synthenia)",
+  textGenerator.generate({0, -10 - 4}, "Background music:", creditsSprites);
+  textGeneratorAccent.generate({0, 0 - 4}, "Lazer Idols (@Synthenia)",
                                creditsSprites);
 
-  textGenerator.generate({0, 20 - 5}, "Background video:", creditsSprites);
-  textGeneratorAccent.generate({0, 30 - 5}, "@RoyaltyFreeTube", creditsSprites);
+  textGenerator.generate({0, 20 - 4}, "Background video:", creditsSprites);
+  textGeneratorAccent.generate({0, 30 - 4}, "@RoyaltyFreeTube", creditsSprites);
 
-  textGenerator.generate({0, 50 - 5}, "Horse:", creditsSprites);
-  textGeneratorAccent.generate({0, 60 - 5}, "@Lu", creditsSprites);
+  textGenerator.generate({0, 50 - 4}, "Horse:", creditsSprites);
+  textGeneratorAccent.generate({0, 60 - 4}, "@Lu", creditsSprites);
 
   textGenerator.generate({0, 70}, "Read the #licenses folder!", creditsSprites);
 }
