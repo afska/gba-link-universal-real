@@ -1,7 +1,10 @@
 // (0) Include the header
 #include "utils/gba-link-connection/LinkUniversal.hpp"
 
+#include "utils/gba-link-connection/LinkCableMultiboot.hpp"
+
 #include "player/player.h"
+#include "scenes/MultibootCableScene.h"
 #include "scenes/StartScene.h"
 #include "utils/gbfs/gbfs.h"
 
@@ -62,6 +65,8 @@ int main() {
   // (3) Initialize the library
   linkUniversal->activate();
 
+  MultibootCableScene::IS_SENDING = false;
+
   while (true) {
     // (4) Sync
     linkUniversal->sync();
@@ -76,7 +81,9 @@ int main() {
 }
 
 BN_CODE_IWRAM void ISR_VBlank() {
-  player_onVBlank();
+  if (!MultibootCableScene::IS_SENDING)
+    player_onVBlank();
+
   Link::_REG_IME = 1;
   player_update(0, [](unsigned current) {});
   Link::_REG_IME = 0;
@@ -126,7 +133,7 @@ bn::unique_ptr<Scene> setNextScene(Screen nextScreen) {
     case Screen::MAIN:
       return bn::unique_ptr{(Scene*)new StartScene(fs)};
     case Screen::MULTIBOOT_CABLE:
-      return bn::unique_ptr{(Scene*)new StartScene(fs)};
+      return bn::unique_ptr{(Scene*)new MultibootCableScene(fs)};
     case Screen::MULTIBOOT_WIRELESS:
       return bn::unique_ptr{(Scene*)new StartScene(fs)};
     default: {
