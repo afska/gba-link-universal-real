@@ -85,6 +85,7 @@ void VideoScene::updateVideo() {
 }
 
 void VideoScene::addExplosion() {
-  explosions.push_back(bn::unique_ptr{new Explosion(
-      {random.get_fixed(-100, 100), random.get_fixed(-100, 100)})});
+  if (!explosions.full())
+    explosions.push_back(bn::unique_ptr{new Explosion(
+        {random.get_fixed(-100, 100), random.get_fixed(-100, 100)})});
 }
