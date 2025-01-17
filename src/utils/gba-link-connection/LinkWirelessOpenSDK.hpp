@@ -4,8 +4,8 @@
 // --------------------------------------------------------------------------
 // An open-source implementation of the "official" Wireless Adapter protocol.
 // --------------------------------------------------------------------------
-// - Advanced usage only!
-// - You only need this if you want to interact with N software.
+// - advanced usage only; you only need this if you want to interact with N
+// software!
 // --------------------------------------------------------------------------
 
 #ifndef LINK_DEVELOPMENT
@@ -16,19 +16,17 @@
 
 #include "LinkRawWireless.hpp"
 
-static volatile char VERSION[] = "LinkWirelessOpenSDK/v7.1.0";
+static volatile char VERSION[] = "LinkWirelessOpenSDK/v8.0.0";
 
 /**
  * @brief An open-source implementation of the "official" Wireless Adapter
  * protocol.
- * \warning Advanced usage only!
- * \warning You only need this if you want to interact with N software.
  */
 class LinkWirelessOpenSDK {
  private:
-  using u32 = unsigned int;
-  using u16 = unsigned short;
-  using u8 = unsigned char;
+  using u32 = Link::u32;
+  using u16 = Link::u16;
+  using u8 = Link::u8;
 
  public:
   static constexpr int MAX_TRANSFER_WORDS = 23;
@@ -51,7 +49,7 @@ class LinkWirelessOpenSDK {
   template <class T>
   struct SendBuffer {
     T header;
-    std::array<u32, MAX_TRANSFER_WORDS> data;
+    u32 data[MAX_TRANSFER_WORDS];
     u32 dataSize = 0;
     u32 totalByteCount = 0;
   };
@@ -371,7 +369,7 @@ class LinkWirelessOpenSDK {
                                      u8 clientNumber) {
     ServerSDKHeader serverHeader;
     serverHeader.isACK = 1;
-    serverHeader.targetSlots = (1 << clientNumber);
+    serverHeader.targetSlots = 1 << clientNumber;
     serverHeader.payloadSize = 0;
     serverHeader.n = clientHeader.n;
     serverHeader.phase = clientHeader.phase;
@@ -431,7 +429,7 @@ class LinkWirelessOpenSDK {
     };
 
     struct PendingTransferList {
-      std::array<PendingTransfer, MaxInflightPackets> transfers = {};
+      PendingTransfer transfers[MaxInflightPackets] = {};
 
       [[nodiscard]]
       PendingTransfer* max(bool ack = false) {
@@ -591,7 +589,6 @@ class LinkWirelessOpenSDK {
       this->linkWirelessOpenSDK = linkWirelessOpenSDK;
       this->fileSize = fileSize;
       this->connectedClients = connectedClients;
-      this->transfers = {};
     }
 
     /**
@@ -654,8 +651,8 @@ class LinkWirelessOpenSDK {
     }
 
    private:
-    std::array<Transfer<MaxInflightPackets>, LINK_RAW_WIRELESS_MAX_PLAYERS - 1>
-        transfers;
+    Transfer<MaxInflightPackets> transfers[LINK_RAW_WIRELESS_MAX_PLAYERS - 1] =
+        {};
 
     LinkWirelessOpenSDK* linkWirelessOpenSDK;
     u32 fileSize;

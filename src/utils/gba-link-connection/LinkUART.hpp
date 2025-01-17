@@ -8,8 +8,8 @@
 // - 1) Include this header in your main.cpp file and add:
 //       LinkUART* linkUART = new LinkUART();
 // - 2) Add the required interrupt service routines: (*)
-//       irq_init(NULL);
-//       irq_add(II_SERIAL, LINK_UART_ISR_SERIAL);
+//       interrupt_init();
+//       interrupt_add(INTR_SERIAL, LINK_UART_ISR_SERIAL);
 // - 3) Initialize the library with:
 //       linkUART->activate();
 // - 4) Send/read data by using:
@@ -37,20 +37,18 @@
 #define LINK_UART_QUEUE_SIZE 256
 #endif
 
-static volatile char LINK_UART_VERSION[] = "LinkUART/v7.1.0";
-
-#define LINK_UART_BARRIER asm volatile("" ::: "memory")
+static volatile char LINK_UART_VERSION[] = "LinkUART/v8.0.0";
 
 /**
  * @brief A UART handler for the Link Port (8N1, 7N1, 8E1, 7E1, 8O1, 7E1).
  */
 class LinkUART {
  private:
-  using u32 = unsigned int;
-  using u16 = unsigned short;
-  using u8 = unsigned char;
-  using vu32 = volatile unsigned int;
-  using vs32 = volatile signed int;
+  using u32 = Link::u32;
+  using u16 = Link::u16;
+  using u8 = Link::u8;
+  using vu32 = Link::vu32;
+  using vs32 = Link::vs32;
   using U8Queue = Link::Queue<u8, LINK_UART_QUEUE_SIZE>;
 
   static constexpr int BIT_CTS = 2;
@@ -111,24 +109,24 @@ class LinkUART {
     this->config.parity = parity;
     this->config.useCTS = false;
 
-    LINK_UART_BARRIER;
+    LINK_BARRIER;
     isEnabled = false;
-    LINK_UART_BARRIER;
+    LINK_BARRIER;
 
     reset();
 
-    LINK_UART_BARRIER;
+    LINK_BARRIER;
     isEnabled = true;
-    LINK_UART_BARRIER;
+    LINK_BARRIER;
   }
 
   /**
    * @brief Deactivates the library.
    */
   void deactivate() {
-    LINK_UART_BARRIER;
+    LINK_BARRIER;
     isEnabled = false;
-    LINK_UART_BARRIER;
+    LINK_BARRIER;
 
     resetState();
     stop();

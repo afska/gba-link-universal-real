@@ -9,8 +9,8 @@
 // - 1) Include this header in your main.cpp file and add:
 //       LinkPS2Mouse* linkPS2Mouse = new LinkPS2Mouse();
 // - 2) Add the required interrupt service routines:
-//       irq_init(NULL);
-//       irq_add(II_TIMER2, NULL);
+//       interrupt_init();
+//       interrupt_add(INTR_TIMER2, []() {});
 // - 3) Initialize the library with:
 //       linkPS2Mouse->activate();
 // - 4) Get a report:
@@ -22,8 +22,8 @@
 //       data[2] // Y movement
 // --------------------------------------------------------------------------
 // considerations:
-// - `activate()` or `report(...)` could freeze the system if not connected!
-// - detecting timeouts using interrupts is the user's responsibility!
+// - `activate()` or `report(...)` could freeze the system if not connected:
+//   detecting timeouts using interrupts is the user's responsibility!
 // --------------------------------------------------------------------------
 //  ____________
 // |   Pinout   |
@@ -41,7 +41,7 @@
 
 #include "_link_common.hpp"
 
-static volatile char LINK_PS2_MOUSE_VERSION[] = "LinkPS2Mouse/v7.1.0";
+static volatile char LINK_PS2_MOUSE_VERSION[] = "LinkPS2Mouse/v8.0.0";
 
 #define LINK_PS2_MOUSE_LEFT_CLICK 0b001
 #define LINK_PS2_MOUSE_RIGHT_CLICK 0b010
@@ -52,9 +52,9 @@ static volatile char LINK_PS2_MOUSE_VERSION[] = "LinkPS2Mouse/v7.1.0";
  */
 class LinkPS2Mouse {
  private:
-  using u32 = unsigned int;
-  using u16 = unsigned short;
-  using u8 = unsigned char;
+  using u32 = Link::u32;
+  using u16 = Link::u16;
+  using u8 = Link::u8;
   using s16 = signed short;
 
   static constexpr int RCNT_GPIO = 0b1000000000000000;
