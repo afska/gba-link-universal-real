@@ -8,11 +8,10 @@ class Explosion : public GameObject {
   Explosion(bn::fixed_point position);
 
   bool update();
-  void setCamera(bn::camera_ptr camera) { sprite.set_camera(camera); }
 
  private:
-  bn::sprite_ptr sprite;
-  bn::sprite_animate_action<8> animation;
+  bn::optional<bn::sprite_ptr> sprite;
+  bn::optional<bn::sprite_animate_action<8>> animation;
   bn::fixed speed = 1;
 };
 
