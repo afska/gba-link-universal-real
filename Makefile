@@ -83,4 +83,4 @@ sprites:
 	rm -rf graphics/sprites/output graphics/sprites/export_layers.scm
 
 rebuild:
-	make -j$(nproc)
+	make -j$(shell nproc)
