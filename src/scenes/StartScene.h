@@ -1,13 +1,13 @@
 #ifndef START_SCENE_H
 #define START_SCENE_H
 
-#include "Scene.h"
+#include "VideoScene.h"
 
 #include "../objects/Explosion.h"
 #include "../objects/Horse.h"
 #include "../utils/PixelBlink.h"
 
-class StartScene : public Scene {
+class StartScene : public VideoScene {
  public:
   StartScene(const GBFS_FILE* _fs);
 
@@ -15,18 +15,7 @@ class StartScene : public Scene {
   void update() override;
 
  private:
-  bn::optional<bn::regular_bg_ptr> background;
-  bn::unique_ptr<Horse> horse;
-  bn::vector<bn::sprite_ptr, 256> textSprites;
   bn::vector<bn::sprite_ptr, 256> creditsSprites;
-  bn::sprite_text_generator textGenerator;
-  bn::sprite_text_generator textGeneratorAccent;
-  bn::fixed videoFrame = 0;
-  int lastBeat = 0;
-  bn::fixed extraSpeed = 0;
-  bn::unique_ptr<PixelBlink> pixelBlink;
-  bn::vector<bn::unique_ptr<Explosion>, 64> explosions;
-  bn::random random;
 
   bool isConnected = false;
   unsigned counter = 0;
@@ -38,7 +27,6 @@ class StartScene : public Scene {
   void onConnected();
   void onDisconnected();
   void onError(unsigned expected, unsigned actual);
-  void updateVideo();
   void addExplosion();
   void print(bn::string<128> text);
   void printCredits();
