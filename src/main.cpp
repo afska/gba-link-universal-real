@@ -30,7 +30,7 @@ int main() {
   // (1) Create a LinkUniversal instance
   linkUniversal =
       new LinkUniversal(LinkUniversal::Protocol::AUTODETECT, "LinkUNI",
-                        {.baudRate = LinkCable::BAUD_RATE_3,
+                        {.baudRate = LinkCable::BaudRate::BAUD_RATE_3,
                          .timeout = LINK_CABLE_DEFAULT_TIMEOUT,
                          .interval = Link::perFrame(4),
                          .sendTimerId = 0},
