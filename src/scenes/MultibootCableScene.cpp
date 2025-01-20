@@ -32,13 +32,17 @@ void MultibootCableScene::sendRom() {
   unsigned long romSize;
   const u8* romToSend = (const u8*)gbfs_get_obj(fs, FILE_NAME, &romSize);
 
-  LinkCableMultiboot lcMultiboot;
   IS_SENDING = true;
-  player_unload();
-  auto result = lcMultiboot.sendRom(
-      romToSend, romSize, []() { return bn::keypad::select_pressed(); });
+  bool success = linkCableMultibootAsync->sendRom(romToSend, romSize);
+  BN_LOG(success);
+  while (linkCableMultibootAsync->getState() !=
+         LinkCableMultiboot::Async::State::STOPPED) {
+    // bn::core::update();
+  }
   IS_SENDING = false;
 
-  textGenerator.generate({0, 10}, "Result: " + bn::to_string<32>(result),
-                         uiTextSprites);
+  textGenerator.generate(
+      {0, 10},
+      "Result: " + bn::to_string<32>(linkCableMultibootAsync->getResult()),
+      uiTextSprites);
 }

@@ -22,6 +22,8 @@
   __attribute__((section(".iwram"), target("arm"), noinline))
 #define LINK_INLINE inline __attribute__((always_inline))
 #define LINK_NOINLINE __attribute__((noinline))
+#define LINK_VERSION_TAG inline const char*
+#define LINK_READ_TAG(TAG) (void)*((volatile const char*)TAG)
 
 /**
  * @brief This namespace contains shared code between all libraries.
@@ -44,6 +46,10 @@ using vu16 = volatile unsigned short;
 using vs16 = volatile signed short;
 using vu8 = volatile unsigned char;
 using vs8 = volatile signed char;
+
+// Globals
+
+inline u32 randomSeed = 123;
 
 // Structs
 
@@ -99,7 +105,7 @@ inline vu16& _REG_KEYS = *reinterpret_cast<vu16*>(_REG_BASE + 0x0130);
 inline vu16& _REG_TM1CNT_L = *reinterpret_cast<vu16*>(_REG_BASE + 0x0104);
 inline vu16& _REG_TM1CNT_H = *reinterpret_cast<vu16*>(_REG_BASE + 0x0106);
 inline vu16& _REG_TM2CNT_L = *reinterpret_cast<vu16*>(_REG_BASE + 0x0108);
-inline vu16& _REG_TM2CNT_H = *reinterpret_cast<vu16*>(_REG_BASE + 0x010a);
+inline vu16& _REG_TM2CNT_H = *reinterpret_cast<vu16*>(_REG_BASE + 0x010A);
 inline vu16& _REG_IME = *reinterpret_cast<vu16*>(_REG_BASE + 0x0208);
 
 inline volatile _TMR_REC* const _REG_TM =
@@ -145,6 +151,17 @@ static LINK_INLINE auto _MultiBoot(const _MultiBootParam* param,
   return r0.res;
 }
 
+// Random
+
+static inline int _qran() {
+  randomSeed = 1664525 * randomSeed + 1013904223;
+  return (randomSeed >> 16) & 0x7FFF;
+}
+
+static inline int _qran_range(int min, int max) {
+  return (_qran() * (max - min) >> 15) + min;
+}
+
 // Helpers
 
 static inline u32 buildU32(u16 msB, u16 lsB) {
@@ -165,7 +182,7 @@ static inline u16 msB32(u32 value) {
 }
 
 static inline u16 lsB32(u32 value) {
-  return value & 0xffff;
+  return value & 0xFFFF;
 }
 
 static inline u8 msB16(u16 value) {
@@ -173,7 +190,7 @@ static inline u8 msB16(u16 value) {
 }
 
 static inline u8 lsB16(u16 value) {
-  return value & 0xff;
+  return value & 0xFF;
 }
 
 static inline int _max(int a, int b) {
