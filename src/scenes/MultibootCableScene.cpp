@@ -56,6 +56,9 @@ void MultibootCableScene::update() {
         bn::to_string<32>(linkCableMultibootAsync->playerCount()) + " players",
         uiTextSprites);
 
+    if (bn::keypad::start_pressed())
+      linkCableMultibootAsync->markReady();
+
     if (bn::keypad::b_pressed()) {
       linkCableMultibootAsync->reset();
       printInstructions();
@@ -77,7 +80,7 @@ void MultibootCableScene::sendRom(bool normalMode) {
   const u8* romToSend = (const u8*)gbfs_get_obj(fs, FILE_NAME, &romSize);
 
   linkCableMultibootAsync->sendRom(
-      romToSend, romSize, false,
+      romToSend, romSize, bn::keypad::start_held(),
       normalMode ? LinkCableMultiboot::TransferMode::SPI
                  : LinkCableMultiboot::TransferMode::MULTI_PLAY);
 }

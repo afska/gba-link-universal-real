@@ -1,8 +1,6 @@
 #ifndef LINK_CABLE_MULTIBOOT_H
 #define LINK_CABLE_MULTIBOOT_H
 
-// TODO: Async C bindings, documentation, ready flag
-
 // --------------------------------------------------------------------------
 // A Multiboot tool to send small programs from one GBA to up to 3 slaves.
 // --------------------------------------------------------------------------
@@ -12,7 +10,8 @@
 // - 2) Send the ROM:
 //       LinkCableMultiboot::Result result = linkCableMultiboot->sendRom(
 //         romBytes, // for current ROM, use: ((const u8*)MEM_EWRAM)
-//         romLength, // in bytes, should be multiple of 0x10, 4-byte aligned
+//                   // ^ must be 4-byte aligned
+//         romLength, // in bytes, should be multiple of 0x10
 //         []() {
 //           u16 keys = ~REG_KEYS & KEY_ANY;
 //           return keys & KEY_START;
@@ -40,6 +39,7 @@
 // --------------------------------------------------------------------------
 // considerations:
 // - stop DMA before sending the ROM! (you might need to stop your audio player)
+// - this restriction only applies to the sync version!
 // --------------------------------------------------------------------------
 
 #ifndef LINK_DEVELOPMENT
@@ -484,12 +484,13 @@ class LinkCableMultiboot {
     /**
      * @brief Sends the `rom`. Once completed, `getState()` should return
      * `LinkCableMultiboot::Async::State::STOPPED` and `getResult()` should
-     * return `LinkCableMultiboot::Async::Result::SUCCESS`.
+     * return `LinkCableMultiboot::Async::Result::SUCCESS`. Returns `false` if
+     * there's a pending transfer or the size is invalid.
      * @param rom A pointer to ROM data. Must be 4-byte aligned.
      * @param romSize Size of the ROM in bytes. It must be a number between
      * `448` and `262144`, and a multiple of `16`.
-     * @param waitForReadySignal Whether the code should wait for a `ready()`
-     * call to start the actual transfer.
+     * @param waitForReadySignal Whether the code should wait for a
+     * `markReady()` call to start the actual transfer.
      * @param mode Either `TransferMode::MULTI_PLAY` for GBA cable (default
      * value) or `TransferMode::SPI` for GBC cable.
      */
@@ -522,7 +523,7 @@ class LinkCableMultiboot {
     /**
      * @brief Returns the current state.
      */
-    State getState() { return state; }
+    [[nodiscard]] State getState() { return state; }
 
     /**
      * @brief Returns the result of the last operation. After this
@@ -539,12 +540,14 @@ class LinkCableMultiboot {
     /**
      * @brief Returns the number of connected players (`1~4`).
      */
-    u32 playerCount() { return dynamicData.observedPlayers; }
+    [[nodiscard]] u8 playerCount() {
+      return dynamicData.confirmedObservedPlayers;
+    }
 
     /**
      * @brief Returns the completion percentage.
      */
-    u32 getPercentage() {
+    [[nodiscard]] u32 getPercentage() {
       if (state == STOPPED || fixedData.size == 0)
         return 0;
 
@@ -557,7 +560,7 @@ class LinkCableMultiboot {
      * \warning This is only useful when using the `waitForReadySignal`
      * parameter.
      */
-    bool isReady() { return dynamicData.ready; }
+    [[nodiscard]] bool isReady() { return dynamicData.ready; }
 
     /**
      * @brief Marks the transfer as ready.
@@ -627,6 +630,7 @@ class LinkCableMultiboot {
 
       bool ready = false;
       u32 observedPlayers = 1;
+      u32 confirmedObservedPlayers = 1;
     };
 
     LinkRawCable linkRawCable;
@@ -709,10 +713,8 @@ class LinkCableMultiboot {
             transferAsync(CMD_CONFIRM_CLIENTS | dynamicData.clientMask);
           } else {
             dynamicData.tryCount++;
-            if (dynamicData.tryCount >= DETECTION_TRIES) {
-              startMultibootSend();
-              return;
-            }
+            if (dynamicData.tryCount >= DETECTION_TRIES)
+              return (void)startMultibootSend();
 
             transferAsync(CMD_HANDSHAKE);
           }
@@ -721,11 +723,11 @@ class LinkCableMultiboot {
         }
         case DETECTING_CLIENTS_END: {
           if (!isResponseSameAsValueWithClientBit(
-                  response, dynamicData.clientMask, ACK_HANDSHAKE) ||
-              (fixedData.waitForReadySignal && !dynamicData.ready)) {
-            startMultibootSend();
-            return;
-          }
+                  response, dynamicData.clientMask, ACK_HANDSHAKE))
+            return (void)startMultibootSend();
+          dynamicData.confirmedObservedPlayers = dynamicData.observedPlayers;
+          if (fixedData.waitForReadySignal && !dynamicData.ready)
+            return (void)startMultibootSend();
 
           state = SENDING_HEADER;
           dynamicData.headerRemaining = HEADER_PARTS;
@@ -735,10 +737,8 @@ class LinkCableMultiboot {
         case SENDING_HEADER: {
           if (!isResponseSameAsValueWithClientBit(
                   response, dynamicData.clientMask,
-                  dynamicData.headerRemaining << 8)) {
-            startMultibootSend();
-            return;
-          }
+                  dynamicData.headerRemaining << 8))
+            return (void)startMultibootSend();
 
           dynamicData.headerRemaining--;
           sendHeaderPart();
@@ -776,10 +776,8 @@ class LinkCableMultiboot {
             transferAsync(CMD_CONFIRM_HANDSHAKE_DATA | handshakeData);
           } else {
             dynamicData.tryCount++;
-            if (dynamicData.tryCount >= DETECTION_TRIES) {
-              startMultibootSend();
-              return;
-            }
+            if (dynamicData.tryCount >= DETECTION_TRIES)
+              return (void)startMultibootSend();
 
             sendPaletteData();
           }
@@ -787,10 +785,8 @@ class LinkCableMultiboot {
         }
         case CONFIRMING_HANDSHAKE_DATA: {
           if (!isResponseSameAsValue(response, dynamicData.clientMask,
-                                     ACK_RESPONSE, ACK_RESPONSE_MASK)) {
-            startMultibootSend();
-            return;
-          }
+                                     ACK_RESPONSE, ACK_RESPONSE_MASK))
+            return (void)startMultibootSend();
 
           state = WAITING_BEFORE_MAIN_TRANSFER;
           dynamicData.waitFrames = WAIT_BEFORE_MAIN_TRANSFER_FRAMES;
@@ -891,13 +887,13 @@ class LinkCableMultiboot {
     void startMultibootSend() {
       auto tmpFixedData = fixedData;
       bool tmpReady = dynamicData.ready;
-      u32 tmpObservedPlayers = dynamicData.observedPlayers;
+      u32 tmpConfirmedObservedPlayers = dynamicData.confirmedObservedPlayers;
       stop();
 
       state = WAITING;
       fixedData = tmpFixedData;
       dynamicData.ready = tmpReady;
-      dynamicData.observedPlayers = tmpObservedPlayers;
+      dynamicData.confirmedObservedPlayers = tmpConfirmedObservedPlayers;
       dynamicData.waitFrames =
           INITIAL_WAIT_MIN_FRAMES +
           Link::_qran_range(1, INITIAL_WAIT_MAX_RANDOM_FRAMES);
