@@ -28,6 +28,9 @@ void MultibootCableScene::update() {
   if (bn::keypad::a_pressed() && !isSending)
     sendRom();
 
+  if (bn::keypad::b_pressed() && !isSending)
+    sendRom(true);
+
   if (isSending && linkCableMultibootAsync->getState() ==
                        LinkCableMultiboot::Async::State::STOPPED) {
     isSending = false;
@@ -38,10 +41,13 @@ void MultibootCableScene::update() {
   }
 }
 
-void MultibootCableScene::sendRom() {
+void MultibootCableScene::sendRom(bool normal) {
   unsigned long romSize;
   const u8* romToSend = (const u8*)gbfs_get_obj(fs, FILE_NAME, &romSize);
 
-  linkCableMultibootAsync->sendRom(romToSend, romSize);
+  linkCableMultibootAsync->sendRom(
+      romToSend, romSize,
+      normal ? LinkCableMultiboot::TransferMode::SPI
+             : LinkCableMultiboot::TransferMode::MULTI_PLAY);
   isSending = true;
 }
