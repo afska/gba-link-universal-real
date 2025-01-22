@@ -14,7 +14,7 @@ class MultibootCableScene : public VideoScene {
   bn::vector<bn::sprite_ptr, 256> uiTextSprites;
 
   void sendRom(bool normal = false);
-  bool isSending = false;
+  void printInstructions();
 };
 
 #endif  // MULTIBOOT_CABLE_SCENE_SCENE_H

@@ -4,7 +4,6 @@
 #include "../utils/Math.h"
 #include "../utils/gba-link-connection/LinkCableMultiboot.hpp"
 
-#include "bn_core.h"  // TODO: REMOVE
 #include "bn_keypad.h"
 
 #define FILE_NAME "LinkUniversal_fullmb.gba"
@@ -18,12 +17,30 @@ MultibootCableScene::MultibootCableScene(const GBFS_FILE* _fs)
 
 void MultibootCableScene::init() {
   VideoScene::init();
-
-  textGeneratorAccent.generate({0, 0}, "Press A to send!", uiTextSprites);
+  printInstructions();
 }
 
 void MultibootCableScene::update() {
   VideoScene::update();
+
+  bool isSending = linkCableMultibootAsync->getState() !=
+                   LinkCableMultiboot::Async::State::STOPPED;
+  bool hasResult = linkCableMultibootAsync->getResult(false) !=
+                   LinkCableMultiboot::Async::Result::NONE;
+
+  if (hasResult) {
+    uiTextSprites.clear();
+    textGenerator.generate(
+        {0, 0},
+        "Result: " +
+            bn::to_string<32>(linkCableMultibootAsync->getResult(false)),
+        uiTextSprites);
+    if (bn::keypad::a_pressed()) {
+      linkCableMultibootAsync->getResult();
+      printInstructions();
+    }
+    return;
+  }
 
   if (bn::keypad::a_pressed() && !isSending)
     sendRom();
@@ -31,23 +48,32 @@ void MultibootCableScene::update() {
   if (bn::keypad::b_pressed() && !isSending)
     sendRom(true);
 
-  if (isSending && linkCableMultibootAsync->getState() ==
-                       LinkCableMultiboot::Async::State::STOPPED) {
-    isSending = false;
+  if (isSending) {
+    uiTextSprites.clear();
+    textGenerator.generate(
+        {0, -10},
+        "Sending... " +
+            bn::to_string<32>(linkCableMultibootAsync->getPercentage()) + "%",
+        uiTextSprites);
     textGenerator.generate(
         {0, 10},
-        "Result: " + bn::to_string<32>(linkCableMultibootAsync->getResult()),
+        bn::to_string<32>(linkCableMultibootAsync->playerCount()) + " players",
         uiTextSprites);
   }
 }
 
-void MultibootCableScene::sendRom(bool normal) {
+void MultibootCableScene::sendRom(bool normalMode) {
   unsigned long romSize;
   const u8* romToSend = (const u8*)gbfs_get_obj(fs, FILE_NAME, &romSize);
 
   linkCableMultibootAsync->sendRom(
-      romToSend, romSize,
-      normal ? LinkCableMultiboot::TransferMode::SPI
-             : LinkCableMultiboot::TransferMode::MULTI_PLAY);
-  isSending = true;
+      romToSend, romSize, false,
+      normalMode ? LinkCableMultiboot::TransferMode::SPI
+                 : LinkCableMultiboot::TransferMode::MULTI_PLAY);
+}
+
+void MultibootCableScene::printInstructions() {
+  uiTextSprites.clear();
+  textGeneratorAccent.generate({0, -10}, "Press A to send!", uiTextSprites);
+  textGeneratorAccent.generate({0, 10}, "A = MULTI; B = SPI", uiTextSprites);
 }

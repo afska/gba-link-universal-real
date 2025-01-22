@@ -1,6 +1,8 @@
 #ifndef LINK_CABLE_MULTIBOOT_H
 #define LINK_CABLE_MULTIBOOT_H
 
+// TODO: Async C bindings, documentation, ready flag
+
 // --------------------------------------------------------------------------
 // A Multiboot tool to send small programs from one GBA to up to 3 slaves.
 // --------------------------------------------------------------------------
@@ -10,7 +12,7 @@
 // - 2) Send the ROM:
 //       LinkCableMultiboot::Result result = linkCableMultiboot->sendRom(
 //         romBytes, // for current ROM, use: ((const u8*)MEM_EWRAM)
-//         romLength, // in bytes, should be multiple of 0x10
+//         romLength, // in bytes, should be multiple of 0x10, 4-byte aligned
 //         []() {
 //           u16 keys = ~REG_KEYS & KEY_ANY;
 //           return keys & KEY_START;
@@ -18,6 +20,23 @@
 //         }
 //       );
 //       // `result` should be LinkCableMultiboot::Result::SUCCESS
+// - 3) (Optional) Send ROMs asynchronously:
+//       LinkCableMultiboot::Async* linkCableMultibootAsync =
+//         new LinkCableMultiboot::Async();
+//       interrupt_init();
+//       interrupt_add(INTR_VBLANK, LINK_CABLE_MULTIBOOT_ASYNC_ISR_VBLANK);
+//       interrupt_add(INTR_SERIAL, LINK_CABLE_MULTIBOOT_ASYNC_ISR_SERIAL);
+//       bool success = linkCableMultibootAsync->sendRom(romBytes, romLength);
+//       if (success) {
+//         // (monitor `playerCount()` and `getPercentage()`)
+//         if (
+//           linkCableMultibootAsync->getState() ==
+//           LinkCableMultiboot::Async::State::STOPPED
+//         ) {
+//           auto result = linkCableMultibootAsync->getResult();
+//           // `result` should be LinkCableMultiboot::Async::Result::SUCCESS
+//         }
+//       }
 // --------------------------------------------------------------------------
 // considerations:
 // - stop DMA before sending the ROM! (you might need to stop your audio player)
@@ -57,6 +76,8 @@ class LinkCableMultiboot {
   using u32 = Link::u32;
   using u16 = Link::u16;
   using u8 = Link::u8;
+  using vu32 = Link::vu32;
+  using vu8 = Link::vu8;
 
   static constexpr int MIN_ROM_SIZE = 0x100 + 0xC0;
   static constexpr int MAX_ROM_SIZE = 256 * 1024;
@@ -402,6 +423,10 @@ class LinkCableMultiboot {
   }
 
  public:
+  /**
+   * @brief [Asynchronous version] A Multiboot tool to send small programs from
+   * one GBA to up to 3 slaves.
+   */
   class Async {
    private:
     static constexpr int FPS = 60;
@@ -446,8 +471,21 @@ class LinkCableMultiboot {
       CRC_FAILURE = 4,
     };
 
+    /**
+     * @brief Sends the `rom`. Once completed, `getState()` should return
+     * `LinkCableMultiboot::Async::State::STOPPED` and `getResult()` should
+     * return `LinkCableMultiboot::Async::Result::SUCCESS`.
+     * @param rom A pointer to ROM data. Must be 4-byte aligned.
+     * @param romSize Size of the ROM in bytes. It must be a number between
+     * `448` and `262144`, and a multiple of `16`.
+     * @param waitForReadySignal Whether the code should wait for a `ready()`
+     * call to start the actual transfer.
+     * @param mode Either `TransferMode::MULTI_PLAY` for GBA cable (default
+     * value) or `TransferMode::SPI` for GBC cable.
+     */
     bool sendRom(const u8* rom,
                  u32 romSize,
+                 bool waitForReadySignal = false,
                  TransferMode mode = TransferMode::MULTI_PLAY) {
       if (state != STOPPED)
         return false;
@@ -459,17 +497,74 @@ class LinkCableMultiboot {
       }
 
       resetState();
-      initFixedData(rom, romSize, mode);
+      initFixedData(rom, romSize, waitForReadySignal, mode);
       startMultibootSend();
 
       return true;
     }
 
+    /**
+     * Deactivates the library, canceling the in-progress transfer, if any.
+     * \warning Never call this method inside an interrupt handler!
+     */
     void reset() { stop(); }
 
+    /**
+     * @brief Returns the current state.
+     */
     State getState() { return state; }
-    Result getResult() { return result; }
 
+    /**
+     * @brief Returns the result of the last operation. After this
+     * call, the result is cleared if `clear` is `true` (default behavior).
+     * @param clear Whether it should clear the result or not.
+     */
+    Result getResult(bool clear = true) {
+      Result _result = result;
+      if (clear)
+        result = NONE;
+      return _result;
+    }
+
+    /**
+     * @brief Returns the number of connected players (`1~4`).
+     */
+    u32 playerCount() { return dynamicData.observedPlayers; }
+
+    /**
+     * @brief Returns the completion percentage.
+     */
+    u32 getPercentage() {
+      if (state == STOPPED || fixedData.size == 0)
+        return 0;
+
+      return Link::_min(
+          dynamicData.currentRomPart * 100 / (fixedData.size >> 2), 100);
+    }
+
+    /**
+     * @brief Returns whether the ready mark is active or not.
+     * \warning This is only useful when using the `waitForReadySignal`
+     * parameter.
+     */
+    bool isReady() { return dynamicData.ready; }
+
+    /**
+     * @brief Marks the transfer as ready.
+     * \warning This is only useful when using the `waitForReadySignal`
+     * parameter.
+     */
+    void markReady() {
+      if (state == STOPPED)
+        return;
+
+      dynamicData.ready = true;
+    }
+
+    /**
+     * @brief This method is called by the VBLANK interrupt handler.
+     * \warning This is internal API!
+     */
     void _onVBlank() {
       if (state == STOPPED)
         return;
@@ -477,23 +572,31 @@ class LinkCableMultiboot {
       processNewFrame();
     }
 
+    /**
+     * @brief This method is called by the SERIAL interrupt handler.
+     * \warning This is internal API!
+     */
     void _onSerial() {
-      if (state == STOPPED)
+      if (state == STOPPED || interrupt)
         return;
 
+      interrupt = true;
       Response response = getAsyncResponse();
+      Link::_REG_IME = 1;
       processResponse(response);
+      interrupt = false;
     }
 
    private:
     struct MultibootFixedData {
       TransferMode transferMode = TransferMode::MULTI_PLAY;
+      bool waitForReadySignal = false;
       const u16* data = nullptr;
-      u32 size = 0;
+      vu32 size = 0;
     };
 
     struct MultibootDynamicData {
-      u8 clientMask = 0;
+      vu8 clientMask = 0;
       u32 crcB = 0;
       u32 seed = 0;
       u32 crcC = 0;
@@ -503,8 +606,11 @@ class LinkCableMultiboot {
       u32 wait = 0;
       u32 tryCount = 0;
       u32 headerRemaining = 0;
-      u32 currentRomPart = 0;
+      vu32 currentRomPart = 0;
       bool currentRomPartSecondHalf = false;
+
+      bool ready = false;
+      u32 observedPlayers = 1;
     };
 
     LinkRawCable linkRawCable;
@@ -513,11 +619,13 @@ class LinkCableMultiboot {
     MultibootDynamicData dynamicData;
     volatile State state = STOPPED;
     volatile Result result = NONE;
+    volatile bool interrupt = false;
 
     void processNewFrame() {
       dynamicData.irqTimeout++;
       if (dynamicData.irqTimeout >= MAX_IRQ_TIMEOUT_FRAMES) {
-        startMultibootSend();
+        if (!interrupt)
+          startMultibootSend();
         return;
       }
 
@@ -557,19 +665,24 @@ class LinkCableMultiboot {
 
       switch (state) {
         case DETECTING_CLIENTS: {
+          u32 players = 1;
           dynamicData.clientMask = 0;
 
-          bool success = validateResponse(response, [this](u32 i, u16 value) {
-            if ((value & 0xFFF0) == ACK_HANDSHAKE) {
-              u8 clientId = value & 0xF;
-              u8 expectedClientId = 1 << (i + 1);
-              if (clientId == expectedClientId) {
-                dynamicData.clientMask |= clientId;
-                return true;
-              }
-            }
-            return false;
-          });
+          bool success =
+              validateResponse(response, [this, &players](u32 i, u16 value) {
+                if ((value & 0xFFF0) == ACK_HANDSHAKE) {
+                  u8 clientId = value & 0xF;
+                  u8 expectedClientId = 1 << (i + 1);
+                  if (clientId == expectedClientId) {
+                    dynamicData.clientMask |= clientId;
+                    players++;
+                    return true;
+                  }
+                }
+                return false;
+              });
+
+          dynamicData.observedPlayers = players;
 
           if (success) {
             state = DETECTING_CLIENTS_END;
@@ -588,7 +701,8 @@ class LinkCableMultiboot {
         }
         case DETECTING_CLIENTS_END: {
           if (!isResponseSameAsValueWithClientBit(
-                  response, dynamicData.clientMask, ACK_HANDSHAKE)) {
+                  response, dynamicData.clientMask, ACK_HANDSHAKE) ||
+              (fixedData.waitForReadySignal && !dynamicData.ready)) {
             startMultibootSend();
             return;
           }
@@ -741,22 +855,29 @@ class LinkCableMultiboot {
       }
     }
 
-    void initFixedData(const u8* rom, u32 romSize, TransferMode mode) {
+    void initFixedData(const u8* rom,
+                       u32 romSize,
+                       bool waitForReadySignal,
+                       TransferMode mode) {
       const u16* start = (u16*)rom;
       const u16* end = (u16*)(rom + romSize);
 
       fixedData.transferMode = mode;
+      fixedData.waitForReadySignal = waitForReadySignal;
       fixedData.data = start;
       fixedData.size = (u32)end - (u32)start;
     }
 
     void startMultibootSend() {
       auto tmpFixedData = fixedData;
+      bool tmpReady = dynamicData.ready;
+      u32 tmpObservedPlayers = dynamicData.observedPlayers;
       stop();
+
       state = WAITING;
       fixedData = tmpFixedData;
-
-      dynamicData = MultibootDynamicData{};
+      dynamicData.ready = tmpReady;
+      dynamicData.observedPlayers = tmpObservedPlayers;
       dynamicData.waitFrames =
           INITIAL_WAIT_MIN_FRAMES +
           Link::_qran_range(1, INITIAL_WAIT_MAX_RANDOM_FRAMES);
