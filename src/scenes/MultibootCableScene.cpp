@@ -59,6 +59,11 @@ void MultibootCableScene::update() {
         {0, 10},
         bn::to_string<32>(linkCableMultibootAsync->playerCount()) + " players",
         uiTextSprites);
+
+    if (bn::keypad::b_pressed()) {
+      linkCableMultibootAsync->reset();
+      printInstructions();
+    }
   }
 }
 
