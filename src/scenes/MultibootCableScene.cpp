@@ -43,12 +43,6 @@ void MultibootCableScene::update() {
     return;
   }
 
-  if (bn::keypad::a_pressed() && !isSending)
-    sendRom();
-
-  if (bn::keypad::b_pressed() && !isSending)
-    sendRom(true);
-
   if (isSending) {
     uiTextSprites.clear();
     auto percentage = linkCableMultibootAsync->getPercentage();
@@ -66,6 +60,15 @@ void MultibootCableScene::update() {
       linkCableMultibootAsync->reset();
       printInstructions();
     }
+  } else {
+    if (bn::keypad::a_pressed())
+      sendRom();
+
+    if (bn::keypad::b_pressed())
+      sendRom(true);
+
+    if (bn::keypad::l_pressed())
+      setNextScreen(Screen::MAIN);
   }
 }
 
@@ -81,7 +84,7 @@ void MultibootCableScene::sendRom(bool normalMode) {
 
 void MultibootCableScene::printInstructions() {
   uiTextSprites.clear();
-  textGeneratorAccent.generate({0, -10}, "Press A to send!", uiTextSprites);
-  textGeneratorAccent.generate({0, 10}, "A = MULTI; B = SPI", uiTextSprites);
+  textGeneratorAccent.generate({0, -10}, "A = MULTI, B = SPI", uiTextSprites);
+  textGenerator.generate({0, 10}, "(or L to go back)", uiTextSprites);
   horse->getMainSprite().set_scale(1);
 }
