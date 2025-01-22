@@ -69,8 +69,6 @@ int main() {
   // (3) Initialize the library
   linkUniversal->activate();
 
-  MultibootCableScene::IS_SENDING = false;
-
   while (true) {
     // (4) Sync
     linkUniversal->sync();
@@ -85,12 +83,11 @@ int main() {
 }
 
 BN_CODE_IWRAM void ISR_VBlank() {
-  if (!MultibootCableScene::IS_SENDING)
-    player_onVBlank();  // TODO: PROBAR ENCENDER
+  player_onVBlank();
 
-  // Link::_REG_IME = 1;
-  // player_update(0, [](unsigned current) {});
-  // Link::_REG_IME = 0;
+  Link::_REG_IME = 1;
+  player_update(0, [](unsigned current) {});
+  Link::_REG_IME = 0;
   if (linkCableMultibootAsync != nullptr)
     LINK_CABLE_MULTIBOOT_ASYNC_ISR_VBLANK();
   bn::core::default_vblank_handler();

@@ -5,8 +5,6 @@
 
 class MultibootCableScene : public VideoScene {
  public:
-  static inline bool IS_SENDING = false;
-
   MultibootCableScene(const GBFS_FILE* _fs);
 
   void init() override;
@@ -16,6 +14,7 @@ class MultibootCableScene : public VideoScene {
   bn::vector<bn::sprite_ptr, 256> uiTextSprites;
 
   void sendRom();
+  bool isSending = false;
 };
 
 #endif  // MULTIBOOT_CABLE_SCENE_SCENE_H
