@@ -18,6 +18,7 @@ MultibootCableScene::MultibootCableScene(const GBFS_FILE* _fs)
 void MultibootCableScene::init() {
   VideoScene::init();
   printInstructions();
+  horse->customScale = true;
 }
 
 void MultibootCableScene::update() {
@@ -50,11 +51,12 @@ void MultibootCableScene::update() {
 
   if (isSending) {
     uiTextSprites.clear();
-    textGenerator.generate(
-        {0, -10},
-        "Sending... " +
-            bn::to_string<32>(linkCableMultibootAsync->getPercentage()) + "%",
-        uiTextSprites);
+    auto percentage = linkCableMultibootAsync->getPercentage();
+    horse->getMainSprite().set_scale(
+        percentage > 0 ? 1 + bn::fixed(percentage) / 100 : 1);
+    textGenerator.generate({0, -10},
+                           "Sending... " + bn::to_string<32>(percentage) + "%",
+                           uiTextSprites);
     textGenerator.generate(
         {0, 10},
         bn::to_string<32>(linkCableMultibootAsync->playerCount()) + " players",
@@ -81,4 +83,5 @@ void MultibootCableScene::printInstructions() {
   uiTextSprites.clear();
   textGeneratorAccent.generate({0, -10}, "Press A to send!", uiTextSprites);
   textGeneratorAccent.generate({0, 10}, "A = MULTI; B = SPI", uiTextSprites);
+  horse->getMainSprite().set_scale(1);
 }
