@@ -63,7 +63,7 @@
 #define LINK_CABLE_QUEUE_SIZE 15
 #endif
 
-static volatile char LINK_CABLE_VERSION[] = "LinkCable/v8.0.0";
+LINK_VERSION_TAG LINK_CABLE_VERSION = "vLinkCable/v8.0.0";
 
 #define LINK_CABLE_MAX_PLAYERS LINK_RAW_CABLE_MAX_PLAYERS
 #define LINK_CABLE_DEFAULT_TIMEOUT 3
@@ -80,8 +80,6 @@ class LinkCable {
   using u32 = Link::u32;
   using u16 = Link::u16;
   using u8 = Link::u8;
-  using vu32 = Link::vu32;
-  using vs32 = Link::vs32;
   using vu8 = Link::vu8;
   using U16Queue = Link::Queue<u16, LINK_CABLE_QUEUE_SIZE>;
 
@@ -107,10 +105,10 @@ class LinkCable {
                      u32 timeout = LINK_CABLE_DEFAULT_TIMEOUT,
                      u16 interval = LINK_CABLE_DEFAULT_INTERVAL,
                      u8 sendTimerId = LINK_CABLE_DEFAULT_SEND_TIMER_ID) {
-    this->config.baudRate = baudRate;
-    this->config.timeout = timeout;
-    this->config.interval = interval;
-    this->config.sendTimerId = sendTimerId;
+    config.baudRate = baudRate;
+    config.timeout = timeout;
+    config.interval = interval;
+    config.sendTimerId = sendTimerId;
   }
 
   /**
@@ -122,6 +120,8 @@ class LinkCable {
    * @brief Activates the library.
    */
   void activate() {
+    LINK_READ_TAG(LINK_CABLE_VERSION);
+
     LINK_BARRIER;
     isEnabled = false;
     LINK_BARRIER;
@@ -155,7 +155,7 @@ class LinkCable {
   }
 
   /**
-   * @brief Returns the number of connected players (`0~4`).
+   * @brief Returns the number of connected players (`1~4`).
    */
   [[nodiscard]] u8 playerCount() { return state.playerCount; }
 
@@ -166,7 +166,8 @@ class LinkCable {
 
   /**
    * @brief Collects available messages from interrupts for later processing
-   * with `read(...)`. Call this method whenever you need to fetch new data.
+   * with `read(...)`. Call this method whenever you need to fetch new data, and
+   * always process all messages before calling it again.
    */
   void sync() {
     if (!isEnabled)
@@ -444,7 +445,7 @@ class LinkCable {
   }
 
   void resetState() {
-    state.playerCount = 0;
+    state.playerCount = 1;
     state.currentPlayerId = 0;
 
     _state.outgoingMessages.syncClear();

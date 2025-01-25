@@ -37,7 +37,7 @@
 #define LINK_UART_QUEUE_SIZE 256
 #endif
 
-static volatile char LINK_UART_VERSION[] = "LinkUART/v8.0.0";
+LINK_VERSION_TAG LINK_UART_VERSION = "vLinkUART/v8.0.0";
 
 /**
  * @brief A UART handler for the Link Port (8N1, 7N1, 8E1, 7E1, 8O1, 7E1).
@@ -47,8 +47,6 @@ class LinkUART {
   using u32 = Link::u32;
   using u16 = Link::u16;
   using u8 = Link::u8;
-  using vu32 = Link::vu32;
-  using vs32 = Link::vs32;
   using U8Queue = Link::Queue<u8, LINK_UART_QUEUE_SIZE>;
 
   static constexpr int BIT_CTS = 2;
@@ -81,10 +79,10 @@ class LinkUART {
    * @brief Constructs a new LinkUART object.
    */
   explicit LinkUART() {
-    this->config.baudRate = BAUD_RATE_0;
-    this->config.dataSize = SIZE_8_BITS;
-    this->config.parity = NO;
-    this->config.useCTS = false;
+    config.baudRate = BAUD_RATE_0;
+    config.dataSize = SIZE_8_BITS;
+    config.parity = NO;
+    config.useCTS = false;
   }
 
   /**
@@ -104,10 +102,12 @@ class LinkUART {
                 DataSize dataSize = SIZE_8_BITS,
                 Parity parity = NO,
                 bool useCTS = false) {
-    this->config.baudRate = baudRate;
-    this->config.dataSize = dataSize;
-    this->config.parity = parity;
-    this->config.useCTS = false;
+    LINK_READ_TAG(LINK_UART_VERSION);
+
+    config.baudRate = baudRate;
+    config.dataSize = dataSize;
+    config.parity = parity;
+    config.useCTS = false;
 
     LINK_BARRIER;
     isEnabled = false;

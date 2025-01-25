@@ -16,7 +16,7 @@
 
 #include "LinkRawWireless.hpp"
 
-static volatile char VERSION[] = "LinkWirelessOpenSDK/v8.0.0";
+LINK_VERSION_TAG LINK_WIRELESS_OPEN_SDK_VERSION = "LinkWirelessOpenSDK/v8.0.0";
 
 /**
  * @brief An open-source implementation of the "official" Wireless Adapter
@@ -69,7 +69,7 @@ class LinkWirelessOpenSDK {
 
     static SequenceNumber fromPacketId(u32 packetId) {
       return SequenceNumber{.n = ((packetId + 4) / 4) % 4,
-                            packetId % 4,
+                            .phase = packetId % 4,
                             .commState = COMMUNICATING};
     }
 
@@ -426,10 +426,17 @@ class LinkWirelessOpenSDK {
       u32 cursor;
       bool ack;
       bool isActive = false;
+
+      void reset() { isActive = false; }
     };
 
     struct PendingTransferList {
       PendingTransfer transfers[MaxInflightPackets] = {};
+
+      void reset() {
+        for (u32 i = 0; i < MaxInflightPackets; i++)
+          transfers[i].reset();
+      }
 
       [[nodiscard]]
       PendingTransfer* max(bool ack = false) {
@@ -447,7 +454,7 @@ class LinkWirelessOpenSDK {
 
       [[nodiscard]]
       PendingTransfer* minWithoutAck() {
-        u32 minCursor = 0xffffffff;
+        u32 minCursor = 0xFFFFFFFF;
         int minI = -1;
         for (u32 i = 0; i < MaxInflightPackets; i++) {
           if (transfers[i].isActive && transfers[i].cursor < minCursor &&
@@ -537,7 +544,12 @@ class LinkWirelessOpenSDK {
 
    public:
     u32 cursor = 0;
-    PendingTransferList pendingTransferList;
+    PendingTransferList pendingTransferList = {};
+
+    void reset() {
+      cursor = 0;
+      pendingTransferList.reset();
+    }
 
     [[nodiscard]]
     u32 nextCursor(bool canSendInflightPackets) {
@@ -545,7 +557,9 @@ class LinkWirelessOpenSDK {
 
       if (canSendInflightPackets && pendingCount > 0 &&
           pendingCount < MaxInflightPackets) {
-        return pendingTransferList.max()->cursor + 1;
+        auto max = pendingTransferList.max();
+        // (`max` is never null here! but the compiler complains...)
+        return max != nullptr ? max->cursor + 1 : 0;
       } else {
         auto minWithoutAck = pendingTransferList.minWithoutAck();
         return minWithoutAck != nullptr ? minWithoutAck->cursor : cursor;
@@ -578,17 +592,25 @@ class LinkWirelessOpenSDK {
   class MultiTransfer {
    public:
     /**
-     * @brief Construct a new MultiTransfer object.
+     * @brief Constructs a new MultiTransfer object.
      * @param linkWirelessOpenSDK An pointer to a `LinkWirelessOpenSDK`.
+     */
+    explicit MultiTransfer(LinkWirelessOpenSDK* linkWirelessOpenSDK) {
+      this->linkWirelessOpenSDK = linkWirelessOpenSDK;
+    }
+
+    /**
+     * @brief Configures the file transfer and resets the state.
      * @param fileSize Size of the file.
      * @param connectedClients Number of clients.
      */
-    explicit MultiTransfer(LinkWirelessOpenSDK* linkWirelessOpenSDK,
-                           u32 fileSize,
-                           u32 connectedClients) {
-      this->linkWirelessOpenSDK = linkWirelessOpenSDK;
+    void configure(u32 fileSize, u32 connectedClients) {
       this->fileSize = fileSize;
       this->connectedClients = connectedClients;
+      for (u32 i = 0; i < LINK_RAW_WIRELESS_MAX_PLAYERS - 1; i++)
+        transfers[i].reset();
+      this->finished = false;
+      this->cursor = 0;
     }
 
     /**
@@ -637,7 +659,7 @@ class LinkWirelessOpenSDK {
      * @param response The received response from the adapter.
      * @return The completion percentage (0~100).
      */
-    u32 processResponse(LinkRawWireless::ReceiveDataResponse response) {
+    u8 processResponse(LinkRawWireless::ReceiveDataResponse response) {
       if (finished)
         return 100;
 
@@ -655,8 +677,8 @@ class LinkWirelessOpenSDK {
         {};
 
     LinkWirelessOpenSDK* linkWirelessOpenSDK;
-    u32 fileSize;
-    u32 connectedClients;
+    u32 fileSize = 0;
+    u32 connectedClients = 0;
     bool finished = false;
     u32 cursor = 0;
 
@@ -682,7 +704,7 @@ class LinkWirelessOpenSDK {
 
     [[nodiscard]]
     u32 findMinClient() {
-      u32 minTransferredBytes = 0xffffffff;
+      u32 minTransferredBytes = 0xFFFFFFFF;
       u32 minClient = 0;
 
       for (u32 i = 0; i < connectedClients; i++) {
@@ -698,7 +720,7 @@ class LinkWirelessOpenSDK {
 
     [[nodiscard]]
     u32 findMinCursor() {
-      u32 minNextCursor = 0xffffffff;
+      u32 minNextCursor = 0xFFFFFFFF;
 
       bool canSendInflightPackets = true;
       for (u32 i = 0; i < connectedClients; i++) {

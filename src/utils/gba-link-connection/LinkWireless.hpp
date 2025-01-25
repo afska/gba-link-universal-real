@@ -135,13 +135,13 @@
 // #define LINK_WIRELESS_TWO_PLAYERS_ONLY
 #endif
 
-static volatile char LINK_WIRELESS_VERSION[] = "LinkWireless/v8.0.0";
+LINK_VERSION_TAG LINK_WIRELESS_VERSION = "vLinkWireless/v8.0.0";
 
 #define LINK_WIRELESS_MAX_PLAYERS LINK_RAW_WIRELESS_MAX_PLAYERS
 #define LINK_WIRELESS_MIN_PLAYERS 2
 #define LINK_WIRELESS_END 0
 #define LINK_WIRELESS_MAX_SERVERS LINK_RAW_WIRELESS_MAX_SERVERS
-#define LINK_WIRELESS_MAX_GAME_ID 0x7fff
+#define LINK_WIRELESS_MAX_GAME_ID 0x7FFF
 #define LINK_WIRELESS_MAX_GAME_NAME_LENGTH 14
 #define LINK_WIRELESS_MAX_USER_NAME_LENGTH 8
 #define LINK_WIRELESS_DEFAULT_TIMEOUT 10
@@ -163,9 +163,6 @@ class LinkWireless {
   using u32 = Link::u32;
   using u16 = Link::u16;
   using u8 = Link::u8;
-  using s8 = Link::s8;
-  using vu32 = Link::vu32;
-  using vs32 = Link::vs32;
   using vu8 = Link::vu8;
 
   static constexpr auto BASE_FREQUENCY = Link::_TM_FREQ_1024;
@@ -176,7 +173,7 @@ class LinkWireless {
 #endif
   static constexpr int MAX_PACKET_IDS = 1 << PACKET_ID_BITS;
   static constexpr int PACKET_ID_MASK = MAX_PACKET_IDS - 1;
-  static constexpr int MSG_PING = 0xffff;
+  static constexpr int MSG_PING = 0xFFFF;
   static constexpr int BROADCAST_SEARCH_WAIT_FRAMES = 60;
   static constexpr int MAX_COMMAND_TRANSFER_LENGTH = 22;
 
@@ -263,12 +260,12 @@ class LinkWireless {
     maxPlayers = 2;
 #endif
 
-    this->config.forwarding = forwarding;
-    this->config.retransmission = retransmission;
-    this->config.maxPlayers = maxPlayers;
-    this->config.timeout = timeout;
-    this->config.interval = interval;
-    this->config.sendTimerId = sendTimerId;
+    config.forwarding = forwarding;
+    config.retransmission = retransmission;
+    config.maxPlayers = maxPlayers;
+    config.timeout = timeout;
+    config.interval = interval;
+    config.sendTimerId = sendTimerId;
   }
 
   /**
@@ -282,6 +279,8 @@ class LinkWireless {
    * adapter.
    */
   bool activate() {
+    LINK_READ_TAG(LINK_WIRELESS_VERSION);
+
     lastError = NONE;
     isEnabled = false;
 
@@ -402,7 +401,7 @@ class LinkWireless {
     if (isAsyncCommandActive())
       return badRequest(BUSY_TRY_AGAIN);
 
-    LinkRawWireless::AcceptConnectionsResponse response;
+    LinkRawWireless::PollConnectionsResponse response;
     bool success = linkRawWireless.endHost(response);
 
     if (!success)
@@ -533,7 +532,7 @@ class LinkWireless {
         server.userName[j] = foundServers[i].userName[j];
       u8 nextClientNumber = foundServers[i].nextClientNumber;
       server.currentPlayerCount =
-          nextClientNumber == 0xff ? 0 : 1 + nextClientNumber;
+          nextClientNumber == 0xFF ? 0 : 1 + nextClientNumber;
       servers[i] = server;
     }
 
@@ -671,14 +670,14 @@ class LinkWireless {
   }
 
   /**
-   * @brief Returns the number of connected players.
+   * @brief Returns the number of connected players (`1~5`).
    */
   [[nodiscard]] u8 playerCount() {
     return linkRawWireless.sessionState.playerCount;
   }
 
   /**
-   * @brief Returns the current player ID.
+   * @brief Returns the current player ID (`0~4`).
    */
   [[nodiscard]] u8 currentPlayerId() {
     return linkRawWireless.sessionState.currentPlayerId;
@@ -1020,7 +1019,7 @@ class LinkWireless {
         u32 levels = commandResult->dataSize > 0 ? commandResult->data[0] : 0;
         u32 players = 1;
         for (u32 i = 1; i < LINK_WIRELESS_MAX_PLAYERS; i++) {
-          u32 level = (levels >> ((i - 1) * 8)) & 0xff;
+          u32 level = (levels >> ((i - 1) * 8)) & 0xFF;
           sessionState.signalLevel.level[i] = level;
           if (level > 0)
             players++;
@@ -1259,7 +1258,7 @@ class LinkWireless {
            sessionState.lastPacketIdFromClients[4] == 0)) {
         u32 lastPacketId = sessionState.lastPacketId;
         u16 header = buildConfirmationHeader(0, lastPacketId);
-        u32 rawMessage = Link::buildU32(header, lastPacketId & 0xffff);
+        u32 rawMessage = Link::buildU32(header, lastPacketId & 0xFFFF);
         addAsyncData(rawMessage);
       }
 #endif
@@ -1267,14 +1266,14 @@ class LinkWireless {
       for (int i = 0; i < linkRawWireless.sessionState.playerCount - 1; i++) {
         u32 confirmationData = sessionState.lastPacketIdFromClients[1 + i];
         u16 header = buildConfirmationHeader(1 + i, confirmationData);
-        u32 rawMessage = Link::buildU32(header, confirmationData & 0xffff);
+        u32 rawMessage = Link::buildU32(header, confirmationData & 0xFFFF);
         addAsyncData(rawMessage);
       }
     } else {
       u32 confirmationData = sessionState.lastPacketIdFromServer;
       u16 header = buildConfirmationHeader(
           linkRawWireless.sessionState.currentPlayerId, confirmationData);
-      u32 rawMessage = Link::buildU32(header, confirmationData & 0xffff);
+      u32 rawMessage = Link::buildU32(header, confirmationData & 0xFFFF);
       addAsyncData(rawMessage);
     }
   }
@@ -1309,13 +1308,13 @@ class LinkWireless {
                                 u8 playerId) {  // (irq only)
     sessionState.lastConfirmationFromClients[playerId] = confirmationData;
 
-    u32 min = 0xffffffff;
+    u32 min = 0xFFFFFFFF;
     for (int i = 0; i < config.maxPlayers - 1; i++) {
       u32 _confirmationData = sessionState.lastConfirmationFromClients[1 + i];
       if (_confirmationData > 0 && _confirmationData < min)
         min = _confirmationData;
     }
-    if (min < 0xffffffff)
+    if (min < 0xFFFFFFFF)
       removeConfirmedMessages(min);
   }
 
@@ -1331,7 +1330,7 @@ class LinkWireless {
     //     packetId => high 6 bits of confirmation
     //     data     => low 16 bits of confirmation
     u8 highPart = (confirmationData >> 16) & PACKET_ID_MASK;
-    u16 lowPart = confirmationData & 0xffff;
+    u16 lowPart = confirmationData & 0xFFFF;
     return buildMessageHeader(playerId, highPart, buildChecksum(lowPart), true);
   }
 

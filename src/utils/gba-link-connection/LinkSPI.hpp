@@ -46,10 +46,10 @@
 
 #include "_link_common.hpp"
 
-static volatile char LINK_SPI_VERSION[] = "LinkSPI/v8.0.0";
+LINK_VERSION_TAG LINK_SPI_VERSION = "vLinkSPI/v8.0.0";
 
-#define LINK_SPI_NO_DATA_32 0xffffffff
-#define LINK_SPI_NO_DATA_8 0xff
+#define LINK_SPI_NO_DATA_32 0xFFFFFFFF
+#define LINK_SPI_NO_DATA_8 0xFF
 #define LINK_SPI_NO_DATA LINK_SPI_NO_DATA_32
 
 /**
@@ -60,6 +60,7 @@ class LinkSPI {
   using u32 = Link::u32;
   using u16 = Link::u16;
   using u8 = Link::u8;
+  using vu32 = Link::vu32;
 
   static constexpr int BIT_CLOCK = 0;
   static constexpr int BIT_CLOCK_SPEED = 1;
@@ -87,6 +88,8 @@ class LinkSPI {
    * @param dataSize One of the enum values from `LinkSPI::DataSize`.
    */
   void activate(Mode mode, DataSize dataSize = SIZE_32BIT) {
+    LINK_READ_TAG(LINK_SPI_VERSION);
+
     this->mode = mode;
     this->dataSize = dataSize;
     this->waitMode = false;
@@ -296,7 +299,7 @@ class LinkSPI {
   DataSize dataSize = DataSize::SIZE_32BIT;
   bool waitMode = false;
   volatile AsyncState asyncState = IDLE;
-  volatile u32 asyncData = 0;
+  vu32 asyncData = 0;
   volatile bool isEnabled = false;
 
   void setNormalMode() {
@@ -317,12 +320,12 @@ class LinkSPI {
     if (dataSize == SIZE_32BIT)
       Link::_REG_SIODATA32 = data;
     else
-      Link::_REG_SIODATA8 = data & 0xff;
+      Link::_REG_SIODATA8 = data & 0xFF;
   }
 
   u32 getData() {
     return dataSize == SIZE_32BIT ? Link::_REG_SIODATA32
-                                  : Link::_REG_SIODATA8 & 0xff;
+                                  : Link::_REG_SIODATA8 & 0xFF;
   }
 
   u32 noData() {
