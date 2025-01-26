@@ -81,7 +81,7 @@ void MultibootCableScene::sendRom(bool normalMode) {
   const u8* romToSend = (const u8*)gbfs_get_obj(fs, FILE_NAME, &romSize);
 
   linkWirelessMultibootAsync->sendRom(romToSend, romSize, "Multiboo",
-                                      "Demodemo", 0x7FFF, 2,
+                                      "Demodemo", 0x7FFF, 5,
                                       bn::keypad::start_held());
 }
 
