@@ -1,7 +1,7 @@
 // (0) Include the header
 #include "utils/gba-link-connection/LinkUniversal.hpp"
 
-#include "utils/gba-link-connection/LinkCableMultiboot.hpp"
+#include "utils/gba-link-connection/LinkWirelessMultiboot.hpp"
 
 #include "player/player.h"
 #include "scenes/MultibootCableScene.h"
@@ -21,7 +21,7 @@
 #include "bn_unique_ptr.h"
 
 LinkUniversal* linkUniversal = nullptr;
-LinkCableMultiboot::Async* linkCableMultibootAsync = nullptr;
+LinkWirelessMultiboot::Async* linkWirelessMultibootAsync = nullptr;
 
 static const GBFS_FILE* fs = find_first_gbfs_file(0);
 bn::optional<bn::unique_ptr<Scene>> scene;
@@ -46,14 +46,14 @@ int main() {
                          .interval = Link::perFrame(4),
                          .sendTimerId = 0});
 
-  linkCableMultibootAsync = new LinkCableMultiboot::Async();
+  linkWirelessMultibootAsync = new LinkWirelessMultiboot::Async();
 
   // (2) Add the required interrupt service routines
   bn::memory::set_dma_enabled(false);
   // ^^^ DMA screws up interrupts and might cause packet loss!
   // ^^^ Most audio players also use DMA but it's not too terrible.
   bn::hw::irq::set_isr(bn::hw::irq::id::SERIAL,
-                       LINK_CABLE_MULTIBOOT_ASYNC_ISR_SERIAL);
+                       LINK_WIRELESS_MULTIBOOT_ASYNC_ISR_SERIAL);
   // bn::hw::irq::set_isr(bn::hw::irq::id::TIMER0, LINK_UNIVERSAL_ISR_TIMER);
   bn::hw::irq::enable(bn::hw::irq::id::SERIAL);
   // bn::hw::irq::enable(bn::hw::irq::id::TIMER0);
@@ -88,8 +88,8 @@ BN_CODE_IWRAM void ISR_VBlank() {
   Link::_REG_IME = 1;
   player_update(0, [](unsigned current) {});
   Link::_REG_IME = 0;
-  if (linkCableMultibootAsync != nullptr)
-    LINK_CABLE_MULTIBOOT_ASYNC_ISR_VBLANK();
+  if (linkWirelessMultibootAsync != nullptr)
+    LINK_WIRELESS_MULTIBOOT_ASYNC_ISR_VBLANK();
   bn::core::default_vblank_handler();
 }
 

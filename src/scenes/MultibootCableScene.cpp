@@ -2,7 +2,7 @@
 
 #include "../player/player.h"
 #include "../utils/Math.h"
-#include "../utils/gba-link-connection/LinkCableMultiboot.hpp"
+#include "../utils/gba-link-connection/LinkWirelessMultiboot.hpp"
 
 #include "bn_keypad.h"
 
@@ -24,20 +24,20 @@ void MultibootCableScene::init() {
 void MultibootCableScene::update() {
   VideoScene::update();
 
-  bool isSending = linkCableMultibootAsync->getState() !=
-                   LinkCableMultiboot::Async::State::STOPPED;
-  bool hasResult = linkCableMultibootAsync->getResult(false) !=
-                   LinkCableMultiboot::Async::Result::NONE;
+  bool isSending = linkWirelessMultibootAsync->getState() !=
+                   LinkWirelessMultiboot::Async::State::STOPPED;
+  bool hasResult = linkWirelessMultibootAsync->getResult(false) !=
+                   LinkWirelessMultiboot::Async::Result::NONE;
 
   if (hasResult) {
     uiTextSprites.clear();
     textGenerator.generate(
         {0, 0},
         "Result: " +
-            bn::to_string<32>(linkCableMultibootAsync->getResult(false)),
+            bn::to_string<32>(linkWirelessMultibootAsync->getResult(false)),
         uiTextSprites);
     if (bn::keypad::a_pressed()) {
-      linkCableMultibootAsync->getResult();
+      linkWirelessMultibootAsync->getResult();
       printInstructions();
     }
     return;
@@ -45,7 +45,7 @@ void MultibootCableScene::update() {
 
   if (isSending) {
     uiTextSprites.clear();
-    auto percentage = linkCableMultibootAsync->getPercentage();
+    auto percentage = linkWirelessMultibootAsync->getPercentage();
     horse->getMainSprite().set_scale(
         percentage > 0 ? 1 + bn::fixed(percentage) / 100 : 1);
     textGenerator.generate({0, -10},
@@ -53,14 +53,15 @@ void MultibootCableScene::update() {
                            uiTextSprites);
     textGenerator.generate(
         {0, 10},
-        bn::to_string<32>(linkCableMultibootAsync->playerCount()) + " players",
+        bn::to_string<32>(linkWirelessMultibootAsync->playerCount()) +
+            " players",
         uiTextSprites);
 
     if (bn::keypad::start_pressed())
-      linkCableMultibootAsync->markReady();
+      linkWirelessMultibootAsync->markReady();
 
     if (bn::keypad::b_pressed()) {
-      linkCableMultibootAsync->reset();
+      linkWirelessMultibootAsync->reset();
       printInstructions();
     }
   } else {
@@ -79,10 +80,9 @@ void MultibootCableScene::sendRom(bool normalMode) {
   unsigned long romSize;
   const u8* romToSend = (const u8*)gbfs_get_obj(fs, FILE_NAME, &romSize);
 
-  linkCableMultibootAsync->sendRom(
-      romToSend, romSize, bn::keypad::start_held(),
-      normalMode ? LinkCableMultiboot::TransferMode::SPI
-                 : LinkCableMultiboot::TransferMode::MULTI_PLAY);
+  linkWirelessMultibootAsync->sendRom(romToSend, romSize, "Multiboo",
+                                      "Demodemo", 0x7FFF, 2,
+                                      bn::keypad::start_held());
 }
 
 void MultibootCableScene::printInstructions() {
