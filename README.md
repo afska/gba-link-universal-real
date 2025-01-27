@@ -20,3 +20,5 @@ bn::core::init(); // no parameters here!
 // ...instantiate the library here...
 bn::core::set_vblank_callback(LINK_UNIVERSAL_ISR_VBLANK);
 ```
+
+The other difference is that the audio system needs Timer 0, so you'll probably need to change `.sendTimerId = 0` and `bn::hw::irq::id::TIMER0` in [main.cpp](src/main.cpp). Use **timer 1**, since it's the timer that *butano* has designated for multiplayer stuff.

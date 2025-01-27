@@ -33,12 +33,12 @@ int main() {
                         {.baudRate = LinkCable::BaudRate::BAUD_RATE_3,
                          .timeout = LINK_CABLE_DEFAULT_TIMEOUT,
                          .interval = Link::perFrame(4),
-                         .sendTimerId = 3},
+                         .sendTimerId = 0},
                         {.retransmission = true,
                          .maxPlayers = 2,
                          .timeout = LINK_WIRELESS_DEFAULT_TIMEOUT,
                          .interval = Link::perFrame(4),
-                         .sendTimerId = 3});
+                         .sendTimerId = 0});
   linkCableMultibootAsync = new LinkCableMultiboot::Async();
   linkWirelessMultibootAsync = new LinkWirelessMultiboot::Async();
 
@@ -51,8 +51,8 @@ int main() {
   // (VBlank is already enabled by Butano)
   bn::hw::irq::set_isr(bn::hw::irq::id::SERIAL, ISR_SERIAL);
   bn::hw::irq::enable(bn::hw::irq::id::SERIAL);
-  bn::hw::irq::set_isr(bn::hw::irq::id::TIMER3, ISR_TIMER);
-  bn::hw::irq::enable(bn::hw::irq::id::TIMER3);
+  bn::hw::irq::set_isr(bn::hw::irq::id::TIMER0, ISR_TIMER);
+  bn::hw::irq::enable(bn::hw::irq::id::TIMER0);
 
   // Ensure the GBFS file exists
   BN_ASSERT(fs != NULL,
