@@ -94,11 +94,13 @@ void StartScene::update() {
     // Debug output
     if (!credits) {
       bn::string<128> output1 =
-          "Waiting... [" + bn::to_string<128>(linkUniversal->getState()) + "]";
-      output1 += "<" + bn::to_string<128>(linkUniversal->getMode()) + ">";
+          "Waiting... [" + bn::to_string<128>((int)linkUniversal->getState()) +
+          "]";
+      output1 += "<" + bn::to_string<128>((int)linkUniversal->getMode()) + ">";
       if (linkUniversal->getMode() == LinkUniversal::Mode::LINK_WIRELESS)
-        output1 +=
-            " (" + bn::to_string<128>(linkUniversal->getWirelessState()) + ")";
+        output1 += " (" +
+                   bn::to_string<128>((int)linkUniversal->getWirelessState()) +
+                   ")";
       bn::string<128> output2 =
           "_wait: " + bn::to_string<128>(linkUniversal->_getWaitCount());
       bn::string<128> output3 =

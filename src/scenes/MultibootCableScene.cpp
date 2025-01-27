@@ -33,8 +33,8 @@ void MultibootCableScene::update() {
     uiTextSprites.clear();
     textGenerator.generate(
         {0, 0},
-        "Result: " +
-            bn::to_string<32>(linkWirelessMultibootAsync->getResult(false)),
+        "Result: " + bn::to_string<32>(
+                         (int)linkWirelessMultibootAsync->getResult(false)),
         uiTextSprites);
     if (bn::keypad::a_pressed()) {
       linkWirelessMultibootAsync->getResult();
