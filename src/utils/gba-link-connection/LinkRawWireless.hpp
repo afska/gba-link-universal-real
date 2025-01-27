@@ -100,7 +100,7 @@ class LinkRawWireless {
 #ifdef LINK_RAW_WIRELESS_ENABLE_LOGGING
   static constexpr int CMD_TIMEOUT = 228;
 #else
-  static constexpr int CMD_TIMEOUT = 15;
+  static constexpr int CMD_TIMEOUT = 30;
 #endif
   static constexpr int LOGIN_STEPS = 9;
   static constexpr int COMMAND_HEADER_VALUE = 0x9966;
