@@ -121,7 +121,7 @@ void MultibootScene::sendRomViaWirelessAdapter() {
   // Send ROM (wireless)
   linkWirelessMultibootAsync->sendRom(romToSend, romSize, "Multiboot", "Demo",
                                       0x7FFF, 5, bn::keypad::start_held(),
-                                      false, 2);
+                                      false, 1);
 }
 
 void MultibootScene::printInstructions() {

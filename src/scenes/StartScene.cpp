@@ -138,6 +138,11 @@ void StartScene::onConnected() {
 void StartScene::onError(unsigned expected, unsigned actual) {
   print("Expected " + bn::to_string<128>(expected) + " but got " +
         bn::to_string<128>(actual));
+  textGenerator.generate(
+      {0, 0},
+      "Queue overflow: " +
+          bn::to_string<32>(linkUniversal->didQueueOverflow(false)),
+      textSprites);
   pixelBlink->blink();
 }
 
