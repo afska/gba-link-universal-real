@@ -35,7 +35,6 @@ PYTHON      	:=  python
 SOURCES     	:=  src \
 					src/assets \
 					src/assets/fonts \
-					src/player \
 					src/scenes \
 					src/objects \
 					src/utils \
@@ -52,8 +51,8 @@ USERFLAGS   	:=  -Ofast -Wno-unused-parameter -DLINK_WIRELESS_MAX_SERVER_TRANSFE
 USERCXXFLAGS	:=  
 USERASFLAGS 	:=  
 USERLDFLAGS 	:= -Wl,--print-memory-usage
-USERLIBDIRS 	:= $(DEVKITPRO)/libgba
-USERLIBS    	:= -lgba
+USERLIBDIRS 	:= 
+USERLIBS    	:= 
 DEFAULTLIBS 	:= true
 STACKTRACE		:= 
 USERBUILD   	:=  

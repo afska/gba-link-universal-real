@@ -24,8 +24,6 @@ class VideoScene : public Scene {
   bn::sprite_text_generator textGeneratorAccent;
   bn::vector<bn::sprite_ptr, 256> textSprites;
   bn::fixed videoFrame = 0;
-  int lastBeat = 0;
-  bn::fixed extraSpeed = 0;
   bn::unique_ptr<PixelBlink> pixelBlink;
   bn::vector<bn::unique_ptr<Explosion>, 64> explosions;
   bn::random random;

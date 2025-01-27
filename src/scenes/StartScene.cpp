@@ -1,14 +1,17 @@
 #include "StartScene.h"
 
-#include "../player/player.h"
 #include "../utils/Math.h"
 #include "../utils/gba-link-connection/LinkUniversal.hpp"
 
 #include "bn_keypad.h"
 
+#include "bn_music_items.h"
+
 StartScene::StartScene(const GBFS_FILE* _fs) : VideoScene(_fs) {}
 
 void StartScene::init() {
+  linkUniversal->activate();  // << enable LinkUniversal
+
   VideoScene::init();
 
   printCredits();
@@ -16,7 +19,13 @@ void StartScene::init() {
   onDisconnected();
 }
 
+void StartScene::destroy() {
+  linkUniversal->deactivate();  // << disable LinkUniversal
+}
+
 void StartScene::update() {
+  linkUniversal->sync();  // << update LinkUniversal
+
   VideoScene::update();
 
   // Credits
@@ -123,7 +132,7 @@ void StartScene::send() {
 void StartScene::onConnected() {
   print("Whoa! Connected!");
   pixelBlink->blink();
-  player_seek(0);
+  bn::music_items::cyberrid.play(1);
 }
 
 void StartScene::onError(unsigned expected, unsigned actual) {
@@ -163,7 +172,8 @@ void StartScene::hideCredits() {
 
   textGeneratorAccent.generate({0, -70}, "SELECT: Toggle credits",
                                uiTextSprites);
-  textGeneratorAccent.generate({0, -70 + 10}, "L/R: Multiboot", uiTextSprites);
+  textGeneratorAccent.generate({0, -70 + 10}, "L/R: Multiboot (Cable/RFU)",
+                               uiTextSprites);
 }
 
 void StartScene::printCredits() {
@@ -177,7 +187,7 @@ void StartScene::printCredits() {
                                creditsSprites);
 
   textGenerator.generate({0, -10 - 4}, "Background music:", creditsSprites);
-  textGeneratorAccent.generate({0, 0 - 4}, "Lazer Idols (@Synthenia)",
+  textGeneratorAccent.generate({0, 0 - 4}, "cyberrid (@Jester)",
                                creditsSprites);
 
   textGenerator.generate({0, 20 - 4}, "Background video:", creditsSprites);
