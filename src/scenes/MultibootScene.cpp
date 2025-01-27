@@ -97,6 +97,9 @@ void MultibootScene::update() {
 
     if (bn::keypad::l_pressed())
       setNextScreen(Screen::MAIN);
+
+    if (bn::keypad::r_pressed())
+      launch();
   }
 }
 
@@ -104,6 +107,7 @@ void MultibootScene::sendRomViaCable(bool normalMode) {
   unsigned long romSize;
   const u8* romToSend = (const u8*)gbfs_get_obj(fs, FILE_NAME, &romSize);
 
+  // Send ROM (cable)
   linkCableMultibootAsync->sendRom(
       romToSend, romSize, bn::keypad::start_held(),
       normalMode ? LinkCableMultiboot::TransferMode::SPI
@@ -114,6 +118,7 @@ void MultibootScene::sendRomViaWirelessAdapter() {
   unsigned long romSize;
   const u8* romToSend = (const u8*)gbfs_get_obj(fs, FILE_NAME, &romSize);
 
+  // Send ROM (wireless)
   linkWirelessMultibootAsync->sendRom(romToSend, romSize, "Multiboot", "Demo",
                                       0x7FFF, 5, bn::keypad::start_held(),
                                       false, 2);
@@ -126,7 +131,7 @@ void MultibootScene::printInstructions() {
   else
     textGeneratorAccent.generate({0, -20}, "A = Send wirelessly",
                                  uiTextSprites);
-  textGenerator.generate({0, 0}, "(L = go back)", uiTextSprites);
+  textGenerator.generate({0, 0}, "(L = back, R = launch)", uiTextSprites);
   textGenerator.generate({0, 20}, "(START = mark as ready)", uiTextSprites);
   horse->getMainSprite().set_scale(1);
 }
@@ -153,4 +158,26 @@ void MultibootScene::reset() {
     linkCableMultibootAsync->reset();
   else
     linkWirelessMultibootAsync->reset();
+}
+
+void MultibootScene::launch() {
+  unsigned long romSize;
+  const u8* romToSend = (const u8*)gbfs_get_obj(fs, FILE_NAME, &romSize);
+
+  Link::_REG_IME = 0;
+  *((volatile u16*)0x04000082) = 0;  // (clear SOUNDCNT_H)
+
+  void* EWRAM = (void*)0x02000000;
+  for (u32 i = 0; i < romSize; i++)
+    ((unsigned char*)EWRAM)[i] = romToSend[i];
+
+  asm volatile(
+      "mov r0, %0\n"
+      "bx r0\n"
+      :
+      : "r"(EWRAM)
+      : "r0");
+
+  while (true)
+    ;
 }

@@ -24,6 +24,7 @@ class MultibootScene : public VideoScene {
   unsigned getPercentage();
   void markReady();
   void reset();
+  void launch();
 };
 
 #endif  // MULTIBOOT_SCENE_H
