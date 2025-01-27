@@ -686,6 +686,7 @@ class LinkWirelessMultiboot {
 
     static constexpr int FPS = 60;
     static constexpr int MAX_IRQ_TIMEOUT_FRAMES = FPS * 5;
+    static constexpr int START_WAIT_FRAMES = 2;
 
    public:
 #ifdef LINK_WIRELESS_MULTIBOOT_ENABLE_LOGGING
@@ -848,15 +849,11 @@ class LinkWirelessMultiboot {
 
     /**
      * @brief Returns whether the ready mark is active or not.
-     * \warning This is only useful when using the `waitForReadySignal`
-     * parameter.
      */
     [[nodiscard]] bool isReady() { return dynamicData.ready; }
 
     /**
      * @brief Marks the transfer as ready.
-     * \warning This is only useful when using the `waitForReadySignal`
-     * parameter.
      */
     void markReady() {
       if (state == STOPPED)
@@ -961,7 +958,7 @@ class LinkWirelessMultiboot {
       switch (state) {
         case STARTING: {
           dynamicData.wait++;
-          if (dynamicData.wait >= 2) {
+          if (dynamicData.wait >= START_WAIT_FRAMES) {
             state = LISTENING;
             startOrKeepListening();
           }
@@ -1018,7 +1015,7 @@ class LinkWirelessMultiboot {
             startHandshakeWith(lastClientNumber);
           } else {
             state = STARTING;
-            dynamicData.wait = 0;
+            dynamicData.wait = START_WAIT_FRAMES - 1;
           }
           break;
         }
@@ -1241,9 +1238,10 @@ class LinkWirelessMultiboot {
     };
 
     void startOrKeepListening() {
-      if ((linkRawWireless.playerCount() < fixedData.players &&
-           !dynamicData.ready) ||
-          linkRawWireless.playerCount() <= 1) {
+      if (linkRawWireless.playerCount() <= 1 ||
+          (fixedData.waitForReadySignal && !dynamicData.ready) ||
+          (linkRawWireless.playerCount() < fixedData.players &&
+           !dynamicData.ready)) {
         state = LISTENING;
         return (void)pollConnections();
       }
