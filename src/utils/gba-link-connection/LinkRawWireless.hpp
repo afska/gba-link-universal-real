@@ -100,7 +100,7 @@ class LinkRawWireless {
 #ifdef LINK_RAW_WIRELESS_ENABLE_LOGGING
   static constexpr int CMD_TIMEOUT = 228;
 #else
-  static constexpr int CMD_TIMEOUT = 30;
+  static constexpr int CMD_TIMEOUT = 15;
 #endif
   static constexpr int LOGIN_STEPS = 9;
   static constexpr int COMMAND_HEADER_VALUE = 0x9966;
@@ -1146,6 +1146,13 @@ class LinkRawWireless {
           asyncCommand.direction == AsyncCommand::Direction::SENDING) {
         if (!acknowledge())
           return -4;
+
+#ifdef LINK_WIRELESS_PUT_ISR_IN_IWRAM
+#ifdef LINK_WIRELESS_ENABLE_NESTED_IRQ
+        Link::_REG_IME = 1;
+#endif
+#endif
+
         sendAsyncCommand(newData, _clockInversionSupport);
       } else if (_clockInversionSupport) {
         if (!reverseAcknowledge(asyncCommand.step ==
