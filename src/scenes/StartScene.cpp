@@ -123,10 +123,12 @@ void StartScene::update() {
 }
 
 void StartScene::send() {
+  unsigned oldCounter = counter;
   counter = (counter + 1) & ~(1 << 15);
   // (^^ we'll use bit 15 for special commands for this demo)
 
-  linkUniversal->send(counter);
+  if (!linkUniversal->send(counter))
+    counter = oldCounter;
 }
 
 void StartScene::onConnected() {
