@@ -9,6 +9,8 @@
 StartScene::StartScene(const GBFS_FILE* _fs) : VideoScene(_fs) {}
 
 void StartScene::init() {
+  linkUniversal->activate();  // << enable LinkUniversal
+
   VideoScene::init();
 
   printCredits();
@@ -16,7 +18,13 @@ void StartScene::init() {
   onDisconnected();
 }
 
+void StartScene::destroy() {
+  linkUniversal->deactivate();  // << disable LinkUniversal
+}
+
 void StartScene::update() {
+  linkUniversal->sync();  // << update LinkUniversal
+
   VideoScene::update();
 
   // Credits
@@ -163,7 +171,8 @@ void StartScene::hideCredits() {
 
   textGeneratorAccent.generate({0, -70}, "SELECT: Toggle credits",
                                uiTextSprites);
-  textGeneratorAccent.generate({0, -70 + 10}, "L/R: Multiboot", uiTextSprites);
+  textGeneratorAccent.generate({0, -70 + 10}, "L/R: Multiboot (Cable/RFU)",
+                               uiTextSprites);
 }
 
 void StartScene::printCredits() {
