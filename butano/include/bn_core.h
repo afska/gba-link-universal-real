@@ -37,8 +37,6 @@ namespace bn::keypad
  */
 namespace bn::core
 {
-    void default_vblank_handler();
-
     /**
      * @brief This function must be called before using Butano, and it must be called only once.
      */
@@ -60,19 +58,12 @@ namespace bn::core
 
     /**
      * @brief This function must be called before using Butano, and it must be called only once.
-     * @param onVBlank VBlank interrupt handler.
-     */
-    void init(void (*onVBlank)());
-
-    /**
-     * @brief This function must be called before using Butano, and it must be called only once.
      * @param transparent_color Initial transparent color of the backgrounds.
      * @param keypad_commands Keypad commands recorded with the keypad logger.
-     * @param onVBlank VBlank interrupt handler.
      *
      * Instead of reading the keypad of the GBA, these keypad commands are replayed.
      */
-    void init(const optional<color>& transparent_color, const string_view& keypad_commands, void (*onVBlank)());
+    void init(const optional<color>& transparent_color, const string_view& keypad_commands);
 
     /**
      * @brief Returns the number of frames to skip.

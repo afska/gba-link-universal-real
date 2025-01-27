@@ -3,7 +3,6 @@
 
 #include "utils/gba-link-connection/LinkWirelessMultiboot.hpp"
 
-#include "player/player.h"
 #include "scenes/MultibootCableScene.h"
 #include "scenes/StartScene.h"
 #include "utils/gbfs/gbfs.h"
@@ -14,6 +13,8 @@
 #include "bn_blending.h"
 #include "bn_core.h"
 #include "bn_memory.h"
+#include "bn_music.h"
+#include "bn_music_items.h"
 #include "bn_optional.h"
 #include "bn_sprite_palettes.h"
 #include "bn_sprite_text_generator.h"
@@ -31,7 +32,9 @@ bn::unique_ptr<Scene> setNextScene(Screen nextScreen);
 void transitionToNextScene();
 
 int main() {
-  bn::core::init(ISR_VBlank);  // << ISR_VBlank calls LINK_UNIVERSAL_ISR_VBLANK
+  bn::core::init();
+
+  bn::music_items::title.play(1);
 
   // (1) Create a LinkUniversal instance
   linkUniversal =
@@ -39,29 +42,28 @@ int main() {
                         {.baudRate = LinkCable::BaudRate::BAUD_RATE_3,
                          .timeout = LINK_CABLE_DEFAULT_TIMEOUT,
                          .interval = Link::perFrame(4),
-                         .sendTimerId = 0},
+                         .sendTimerId = 3},
                         {.retransmission = true,
                          .maxPlayers = 2,
                          .timeout = LINK_WIRELESS_DEFAULT_TIMEOUT,
                          .interval = Link::perFrame(4),
-                         .sendTimerId = 0});
+                         .sendTimerId = 3});
 
   linkWirelessMultibootAsync = new LinkWirelessMultiboot::Async();
 
   // (2) Add the required interrupt service routines
-  bn::memory::set_dma_enabled(false);
+  bn::memory::set_dma_enabled(true);
   // ^^^ DMA screws up interrupts and might cause packet loss!
   // ^^^ Most audio players also use DMA but it's not too terrible.
   bn::hw::irq::set_isr(bn::hw::irq::id::SERIAL,
                        LINK_WIRELESS_MULTIBOOT_ASYNC_ISR_SERIAL);
-  // bn::hw::irq::set_isr(bn::hw::irq::id::TIMER0, LINK_UNIVERSAL_ISR_TIMER);
+  bn::hw::irq::set_isr(bn::hw::irq::id::TIMER3, LINK_UNIVERSAL_ISR_TIMER);
   bn::hw::irq::enable(bn::hw::irq::id::SERIAL);
-  // bn::hw::irq::enable(bn::hw::irq::id::TIMER0);
+  bn::hw::irq::enable(bn::hw::irq::id::TIMER3);
+  bn::core::set_vblank_callback(ISR_VBlank);
 
   BN_ASSERT(fs != NULL,
             "GBFS file not found.\nUse the ROM that ends with .out.gba!");
-
-  player_init();
 
   scene = bn::unique_ptr{(Scene*)new StartScene(fs)};
   scene->get()->init();
@@ -83,14 +85,8 @@ int main() {
 }
 
 BN_CODE_IWRAM void ISR_VBlank() {
-  player_onVBlank();
-
-  Link::_REG_IME = 1;
-  player_update(0, [](unsigned current) {});
-  Link::_REG_IME = 0;
   if (linkWirelessMultibootAsync != nullptr)
     LINK_WIRELESS_MULTIBOOT_ASYNC_ISR_VBLANK();
-  bn::core::default_vblank_handler();
 }
 
 void transitionToNextScene() {

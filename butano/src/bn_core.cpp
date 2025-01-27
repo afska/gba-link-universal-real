@@ -29,7 +29,6 @@
 #include "bn_sprite_tiles_manager.h"
 #include "bn_hblank_effects_manager.h"
 #include "../hw/include/bn_hw_irq.h"
-#include "../hw/include/bn_hw_link.h"
 #include "../hw/include/bn_hw_core.h"
 #include "../hw/include/bn_hw_sram.h"
 #include "../hw/include/bn_hw_timer.h"
@@ -147,7 +146,7 @@ namespace
     {
         hblank_effects_manager::enable();
         link_manager::enable();
-        //audio_manager::enable();
+        audio_manager::enable();
         hdma_manager::enable();
     }
 
@@ -157,7 +156,7 @@ namespace
 
         if(disable_vblank_irq)
         {
-            //audio_manager::disable();
+            audio_manager::disable();
         }
 
         link_manager::disable();
@@ -168,7 +167,7 @@ namespace
     {
         hw::core::wait_for_vblank();
 
-        //audio_manager::stop();
+        audio_manager::stop();
         hdma_manager::force_stop();
         palettes_manager::stop();
         bgs_manager::stop();
@@ -238,9 +237,9 @@ namespace
         result.missed_frames = data.missed_frames;
         data.missed_frames = 0;
 
-        //BN_PROFILER_ENGINE_DETAILED_START("eng_audio_commands");
-        //audio_manager::execute_commands();
-        //BN_PROFILER_ENGINE_DETAILED_STOP();
+        BN_PROFILER_ENGINE_DETAILED_START("eng_audio_commands");
+        audio_manager::execute_commands();
+        BN_PROFILER_ENGINE_DETAILED_STOP();
 
         BN_PROFILER_ENGINE_DETAILED_START("eng_display_commit");
         display_manager::commit();
@@ -299,9 +298,9 @@ namespace
 
         result.vblank_usage_ticks = data.cpu_usage_timer.elapsed_ticks();
 
-        //BN_PROFILER_ENGINE_DETAILED_START("eng_audio_commit");
-        //audio_manager::commit();
-        //BN_PROFILER_ENGINE_DETAILED_STOP();
+        BN_PROFILER_ENGINE_DETAILED_START("eng_audio_commit");
+        audio_manager::commit();
+        BN_PROFILER_ENGINE_DETAILED_STOP();
 
         BN_PROFILER_ENGINE_GENERAL_STOP();
 
@@ -309,29 +308,22 @@ namespace
     }
 }
 
-void default_vblank_handler();
-
 void init()
 {
-    init(nullopt, string_view(), default_vblank_handler);
+    init(nullopt, string_view());
 }
 
 void init(const optional<color>& transparent_color)
 {
-    init(transparent_color, string_view(), default_vblank_handler);
+    init(transparent_color, string_view());
 }
 
 void init(const string_view& keypad_commands)
 {
-    init(nullopt, keypad_commands, default_vblank_handler);
+    init(nullopt, keypad_commands);
 }
 
-void init(void (*onVBlank)())
-{
-    init(nullopt, string_view(), onVBlank);
-}
-
-void init(const optional<color>& transparent_color, const string_view& keypad_commands, void (*onVBlank)())
+void init(const optional<color>& transparent_color, const string_view& keypad_commands)
 {
     new(&data) static_data();
 
@@ -352,7 +344,7 @@ void init(const optional<color>& transparent_color, const string_view& keypad_co
     link_manager::init();
 
     // Init audio system:
-    //audio_manager::init();
+    audio_manager::init();
 
     // Init storage systems:
     data.slow_game_pak = hw::game_pak::init();
@@ -372,10 +364,6 @@ void init(const optional<color>& transparent_color, const string_view& keypad_co
     bg_blocks_manager::init();
     bgs_manager::init();
     keypad_manager::init(keypad_commands);
-
-    // Set our own vblank handler so update doesn't freeze
-    hw::irq::set_isr(hw::irq::id::VBLANK, onVBlank);
-    hw::irq::enable(hw::irq::id::VBLANK);
 
     // First update:
     update();
@@ -439,9 +427,9 @@ void on_vblank()
 {
     if(data.waiting_for_vblank)
     {
-        //BN_PROFILER_ENGINE_DETAILED_START("eng_audio_update");
-        //audio_manager::update();
-        //BN_PROFILER_ENGINE_DETAILED_STOP();
+        BN_PROFILER_ENGINE_DETAILED_START("eng_audio_update");
+        audio_manager::update();
+        BN_PROFILER_ENGINE_DETAILED_STOP();
 
         data.waiting_for_vblank = false;
     }
@@ -453,13 +441,6 @@ void on_vblank()
     }
 }
 
-
-void default_vblank_handler()
-{
-    on_vblank();
-
-    hw::link::commit();
-}
 
 void sleep(keypad::key_type wake_up_key)
 {
