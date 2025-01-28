@@ -39,7 +39,8 @@ int main() {
                          .interval = Link::perFrame(4),
                          .sendTimerId = 1});
   linkCableMultibootAsync = new LinkCableMultiboot::Async();
-  linkWirelessMultibootAsync = new LinkWirelessMultiboot::Async();
+  linkWirelessMultibootAsync = new LinkWirelessMultiboot::Async(
+      "Multiboot", "Demo", 0x1234, 5, false, false, 30, 1);
 
   // Disable DMA
   bn::memory::set_dma_enabled(false);
@@ -86,6 +87,7 @@ BN_CODE_IWRAM void ISR_SERIAL() {
 
 BN_CODE_IWRAM void ISR_TIMER() {
   LINK_UNIVERSAL_ISR_TIMER();
+  LINK_WIRELESS_MULTIBOOT_ASYNC_ISR_TIMER();
 }
 
 void transitionToNextScene() {

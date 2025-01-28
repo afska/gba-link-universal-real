@@ -3,6 +3,9 @@
 
 #include "VideoScene.h"
 
+#include "../utils/gba-link-connection/LinkCableMultiboot.hpp"
+#include "../utils/gba-link-connection/LinkWirelessMultiboot.hpp"
+
 class MultibootScene : public VideoScene {
  public:
   enum class Mode { CABLE, WIRELESS };
@@ -17,13 +20,10 @@ class MultibootScene : public VideoScene {
   Mode mode;
   bn::vector<bn::sprite_ptr, 256> uiTextSprites;
 
+  Link::AsyncMultiboot* instance();
   void sendRomViaCable(bool normal = false);
   void sendRomViaWirelessAdapter();
   void printInstructions();
-  unsigned playerCount();
-  unsigned getPercentage();
-  void markReady();
-  void reset();
   void launch();
 };
 
