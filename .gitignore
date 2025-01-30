@@ -1,7 +1,8 @@
 build/
 
 # GBA
+gba-link-universal-test.gba
+gba-link-universal-test.out.gba
 *.elf
-*.gba
 *.sav
 *.sa2
