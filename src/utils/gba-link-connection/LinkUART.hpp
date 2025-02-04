@@ -103,6 +103,7 @@ class LinkUART {
                 Parity parity = Parity::NO,
                 bool useCTS = false) {
     LINK_READ_TAG(LINK_UART_VERSION);
+    static_assert(LINK_UART_QUEUE_SIZE >= 1);
 
     config.baudRate = baudRate;
     config.dataSize = dataSize;
@@ -308,8 +309,10 @@ class LinkUART {
   }
 
   void resetState() {
+    LINK_BARRIER;
     incomingQueue.clear();
     outgoingQueue.clear();
+    LINK_BARRIER;
   }
 
   void stop() { setGeneralPurposeMode(); }

@@ -113,6 +113,7 @@ class LinkUniversal {
   };
 
   struct WirelessOptions {
+    bool forwarding;
     bool retransmission;
     u32 maxPlayers;
     u32 timeout;
@@ -139,7 +140,7 @@ class LinkUniversal {
                                           LINK_CABLE_DEFAULT_SEND_TIMER_ID},
                          WirelessOptions wirelessOptions =
                              WirelessOptions{
-                                 true, LINK_UNIVERSAL_MAX_PLAYERS,
+                                 true, true, LINK_UNIVERSAL_MAX_PLAYERS,
                                  LINK_WIRELESS_DEFAULT_TIMEOUT,
                                  LINK_WIRELESS_DEFAULT_INTERVAL,
                                  LINK_WIRELESS_DEFAULT_SEND_TIMER_ID})
@@ -148,8 +149,8 @@ class LinkUniversal {
                   cableOptions.interval,
                   cableOptions.sendTimerId),
         linkWireless(
+            wirelessOptions.forwarding,
             wirelessOptions.retransmission,
-            true,
             Link::_min(wirelessOptions.maxPlayers, LINK_UNIVERSAL_MAX_PLAYERS),
             wirelessOptions.timeout,
             wirelessOptions.interval,
@@ -349,6 +350,15 @@ class LinkUniversal {
   }
 
   /**
+   * @brief Returns if a `send(...)` call would fail due to the queue being
+   * full.
+   */
+  bool canSend() {
+    return mode == Mode::LINK_CABLE ? linkCable.canSend()
+                                    : linkWireless.canSend();
+  }
+
+  /**
    * @brief Sends `data` to all connected players.
    * @param data The value to be sent.
    * \warning If `data` is invalid or the send queue is full, a `false` will be
@@ -363,16 +373,16 @@ class LinkUniversal {
   }
 
   /**
-   * @brief Returns whether the internal receive queue lost messages at some
-   * point due to being full. This can happen if your queue size is too low, if
-   * you receive too much data without calling `sync(...)` enough times, or if
-   * you don't `read(...)` enough messages before the next `sync()` call. After
-   * this call, the overflow flag is cleared if `clear` is `true` (default
-   * behavior).
+   * @brief Returns whether the internal queue lost messages at some point due
+   * to being full. This can happen if your queue size is too low, if you
+   * receive too much data without calling `sync(...)` enough times, or if you
+   * don't `read(...)` enough messages before the next `sync()` call. After this
+   * call, the overflow flag is cleared if `clear` is `true` (default behavior).
    */
   bool didQueueOverflow(bool clear = true) {
-    bool overflow = mode == Mode::LINK_CABLE ? linkCable.didQueueOverflow()
-                                             : linkWireless.didQueueOverflow();
+    bool overflow = mode == Mode::LINK_CABLE
+                        ? linkCable.didQueueOverflow(clear)
+                        : linkWireless.didQueueOverflow(clear);
 
     for (u32 i = 0; i < LINK_UNIVERSAL_MAX_PLAYERS; i++) {
       overflow = overflow || incomingMessages[i].overflow;
@@ -515,12 +525,11 @@ class LinkUniversal {
 
   void receiveWirelessMessages() {
     LinkWireless::Message messages[LINK_WIRELESS_QUEUE_SIZE];
-    linkWireless.receive(messages);
+    u32 receivedCount;
+    linkWireless.receive(messages, receivedCount);
 
-    for (u32 i = 0; i < LINK_WIRELESS_QUEUE_SIZE; i++) {
+    for (u32 i = 0; i < receivedCount; i++) {
       auto message = messages[i];
-      if (message.packetId == LINK_WIRELESS_END)
-        break;
 
       if (message.playerId < LINK_UNIVERSAL_MAX_PLAYERS)
         incomingMessages[message.playerId].push(message.data);
@@ -573,15 +582,14 @@ class LinkUniversal {
 
   bool tryConnectOrServeWirelessSession() {
     LinkWireless::Server servers[LINK_WIRELESS_MAX_SERVERS];
-    if (!linkWireless.getServersAsyncEnd(servers))
+    u32 serverCount;
+    if (!linkWireless.getServersAsyncEnd(servers, serverCount))
       return false;
 
     u32 maxRandomNumber = 0;
     u32 serverIndex = 0;
-    for (u32 i = 0; i < LINK_WIRELESS_MAX_SERVERS; i++) {
+    for (u32 i = 0; i < serverCount; i++) {
       auto server = servers[i];
-      if (server.id == LINK_WIRELESS_END)
-        break;
 
       if (!server.isFull() &&
           Link::areStrEqual(server.gameName, config.gameName) &&
@@ -695,6 +703,7 @@ class LinkUniversal {
   }
 
   void resetState() {
+    LINK_BARRIER;
     waitCount = 0;
     switchWait =
         SWITCH_WAIT_FRAMES + Link::_qran_range(1, SWITCH_WAIT_FRAMES_RANDOM);
@@ -704,6 +713,7 @@ class LinkUniversal {
       incomingMessages[i].clear();
       incomingMessages[i].overflow = false;
     }
+    LINK_BARRIER;
   }
 
   u32 safeStoi(const char* str) {

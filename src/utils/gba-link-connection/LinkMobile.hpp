@@ -199,7 +199,7 @@ class LinkMobile {
     u8 checksumLow;
 
     char _ispNumber1[16 + 1];  // (parsed from `configurationSlot1`)
-  } __attribute__((packed));
+  } LINK_PACKED;
 
   struct AsyncRequest {
     volatile bool completed = false;
@@ -283,6 +283,7 @@ class LinkMobile {
    */
   void activate() {
     LINK_READ_TAG(LINK_MOBILE_VERSION);
+    static_assert(LINK_MOBILE_QUEUE_SIZE >= 1);
 
     error = {};
 
@@ -790,11 +791,11 @@ class LinkMobile {
   struct MagicBytes {
     u8 magic1 = COMMAND_MAGIC_VALUE1;
     u8 magic2 = COMMAND_MAGIC_VALUE2;
-  } __attribute__((packed));
+  } LINK_PACKED;
 
   struct PacketData {
     u8 bytes[LINK_MOBILE_COMMAND_TRANSFER_BUFFER] = {};
-  } __attribute__((packed));
+  } LINK_PACKED;
 
   struct PacketHeader {
     u8 commandId = 0;
@@ -804,12 +805,12 @@ class LinkMobile {
 
     u16 sum() { return commandId + _unused_ + _unusedSizeHigh_ + size; }
     u8 pureCommandId() { return commandId & (~OR_VALUE); }
-  } __attribute__((packed));
+  } LINK_PACKED;
 
   struct PacketChecksum {
     u8 high = 0;
     u8 low = 0;
-  } __attribute__((packed));
+  } LINK_PACKED;
 
   struct Command {
     MagicBytes magicBytes;
@@ -1560,6 +1561,7 @@ class LinkMobile {
   }
 
   void resetState() {
+    LINK_BARRIER;
     setState(State::NEEDS_RESET);
 
     adapterConfiguration = AdapterConfiguration{};
@@ -1574,6 +1576,7 @@ class LinkMobile {
     adapterType = AdapterType::UNKNOWN;
 
     userRequests.syncClear();
+    LINK_BARRIER;
   }
 
   void stop() {

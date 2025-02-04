@@ -75,6 +75,7 @@ class LinkCube {
    */
   void activate() {
     LINK_READ_TAG(LINK_CUBE_VERSION);
+    static_assert(LINK_CUBE_QUEUE_SIZE >= 1);
 
     LINK_BARRIER;
     isEnabled = false;
@@ -155,12 +156,11 @@ class LinkCube {
   [[nodiscard]] u32 pendingCount() { return outgoingQueue.size(); }
 
   /**
-   * @brief Returns whether the internal receive queue lost messages at some
-   * point due to being full. This can happen if your queue size is too low, if
-   * you receive too much data without calling `read(...)` enough times, or
-   * if excessive `read(...)` calls prevent the ISR from copying data. After
-   * this call, the overflow flag is cleared if `clear` is `true` (default
-   * behavior).
+   * @brief Returns whether the internal queue lost messages at some point due
+   * to being full. This can happen if your queue size is too low, if you
+   * receive too much data without calling `read(...)` enough times, or if
+   * excessive `read(...)` calls prevent the ISR from copying data. After this
+   * call, the overflow flag is cleared if `clear` is `true` (default behavior).
    */
   bool didQueueOverflow(bool clear = true) {
     bool overflow = newIncomingQueue.overflow;
@@ -230,6 +230,7 @@ class LinkCube {
   }
 
   void resetState() {
+    LINK_BARRIER;
     needsClear = false;
     newIncomingQueue.clear();
     if (incomingQueue.isReading())
@@ -240,6 +241,7 @@ class LinkCube {
     resetFlag = false;
 
     newIncomingQueue.overflow = false;
+    LINK_BARRIER;
   }
 
   void setPendingData() {

@@ -22,6 +22,9 @@
   __attribute__((section(".iwram"), target("arm"), noinline))
 #define LINK_INLINE inline __attribute__((always_inline))
 #define LINK_NOINLINE __attribute__((noinline))
+#define LINK_PACKED __attribute__((packed))
+#define LINK_WORDALIGNED __attribute__((aligned(4)))
+#define LINK_UNUSED __attribute__((unused))
 #define LINK_VERSION_TAG inline const char*
 #define LINK_READ_TAG(TAG) (void)*((volatile const char*)TAG)
 
@@ -57,10 +60,10 @@ struct _TMR_REC {
   union {
     u16 start;
     u16 count;
-  } __attribute__((packed));
+  } LINK_PACKED;
 
   u16 cnt;
-} __attribute__((aligned(4)));
+} LINK_WORDALIGNED;
 
 typedef struct {
   u32 reserved1[5];
@@ -164,40 +167,40 @@ static inline int _qran_range(int min, int max) {
 
 // Helpers
 
-static inline u32 buildU32(u16 msB, u16 lsB) {
+static LINK_INLINE u32 buildU32(u16 msB, u16 lsB) {
   return (msB << 16) | lsB;
 }
 
-static inline u32 buildU32(u8 msB, u8 byte2, u8 byte3, u8 lsB) {
+static LINK_INLINE u32 buildU32(u8 msB, u8 byte2, u8 byte3, u8 lsB) {
   return ((msB & 0xFF) << 24) | ((byte2 & 0xFF) << 16) | ((byte3 & 0xFF) << 8) |
          (lsB & 0xFF);
 }
 
-static inline u16 buildU16(u8 msB, u8 lsB) {
+static LINK_INLINE u16 buildU16(u8 msB, u8 lsB) {
   return (msB << 8) | lsB;
 }
 
-static inline u16 msB32(u32 value) {
+static LINK_INLINE u16 msB32(u32 value) {
   return value >> 16;
 }
 
-static inline u16 lsB32(u32 value) {
+static LINK_INLINE u16 lsB32(u32 value) {
   return value & 0xFFFF;
 }
 
-static inline u8 msB16(u16 value) {
+static LINK_INLINE u8 msB16(u16 value) {
   return value >> 8;
 }
 
-static inline u8 lsB16(u16 value) {
+static LINK_INLINE u8 lsB16(u16 value) {
   return value & 0xFF;
 }
 
-static inline int _max(int a, int b) {
+static LINK_INLINE int _max(int a, int b) {
   return (a > b) ? (a) : (b);
 }
 
-static inline int _min(int a, int b) {
+static LINK_INLINE int _min(int a, int b) {
   return (a < b) ? (a) : (b);
 }
 
@@ -305,11 +308,11 @@ class Queue {
   }
 
   template <typename F>
-  void forEach(F action) {
+  LINK_INLINE void forEach(F action) {
     vs32 currentFront = front;
 
     for (u32 i = 0; i < count; i++) {
-      if (!action(arr[currentFront]))
+      if (!action(&arr[currentFront]))
         return;
       currentFront = (currentFront + 1) % Size;
     }
