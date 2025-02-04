@@ -110,11 +110,24 @@
  * enable).
  * This can be useful, for example, if your audio engine requires calling a
  * VBlank handler with precise timing.
- * \warning This won't produce any effect if `LINK_WIRELESS_PUT_ISR_IN_IWRAM` is
- * disabled.
  */
 // #define LINK_WIRELESS_ENABLE_NESTED_IRQ
 #endif
+
+// --- LINK_WIRELESS_PUT_ISR_IN_IWRAM knobs ---
+#ifndef LINK_WIRELESS_PUT_ISR_IN_IWRAM_SERIAL
+#define LINK_WIRELESS_PUT_ISR_IN_IWRAM_SERIAL 1
+#endif
+#ifndef LINK_WIRELESS_PUT_ISR_IN_IWRAM_TIMER
+#define LINK_WIRELESS_PUT_ISR_IN_IWRAM_TIMER 0
+#endif
+#ifndef LINK_WIRELESS_PUT_ISR_IN_IWRAM_SERIAL_LEVEL
+#define LINK_WIRELESS_PUT_ISR_IN_IWRAM_SERIAL_LEVEL "-Ofast"
+#endif
+#ifndef LINK_WIRELESS_PUT_ISR_IN_IWRAM_TIMER_LEVEL
+#define LINK_WIRELESS_PUT_ISR_IN_IWRAM_TIMER_LEVEL "-Ofast"
+#endif
+// ---
 
 LINK_VERSION_TAG LINK_WIRELESS_VERSION = "vLinkWireless/v8.0.0";
 
@@ -694,16 +707,16 @@ class LinkWireless {
   }
 
   /**
-   * @brief If one of the other methods returns `false`, you can inspect this to
-   * know the cause. After this call, the last error is cleared if `clear` is
-   * `true` (default behavior).
-   * @param clear Whether it should clear the error or not.
+   * @brief Resets other players' timeout count to `0`.
+   * \warning Call this if you changed `config.timeout`.
    */
-  Error getLastError(bool clear = true) {
-    Error error = lastError;
-    if (clear)
-      lastError = Error::NONE;
-    return error;
+  void resetTimeout() {
+    if (!isEnabled)
+      return;
+
+    LINK_BARRIER;
+    sessionState.isResetTimeoutPending = true;
+    LINK_BARRIER;
   }
 
   /**
@@ -716,6 +729,19 @@ class LinkWireless {
 
     stopTimer();
     startTimer();
+  }
+
+  /**
+   * @brief If one of the other methods returns `false`, you can inspect this to
+   * know the cause. After this call, the last error is cleared if `clear` is
+   * `true` (default behavior).
+   * @param clear Whether it should clear the error or not.
+   */
+  Error getLastError(bool clear = true) {
+    Error error = lastError;
+    if (clear)
+      lastError = Error::NONE;
+    return error;
   }
 
   /**
@@ -807,13 +833,11 @@ class LinkWireless {
     if (!isEnabled)
       return;
 
-#ifdef LINK_WIRELESS_PUT_ISR_IN_IWRAM
 #ifdef LINK_WIRELESS_ENABLE_NESTED_IRQ
     if (interrupt) {
       pendingVBlank = true;
       return;
     }
-#endif
 #endif
 
 #ifdef LINK_WIRELESS_PROFILING_ENABLED
@@ -822,6 +846,13 @@ class LinkWireless {
 
     if (!isSessionActive())
       return;
+
+    if (sessionState.isResetTimeoutPending) {
+      sessionState.recvTimeout = 0;
+      for (u32 i = 0; i < LINK_WIRELESS_MAX_PLAYERS; i++)
+        sessionState.msgTimeouts[i] = 0;
+      sessionState.isResetTimeoutPending = false;
+    }
 
     if (isConnected() && !sessionState.recvFlag)
       sessionState.recvTimeout++;
@@ -840,7 +871,8 @@ class LinkWireless {
 #endif
   }
 
-#ifdef LINK_WIRELESS_PUT_ISR_IN_IWRAM
+#if defined(LINK_WIRELESS_PUT_ISR_IN_IWRAM) || \
+    defined(LINK_WIRELESS_ENABLE_NESTED_IRQ)
   void _onSerial();
   void _onTimer();
 #else
@@ -902,7 +934,7 @@ class LinkWireless {
     bool forwarding;
     bool retransmission;
     u8 maxPlayers;
-    u32 timeout;   // can be changed in realtime
+    u32 timeout;   // can be changed in realtime, but call `resetTimeout()`
     u16 interval;  // can be changed in realtime, but call `resetTimer()`
     u8 sendTimerId;
   };
@@ -948,6 +980,7 @@ class LinkWireless {
     u32 lastACKFromClients[LINK_WIRELESS_MAX_PLAYERS];
     int lastHeartbeatFromClients[LINK_WIRELESS_MAX_PLAYERS];
     int localHeartbeat = -1;
+    volatile bool isResetTimeoutPending = false;
   };
 
   struct TransferHeader {
@@ -1036,13 +1069,10 @@ class LinkWireless {
   volatile Error lastError = Error::NONE;
   volatile bool isEnabled = false;
 
-#ifdef LINK_WIRELESS_PUT_ISR_IN_IWRAM
 #ifdef LINK_WIRELESS_ENABLE_NESTED_IRQ
   volatile bool interrupt = false, pendingVBlank = false;
 #endif
-#endif
 
-#ifdef LINK_WIRELESS_PUT_ISR_IN_IWRAM
 #ifdef LINK_WIRELESS_ENABLE_NESTED_IRQ
   void irqEnd() {
     Link::_REG_IME = 0;
@@ -1053,7 +1083,6 @@ class LinkWireless {
       pendingVBlank = false;
     }
   }
-#endif
 #endif
 
   LINK_INLINE void processAsyncCommand(
@@ -1692,6 +1721,7 @@ class LinkWireless {
     sessionState.lastPacketIdFromServer = 0;
     sessionState.lastACKFromServer = 0;
     sessionState.localHeartbeat = -1;
+    sessionState.isResetTimeoutPending = false;
     for (u32 i = 0; i < LINK_WIRELESS_MAX_PLAYERS; i++) {
       sessionState.msgTimeouts[i] = 0;
       sessionState.msgFlags[i] = false;

@@ -186,6 +186,7 @@ class LinkUniversal {
       linkCable.deactivate();
     bool success = linkWireless.deactivate(turnOffWireless);
     resetState();
+    mode = Mode::LINK_CABLE;
     return success;
   }
 
@@ -391,6 +392,20 @@ class LinkUniversal {
     }
 
     return overflow;
+  }
+
+  /**
+   * @brief Resets other players' timeout count to `0`.
+   * \warning Call this if you changed `config.timeout`.
+   */
+  void resetTimeout() {
+    if (!isEnabled)
+      return;
+
+    if (linkCable.isActive())
+      linkCable.resetTimeout();
+    if (linkWireless.isActive())
+      linkWireless.resetTimeout();
   }
 
   /**
