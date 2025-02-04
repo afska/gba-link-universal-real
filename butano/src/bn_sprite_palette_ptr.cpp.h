@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -235,6 +235,11 @@ void sprite_palette_ptr::set_colors(const sprite_palette_item& palette_item)
         sprite_palette_item decompressed_palette_item = palette_item.decompress(decompressed_colors);
         sprite_palettes_bank.set_colors(_id, decompressed_palette_item.colors_ref());
     }
+}
+
+void sprite_palette_ptr::set_color(int color_index, color color)
+{
+    palettes_manager::sprite_palettes_bank().set_color(_id, color_index, color);
 }
 
 bpp_mode sprite_palette_ptr::bpp() const

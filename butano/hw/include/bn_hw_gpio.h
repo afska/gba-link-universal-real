@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -21,6 +21,8 @@ namespace
         return int(x & 0xf) + int(x >> 4) * 10;
     }
 }
+
+[[nodiscard]] const char* init();
 
 [[nodiscard]] inline bool init_rtc()
 {

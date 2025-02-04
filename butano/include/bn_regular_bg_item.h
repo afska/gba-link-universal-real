@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -142,6 +142,19 @@ public:
 
     /**
      * @brief Creates a regular_bg_ptr using the information contained in this item.
+     * @return The requested regular_bg_ptr.
+     */
+    [[nodiscard]] regular_bg_ptr create_bg() const;
+
+    /**
+     * @brief Creates a regular_bg_ptr using the information contained in this item.
+     * @param map_index Index of the map to reference in map_item().
+     * @return The requested regular_bg_ptr.
+     */
+    [[nodiscard]] regular_bg_ptr create_bg(int map_index) const;
+
+    /**
+     * @brief Creates a regular_bg_ptr using the information contained in this item.
      * @param x Horizontal position of the regular background.
      * @param y Vertical position of the regular background.
      * @return The requested regular_bg_ptr.
@@ -171,6 +184,19 @@ public:
      * @return The requested regular_bg_ptr.
      */
     [[nodiscard]] regular_bg_ptr create_bg(const fixed_point& position, int map_index) const;
+
+    /**
+     * @brief Creates a regular_bg_ptr using the information contained in this item.
+     * @return The requested regular_bg_ptr if it could be allocated; bn::nullopt otherwise.
+     */
+    [[nodiscard]] optional<regular_bg_ptr> create_bg_optional() const;
+
+    /**
+     * @brief Creates a regular_bg_ptr using the information contained in this item.
+     * @param map_index Index of the map to reference in map_item().
+     * @return The requested regular_bg_ptr if it could be allocated; bn::nullopt otherwise.
+     */
+    [[nodiscard]] optional<regular_bg_ptr> create_bg_optional(int map_index) const;
 
     /**
      * @brief Creates a regular_bg_ptr using the information contained in this item.
@@ -244,34 +270,15 @@ public:
      */
     [[nodiscard]] regular_bg_map_ptr create_map(int map_index) const;
 
-    /**
-     * @brief Creates a regular_bg_map_ptr which references the information provided by this item.
-     *
-     * The map system does not support multiple regular_bg_map_ptr items referencing to the same map cells.
-     * If you are not sure if the information provided by this item is already referenced or not,
-     * you should use the create_map method instead.
-     *
-     * The map cells are not copied but referenced,
-     * so they should outlive the regular_bg_map_ptr to avoid dangling references.
-     *
-     * @return regular_bg_map_ptr which references the information provided by this item.
-     */
+    /// @cond DO_NOT_DOCUMENT
+
+    [[deprecated("Call create_map() method instead")]]
     [[nodiscard]] regular_bg_map_ptr create_new_map() const;
 
-    /**
-     * @brief Creates a regular_bg_map_ptr which references the information provided by this item.
-     *
-     * The map system does not support multiple regular_bg_map_ptr items referencing to the same map cells.
-     * If you are not sure if the information provided by this item is already referenced or not,
-     * you should use the create_map method instead.
-     *
-     * The map cells are not copied but referenced,
-     * so they should outlive the regular_bg_map_ptr to avoid dangling references.
-     *
-     * @param map_index Index of the referenced map to handle.
-     * @return regular_bg_map_ptr which references the information provided by this item.
-     */
+    [[deprecated("Call create_map() method instead")]]
     [[nodiscard]] regular_bg_map_ptr create_new_map(int map_index) const;
+
+    /// @endcond
 
     /**
      * @brief Searches for a regular_bg_map_ptr which references the information provided by this item.
@@ -300,36 +307,15 @@ public:
      */
     [[nodiscard]] optional<regular_bg_map_ptr> create_map_optional(int map_index) const;
 
-    /**
-     * @brief Creates a regular_bg_map_ptr which references the information provided by this item.
-     *
-     * The map system does not support multiple regular_bg_map_ptr items referencing to the same map cells.
-     * If you are not sure if the information provided by this item is already referenced or not,
-     * you should use the create_map_optional method instead.
-     *
-     * The map cells are not copied but referenced,
-     * so they should outlive the regular_bg_map_ptr to avoid dangling references.
-     *
-     * @return regular_bg_map_ptr which references the information provided by this item
-     * if the regular_bg_map_ptr can be allocated; bn::nullopt otherwise.
-     */
+    /// @cond DO_NOT_DOCUMENT
+
+    [[deprecated("Call create_map_optional() method instead")]]
     [[nodiscard]] optional<regular_bg_map_ptr> create_new_map_optional() const;
 
-    /**
-     * @brief Creates a regular_bg_map_ptr which references the information provided by this item.
-     *
-     * The map system does not support multiple regular_bg_map_ptr items referencing to the same map cells.
-     * If you are not sure if the information provided by this item is already referenced or not,
-     * you should use the create_map_optional method instead.
-     *
-     * The map cells are not copied but referenced,
-     * so they should outlive the regular_bg_map_ptr to avoid dangling references.
-     *
-     * @param map_index Index of the referenced map to handle.
-     * @return regular_bg_map_ptr which references the information provided by this item
-     * if the regular_bg_map_ptr can be allocated; bn::nullopt otherwise.
-     */
+    [[deprecated("Call create_map_optional() method instead")]]
     [[nodiscard]] optional<regular_bg_map_ptr> create_new_map_optional(int map_index) const;
+
+    /// @endcond
 
     /**
      * @brief Default equal operator.

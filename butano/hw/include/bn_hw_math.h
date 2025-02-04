@@ -1,11 +1,12 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
 #ifndef BN_HW_MATH_H
 #define BN_HW_MATH_H
 
+#include "bn_common.h"
 #include "../3rd_party/agbabi/include/agbabi.h"
 #include "../3rd_party/gba-modern/include/gba-modern.h"
 

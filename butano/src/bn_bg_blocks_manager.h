@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -81,14 +81,6 @@ namespace bn::bg_blocks_manager
                 regular_bg_tiles_ptr&& tiles, bg_palette_ptr&& palette, bool optional);
 
     [[nodiscard]] int create_affine_map(
-                const affine_bg_map_item& map_item, const affine_bg_map_cell* data_ptr,
-                affine_bg_tiles_ptr&& tiles, bg_palette_ptr&& palette, bool optional);
-
-    [[nodiscard]] int create_new_regular_map(
-                const regular_bg_map_item& map_item, const regular_bg_map_cell* data_ptr,
-                regular_bg_tiles_ptr&& tiles, bg_palette_ptr&& palette, bool optional);
-
-    [[nodiscard]] int create_new_affine_map(
                 const affine_bg_map_item& map_item, const affine_bg_map_cell* data_ptr,
                 affine_bg_tiles_ptr&& tiles, bg_palette_ptr&& palette, bool optional);
 

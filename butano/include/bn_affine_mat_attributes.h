@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -99,6 +99,15 @@ public:
         _update_pb();
         _update_pc();
         _update_pd();
+    }
+
+    /**
+     * @brief Sets the rotation angle in degrees.
+     * @param rotation_angle Rotation angle in degrees, in any range.
+     */
+    constexpr void set_rotation_angle_safe(fixed rotation_angle)
+    {
+        set_rotation_angle(safe_degrees_angle(rotation_angle));
     }
 
     /**
@@ -355,17 +364,6 @@ public:
                 a._pa == b._pa && a._pb == b._pb && a._pc == b._pc && a._pd == b._pd;
     }
 
-    /**
-     * @brief Not equal operator.
-     * @param a First affine_mat_attributes to compare.
-     * @param b Second affine_mat_attributes to compare.
-     * @return `true` if the first affine_mat_attributes is not equal to the second one, otherwise `false`.
-     */
-    [[nodiscard]] constexpr friend bool operator!=(const affine_mat_attributes& a, const affine_mat_attributes& b)
-    {
-        return ! (a == b);
-    }
-
 private:
     constexpr static fixed _min_inv_scale = 128;
     constexpr static fixed _min_scale = 1 / _min_inv_scale;
@@ -400,8 +398,12 @@ private:
 
         if(scale_8_data < reciprocal_16_lut_size) [[likely]]
         {
-            return is_constant_evaluated() ? uint16_t(calculate_reciprocal_lut_value<16>(scale_8_data).data()) :
-                                             reciprocal_16_lut._data[scale_8_data];
+            if consteval
+            {
+                return uint16_t(calculate_reciprocal_lut_value<16>(scale_8_data).data());
+            }
+
+            return reciprocal_16_lut._data[scale_8_data];
         }
 
         return uint16_t(calculate_reciprocal_lut_value<16>(scale_8_data).data());

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -19,7 +19,7 @@ class affine_bg_pivot_horizontal_position_hbe_handler
 public:
     static void setup_target(intptr_t target_id, void* target_last_value)
     {
-        new(target_last_value) last_value_type(target_id);
+        ::new(static_cast<void*>(target_last_value)) last_value_type(target_id);
     }
 
     [[nodiscard]] static bool target_visible(intptr_t target_id)

@@ -1,5 +1,3 @@
-#pragma GCC system_header
-
 //
 //  Core functionality
 //

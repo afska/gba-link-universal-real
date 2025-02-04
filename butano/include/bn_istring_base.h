@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -211,17 +211,6 @@ public:
         }
 
         return equal(a_data, a_data + a_size, b_data);
-    }
-
-    /**
-     * @brief Not equal operator.
-     * @param a First istring_base to compare.
-     * @param b Second istring_base to compare.
-     * @return `true` if the first istring_base is not equal to the second one, otherwise `false`.
-     */
-    [[nodiscard]] constexpr friend bool operator!=(const istring_base& a, const istring_base& b)
-    {
-        return ! (a == b);
     }
 
     /**

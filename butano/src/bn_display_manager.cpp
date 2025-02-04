@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -106,7 +106,7 @@ namespace
 
 void init()
 {
-    new(&data) static_data();
+    ::new(static_cast<void*>(&data)) static_data();
 
     unsigned initial_window_flags =
             unsigned(hw::display::window_flag::SPRITES) |
@@ -429,6 +429,22 @@ void set_blending_intensity_alpha(fixed intensity_alpha)
             data.blending_transparency_top_weight != -1 ||
             data.blending_transparency_bottom_weight != -1)
     {
+        data.blending_intensity_alpha = intensity_alpha;
+        data.blending_transparency_top_weight = -1;
+        data.blending_transparency_bottom_weight = -1;
+        data.update_blending_transparency = true;
+        data.commit = true;
+    }
+}
+
+void set_blending_transparency_and_intensity_alpha(fixed transparency_alpha, fixed intensity_alpha)
+{
+    if(data.blending_transparency_alpha != transparency_alpha ||
+            data.blending_intensity_alpha != intensity_alpha ||
+            data.blending_transparency_top_weight != -1 ||
+            data.blending_transparency_bottom_weight != -1)
+    {
+        data.blending_transparency_alpha = transparency_alpha;
         data.blending_intensity_alpha = intensity_alpha;
         data.blending_transparency_top_weight = -1;
         data.blending_transparency_bottom_weight = -1;
@@ -957,9 +973,9 @@ void update()
 
         if(data.update_windows_visible_bgs)
         {
-            bgs_manager::update_windows_flags(data.windows_flags);
             data.update_windows_visible_bgs = false;
             data.commit_windows_flags = true;
+            bgs_manager::update_windows_flags(data.windows_flags);
         }
 
         if(data.commit_display)
@@ -970,20 +986,21 @@ void update()
 
         if(data.update_mosaic)
         {
+            data.update_mosaic = false;
             hw::display::set_mosaic(min(fixed_t<4>(data.sprites_mosaic_horizontal_stretch).data(), 15),
                                     min(fixed_t<4>(data.sprites_mosaic_vertical_stretch).data(), 15),
                                     min(fixed_t<4>(data.bgs_mosaic_horizontal_stretch).data(), 15),
                                     min(fixed_t<4>(data.bgs_mosaic_vertical_stretch).data(), 15), data.mosaic_cnt);
-            data.update_mosaic = false;
         }
 
         if(data.update_blending_transparency)
         {
+            data.update_blending_transparency = false;
+
             pair<int, int> hw_weights = _blending_hw_weights(
                         blending_transparency_top_weight(), blending_transparency_bottom_weight());
             hw::display::set_blending_transparency(
                         hw_weights.first, hw_weights.second, data.blending_transparency_cnt);
-            data.update_blending_transparency = false;
         }
     }
 }

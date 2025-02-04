@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -64,6 +64,8 @@ namespace bn::hblank_effects_manager
     void enable();
 
     void disable();
+
+    void stop();
 
     [[nodiscard]] int create(const void* values_ptr, int values_count, intptr_t target_id, handler_type handler);
 

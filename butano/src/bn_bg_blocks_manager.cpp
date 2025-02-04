@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -301,14 +301,9 @@ namespace
                 return _list->_items + _index;
             }
 
-            [[nodiscard]] friend bool operator==(const iterator& a, const iterator& b)
-            {
-                return a._index == b._index;
-            }
-
             [[nodiscard]] friend bool operator!=(const iterator& a, const iterator& b)
             {
-                return ! (a == b);
+                return a._index != b._index;
             }
 
         private:
@@ -332,7 +327,7 @@ namespace
 
         [[nodiscard]] int size() const
         {
-            return _free_indices_size;
+            return max_items - _free_indices_size;
         }
 
         [[nodiscard]] bool full() const
@@ -613,6 +608,61 @@ namespace
     };
 
 
+    #if BN_CFG_BG_BLOCKS_SANITY_CHECK_ENABLED
+        void _sanity_check()
+        {
+            int items_count = 0;
+            int free_blocks_count = 0;
+            int used_blocks_count = 0;
+            int to_remove_blocks_count = 0;
+            int next_start_block = 0;
+
+            for(const item_type& item : data.items)
+            {
+                BN_ASSERT(item.start_block == next_start_block, item.start_block, " - ", next_start_block);
+                next_start_block = item.start_block + item.blocks_count;
+                ++items_count;
+
+                switch(item.status())
+                {
+
+                case status_type::FREE:
+                    free_blocks_count += item.blocks_count;
+                    break;
+
+                case status_type::USED:
+                    used_blocks_count += item.blocks_count;
+                    break;
+
+                case status_type::TO_REMOVE:
+                    to_remove_blocks_count += item.blocks_count;
+                    break;
+
+                default:
+                    BN_ERROR("Invalid item status: ", int(item.status()));
+                    break;
+                }
+            }
+
+            BN_ASSERT(items_count == data.items.size(), items_count, " - ", data.items.size());
+            BN_ASSERT(free_blocks_count == data.free_blocks_count, free_blocks_count, " - ", data.free_blocks_count);
+            BN_ASSERT(to_remove_blocks_count == data.to_remove_blocks_count,
+                      to_remove_blocks_count, " - ", data.to_remove_blocks_count);
+            BN_ASSERT(free_blocks_count + used_blocks_count + to_remove_blocks_count == hw::bg_tiles::blocks_count(),
+                      free_blocks_count, " - ", used_blocks_count, " - ", to_remove_blocks_count, " - ",
+                      hw::bg_tiles::blocks_count());
+        }
+
+        #define BN_BG_BLOCKS_SANITY_CHECK \
+            _sanity_check
+    #else
+        #define BN_BG_BLOCKS_SANITY_CHECK(...) \
+            do \
+            { \
+            } while(false)
+    #endif
+
+
     #if BN_CFG_BG_BLOCKS_LOG_ENABLED
         void _log_status()
         {
@@ -677,17 +727,16 @@ namespace
         #define BN_BG_BLOCKS_LOG BN_LOG
 
         #define BN_BG_BLOCKS_LOG_STATUS \
-            _log_status
+            _log_status(); \
+            BN_BG_BLOCKS_SANITY_CHECK
     #else
         #define BN_BG_BLOCKS_LOG(...) \
             do \
             { \
             } while(false)
 
-        #define BN_BG_BLOCKS_LOG_STATUS(...) \
-            do \
-            { \
-            } while(false)
+        #define BN_BG_BLOCKS_LOG_STATUS \
+            BN_BG_BLOCKS_SANITY_CHECK
     #endif
 
     [[nodiscard]] int _find_tiles_impl(
@@ -943,6 +992,29 @@ namespace
         }
     }
 
+    void _fix_blocks_count(const item_type& item, int new_item_blocks_count)
+    {
+        switch(item.status())
+        {
+
+        case status_type::FREE:
+            break;
+
+        case status_type::USED:
+            BN_ERROR("Invalid item state");
+            break;
+
+        case status_type::TO_REMOVE:
+            data.free_blocks_count += new_item_blocks_count;
+            data.to_remove_blocks_count -= new_item_blocks_count;
+            break;
+
+        default:
+            BN_ERROR("Invalid item status: ", int(item.status()));
+            break;
+        }
+    }
+
     [[nodiscard]] int _create_item(int id, int padding_blocks_count, bool delay_commit, create_data&& create_data)
     {
         item_type* item = &data.items.item(id);
@@ -954,6 +1026,7 @@ namespace
 
             int new_item_blocks_count = item->blocks_count - padding_blocks_count;
             item->blocks_count = uint8_t(padding_blocks_count);
+            _fix_blocks_count(*item, new_item_blocks_count);
 
             item_type new_item;
             new_item.start_block = item->start_block + item->blocks_count;
@@ -978,7 +1051,8 @@ namespace
 
             if(create_item_at_back)
             {
-                item->blocks_count -= uint8_t(blocks_count);
+                item->blocks_count = uint8_t(new_item_blocks_count);
+                _fix_blocks_count(*item, new_item_blocks_count);
 
                 item_type new_item;
                 new_item.start_block = uint8_t(start_block + item->blocks_count);
@@ -1215,7 +1289,7 @@ namespace
 
 void init()
 {
-    new(&data) static_data();
+    ::new(static_cast<void*>(&data)) static_data();
 
     BN_BG_BLOCKS_LOG("bg_blocks_manager - INIT");
 
@@ -1607,106 +1681,6 @@ int create_affine_map(const affine_bg_map_item& map_item, const affine_bg_map_ce
             #endif
 
             BN_ERROR("Affine BG map create failed:",
-                     "\n\tMap data: ", data_ptr,
-                     "\n\tMap width: ", dimensions.width(),
-                     "\n\tMap height: ", dimensions.height(),
-                     "\n\tBlocks count: ", _new_affine_map_blocks_count(dimensions.width(), dimensions.height(), big),
-                     "\n\nThere's no more available VRAM.",
-                     _status_log_message);
-        }
-    }
-
-    return result;
-}
-
-int create_new_regular_map(const regular_bg_map_item& map_item, const regular_bg_map_cell* data_ptr,
-                           regular_bg_tiles_ptr&& tiles, bg_palette_ptr&& palette, bool optional)
-{
-    const size& dimensions = map_item.dimensions();
-    compression_type compression = map_item.compression();
-    bool big = map_item.big();
-
-    BN_BG_BLOCKS_LOG("bg_blocks_manager - CREATE NEW REGULAR MAP", (optional ? " OPTIONAL: " : ": "), data_ptr, " - ",
-                     dimensions.width(), " - ", dimensions.height(), " - ", tiles.id(), " - ", palette.id(), " - ",
-                     int(compression), " - ", big);
-
-    BN_ASSERT(aligned<4>(data_ptr), "Map cells are not aligned");
-    BN_ASSERT(regular_bg_tiles_item::valid_tiles_count(tiles.tiles_count(), palette.bpp()),
-              "Invalid tiles count: ", tiles.tiles_count(), " - ", int(palette.bpp()));
-    BN_BASIC_ASSERT(compression == compression_type::NONE || ! big, "Compressed big maps are not supported");
-
-    int result = _create_impl(
-                create_data::from_regular_map(data_ptr, dimensions, compression, big, move(tiles), move(palette)));
-
-    if(result >= 0)
-    {
-        BN_BG_BLOCKS_LOG("CREATED. start_block: ", data.items.item(result).start_block);
-        BN_BG_BLOCKS_LOG_STATUS();
-    }
-    else
-    {
-        BN_BG_BLOCKS_LOG("NOT CREATED");
-
-        if(! optional)
-        {
-            #if BN_CFG_LOG_ENABLED
-                log_status();
-            #endif
-
-            BN_ERROR("Regular BG map create new failed:",
-                     "\n\tMap data: ", data_ptr,
-                     "\n\tMap width: ", dimensions.width(),
-                     "\n\tMap height: ", dimensions.height(),
-                     "\n\tBlocks count: ", _new_regular_map_blocks_count(dimensions.width(), dimensions.height(), big),
-                     "\n\nThere's no more available VRAM.",
-                     _status_log_message);
-        }
-    }
-
-    return result;
-}
-
-int create_new_affine_map(const affine_bg_map_item& map_item, const affine_bg_map_cell* data_ptr,
-                          affine_bg_tiles_ptr&& tiles, bg_palette_ptr&& palette, bool optional)
-{
-    const size& dimensions = map_item.dimensions();
-    compression_type compression = map_item.compression();
-    bool big = map_item.big();
-
-    BN_BG_BLOCKS_LOG("bg_blocks_manager - CREATE NEW AFFINE MAP", (optional ? " OPTIONAL: " : ": "), data_ptr, " - ",
-                     dimensions.width(), " - ", dimensions.height(), " - ", tiles.id(), " - ", palette.id(), " - ",
-                     int(compression), " - ", big);
-
-    BN_ASSERT(aligned<4>(data_ptr), "Map cells are not aligned");
-    BN_ASSERT(palette.bpp() == bpp_mode::BPP_8, "4BPP affine maps not supported");
-    BN_BASIC_ASSERT(compression == compression_type::NONE || ! big, "Compressed big maps are not supported");
-    BN_BASIC_ASSERT(! big || dimensions.width() % data.new_affine_big_map_canvas_info.size() == 0,
-                    "Big maps width must be divisible by canvas width: ",
-                    dimensions.width(), " - ", data.new_affine_big_map_canvas_info.size());
-    BN_BASIC_ASSERT(! big || dimensions.height() % data.new_affine_big_map_canvas_info.size() == 0,
-                    "Big maps height must be divisible by canvas height: ",
-                    dimensions.height(), " - ", data.new_affine_big_map_canvas_info.size());
-
-    auto u16_data_ptr = reinterpret_cast<const uint16_t*>(data_ptr);
-    int result = _create_impl(
-                create_data::from_affine_map(u16_data_ptr, dimensions, compression, big, move(tiles), move(palette)));
-
-    if(result >= 0)
-    {
-        BN_BG_BLOCKS_LOG("CREATED. start_block: ", data.items.item(result).start_block);
-        BN_BG_BLOCKS_LOG_STATUS();
-    }
-    else
-    {
-        BN_BG_BLOCKS_LOG("NOT CREATED");
-
-        if(! optional)
-        {
-            #if BN_CFG_LOG_ENABLED
-                log_status();
-            #endif
-
-            BN_ERROR("Affine BG map create new failed:",
                      "\n\tMap data: ", data_ptr,
                      "\n\tMap width: ", dimensions.width(),
                      "\n\tMap height: ", dimensions.height(),
@@ -2888,6 +2862,9 @@ void update()
 {
     if(data.to_remove_blocks_count || data.check_commit)
     {
+        data.to_remove_blocks_count = 0;
+        data.check_commit = false;
+
         BN_BG_BLOCKS_LOG("bg_blocks_manager - UPDATE");
 
         auto end = data.items.end();
@@ -2898,8 +2875,6 @@ void update()
 
         int commit_uncompressed_items_count = 0;
         int commit_compressed_items_count = 0;
-        data.to_remove_blocks_count = 0;
-        data.check_commit = false;
 
         while(iterator != end)
         {

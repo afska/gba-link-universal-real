@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -17,6 +17,7 @@
 #include "bn_utility.h"
 #include "bn_iterator.h"
 #include "bn_algorithm.h"
+#include "bn_type_traits.h"
 #include "bn_intrusive_list_fwd.h"
 
 namespace bn
@@ -68,10 +69,22 @@ public:
         using size_type = intrusive_list::size_type; //!< Size type alias.
         using difference_type = intrusive_list::difference_type; //!< Difference type alias.
         using reference = intrusive_list::reference; //!< Reference alias.
-        using const_reference = intrusive_list::const_reference; //!< Const reference alias.
         using pointer = intrusive_list::pointer; //!< Pointer alias.
-        using const_pointer = intrusive_list::const_pointer; //!< Const pointer alias.
         using iterator_category = bidirectional_iterator_tag; //!< Iterator category alias.
+
+        /**
+         * @brief Default constructor.
+         */
+        iterator() = default;
+
+        /**
+         * @brief Constructor.
+         * @param node Intrusive list node.
+         */
+        explicit iterator(node_type* node) :
+            _node(node)
+        {
+        }
 
         /**
          * @brief Increments the position.
@@ -81,6 +94,17 @@ public:
         {
             _node = _node->next;
             return *this;
+        }
+
+        /**
+         * @brief Increments the position.
+         * @return The iterator before being incremented.
+         */
+        iterator operator++(int)
+        {
+            iterator copy(*this);
+            _node = _node->next;
+            return copy;
         }
 
         /**
@@ -94,33 +118,28 @@ public:
         }
 
         /**
-         * @brief Returns a const reference to the pointed value.
+         * @brief Decrements the position.
+         * @return The iterator before being decremented.
          */
-        [[nodiscard]] const_reference operator*() const
+        iterator operator--(int)
         {
-            return static_cast<const_reference>(*_node);
+            iterator copy(*this);
+            _node = _node->prev;
+            return copy;
         }
 
         /**
          * @brief Returns a reference to the pointed value.
          */
-        [[nodiscard]] reference operator*()
+        [[nodiscard]] reference operator*() const
         {
             return static_cast<reference>(*_node);
         }
 
         /**
-         * @brief Returns a const pointer to the pointed value.
-         */
-        const_pointer operator->() const
-        {
-            return static_cast<const_pointer>(_node);
-        }
-
-        /**
          * @brief Returns a pointer to the pointed value.
          */
-        pointer operator->()
+        pointer operator->() const
         {
             return static_cast<pointer>(_node);
         }
@@ -135,11 +154,6 @@ public:
         friend class const_iterator;
 
         node_type* _node = nullptr;
-
-        explicit iterator(node_type* node) :
-            _node(node)
-        {
-        }
     };
 
     /**
@@ -152,14 +166,27 @@ public:
         using value_type = intrusive_list::value_type; //!< Value type alias.
         using size_type = intrusive_list::size_type; //!< Size type alias.
         using difference_type = intrusive_list::difference_type; //!< Difference type alias.
-        using reference = intrusive_list::reference; //!< Reference type alias.
-        using const_reference = intrusive_list::const_reference; //!< Const reference alias.
-        using pointer = intrusive_list::pointer; //!< Pointer alias.
+        using reference = intrusive_list::const_reference; //!< Reference type alias.
+        using pointer = intrusive_list::const_pointer; //!< Pointer alias.
         using const_pointer = intrusive_list::const_pointer; //!< Const pointer alias.
         using iterator_category = bidirectional_iterator_tag; //!< Iterator category alias.
 
         /**
-         * @brief Public constructor.
+         * @brief Default constructor.
+         */
+        const_iterator() = default;
+
+        /**
+         * @brief Constructor.
+         * @param node Intrusive list node.
+         */
+        explicit const_iterator(const node_type* node) :
+            _node(node)
+        {
+        }
+
+        /**
+         * @brief Constructor.
          * @param it Non const iterator.
          */
         const_iterator(iterator it) :
@@ -178,6 +205,17 @@ public:
         }
 
         /**
+         * @brief Increments the position.
+         * @return The iterator before being incremented.
+         */
+        const_iterator operator++(int)
+        {
+            const_iterator copy(*this);
+            _node = _node->next;
+            return copy;
+        }
+
+        /**
          * @brief Decrements the position.
          * @return Reference to this.
          */
@@ -185,6 +223,17 @@ public:
         {
             _node = _node->prev;
             return *this;
+        }
+
+        /**
+         * @brief Decrements the position.
+         * @return The iterator before being decremented.
+         */
+        const_iterator operator--(int)
+        {
+            const_iterator copy(*this);
+            _node = _node->prev;
+            return copy;
         }
 
         /**
@@ -212,11 +261,6 @@ public:
         friend class intrusive_list;
 
         const node_type* _node = nullptr;
-
-        explicit const_iterator(const node_type* node) :
-            _node(node)
-        {
-        }
     };
 
     using reverse_iterator = bn::reverse_iterator<iterator>; //!< Reverse iterator alias.
@@ -508,13 +552,7 @@ public:
      */
     iterator erase(reference value)
     {
-        BN_BASIC_ASSERT(! empty(), "List is empty");
-
-        iterator position(&value);
-        iterator next = position;
-        ++next;
-        _erase(position);
-        return next;
+        return erase(const_iterator(&value));
     }
 
     /**
@@ -721,17 +759,6 @@ public:
         }
 
         return equal(a.begin(), a.end(), b.begin());
-    }
-
-    /**
-     * @brief Not equal operator.
-     * @param a First intrusive_list to compare.
-     * @param b Second intrusive_list to compare.
-     * @return `true` if the first intrusive_list is not equal to the second one, otherwise `false`.
-     */
-    [[nodiscard]] friend bool operator!=(const intrusive_list& a, const intrusive_list& b)
-    {
-        return ! (a == b);
     }
 
     /**

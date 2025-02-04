@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -13,7 +13,7 @@
  * @ingroup hdma
  */
 
-#include "bn_common.h"
+#include "bn_span_fwd.h"
 
 /**
  * @brief H-Blank direct memory access related functions.
@@ -37,10 +37,17 @@ namespace bn::hdma
      * If the elements overlap, the behavior is undefined.
      *
      * @param source_ref Const reference to the memory location to copy from.
-     * @param elements Number of elements to copy (not bytes).
+     * It must refer to a multiple of bn::display::height() values.
      * @param destination_ref Reference to the memory location to copy to.
      */
+    void start(const bn::span<const uint16_t>& source_ref, uint16_t& destination_ref);
+
+    /// @cond DO_NOT_DOCUMENT
+
+    [[deprecated("Call the other start() method instead")]]
     void start(const uint16_t& source_ref, int elements, uint16_t& destination_ref);
+
+    /// @endcond
 
     /**
      * @brief Stops copying elements each frame.
@@ -66,10 +73,17 @@ namespace bn::hdma
      * High priority HDMA can cause issues with audio, so avoid it unless necessary.
      *
      * @param source_ref Const reference to the memory location to copy from.
-     * @param elements Number of elements to copy (not bytes).
+     * It must refer to a multiple of bn::display::height() values.
      * @param destination_ref Reference to the memory location to copy to.
      */
+    void high_priority_start(const bn::span<const uint16_t>& source_ref, uint16_t& destination_ref);
+
+    /// @cond DO_NOT_DOCUMENT
+
+    [[deprecated("Call the other high_priority_start() method instead")]]
     void high_priority_start(const uint16_t& source_ref, int elements, uint16_t& destination_ref);
+
+    /// @endcond
 
     /**
      * @brief Stops copying elements each frame with high priority.

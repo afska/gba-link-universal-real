@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -7,6 +7,7 @@
 
 #include "bn_bgs.h"
 #include "bn_regular_bg_ptr.h"
+#include "bn_top_left_utils.h"
 
 namespace bn
 {
@@ -17,6 +18,41 @@ regular_bg_builder::regular_bg_builder(const regular_bg_item& item, int map_inde
 {
     BN_ASSERT(map_index >= 0 && map_index < item.map_item().maps_count(),
               "Invalid map index: ", map_index, " - ", item.map_item().maps_count());
+}
+
+fixed regular_bg_builder::top_left_x() const
+{
+    return to_top_left_x(x(), _dimensions().width());
+}
+
+regular_bg_builder& regular_bg_builder::set_top_left_x(fixed top_left_x)
+{
+    return set_x(from_top_left_x(top_left_x, _dimensions().width()));
+}
+
+fixed regular_bg_builder::top_left_y() const
+{
+    return to_top_left_y(y(), _dimensions().height());
+}
+
+regular_bg_builder& regular_bg_builder::set_top_left_y(fixed top_left_y)
+{
+    return set_y(from_top_left_y(top_left_y, _dimensions().height()));
+}
+
+fixed_point regular_bg_builder::top_left_position() const
+{
+    return to_top_left_position(position(), _dimensions());
+}
+
+regular_bg_builder& regular_bg_builder::set_top_left_position(fixed top_left_x, fixed top_left_y)
+{
+    return set_position(from_top_left_position(fixed_point(top_left_x, top_left_y), _dimensions()));
+}
+
+regular_bg_builder& regular_bg_builder::set_top_left_position(const fixed_point& top_left_position)
+{
+    return set_position(from_top_left_position(top_left_position, _dimensions()));
 }
 
 regular_bg_builder& regular_bg_builder::set_priority(int priority)
@@ -33,6 +69,13 @@ regular_bg_builder& regular_bg_builder::set_z_order(int z_order)
 
     _z_order = z_order;
     return *this;
+}
+
+optional<camera_ptr> regular_bg_builder::release_camera()
+{
+    optional<camera_ptr> result = move(_camera);
+    _camera.reset();
+    return result;
 }
 
 regular_bg_ptr regular_bg_builder::build() const
@@ -59,7 +102,7 @@ regular_bg_map_ptr regular_bg_builder::map() const
 {
     if(const regular_bg_item* item = _item.get())
     {
-        return item->create_map(_map_index);
+        return regular_bg_map_ptr::create(*item, _map_index);
     }
 
     return *_map;
@@ -71,7 +114,7 @@ optional<regular_bg_map_ptr> regular_bg_builder::map_optional() const
 
     if(const regular_bg_item* item = _item.get())
     {
-        result = item->create_map_optional(_map_index);
+        result = regular_bg_map_ptr::create_optional(*item, _map_index);
     }
     else
     {
@@ -83,12 +126,8 @@ optional<regular_bg_map_ptr> regular_bg_builder::map_optional() const
 
 regular_bg_map_ptr regular_bg_builder::release_map()
 {
-    if(const regular_bg_item* item = _item.get())
-    {
-        return item->create_map(_map_index);
-    }
-
-    regular_bg_map_ptr result = move(*_map);
+    const regular_bg_item* item = _item.get();
+    regular_bg_map_ptr result = item ? regular_bg_map_ptr::create(*item, _map_index) : move(*_map);
     _map.reset();
     return result;
 }
@@ -99,18 +138,21 @@ optional<regular_bg_map_ptr> regular_bg_builder::release_map_optional()
 
     if(const regular_bg_item* item = _item.get())
     {
-        result = item->create_map_optional(_map_index);
+        result = regular_bg_map_ptr::create_optional(*item, _map_index);
     }
     else
     {
-        if(regular_bg_map_ptr* map = _map.get())
-        {
-            result = move(*map);
-            _map.reset();
-        }
+        result = move(_map);
+        _map.reset();
     }
 
     return result;
+}
+
+size regular_bg_builder::_dimensions() const
+{
+    const regular_bg_item* item = _item.get();
+    return item ? item->map_item().dimensions() : _map->dimensions();
 }
 
 }

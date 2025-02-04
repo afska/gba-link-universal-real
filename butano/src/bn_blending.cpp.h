@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -41,6 +41,18 @@ void set_intensity_alpha(fixed intensity_alpha)
                     "Intensity and fade blendings can't be enabled at the same time");
 
     display_manager::set_blending_intensity_alpha(intensity_alpha);
+}
+
+void set_transparency_and_intensity_alpha(fixed transparency_alpha, fixed intensity_alpha)
+{
+    BN_ASSERT(transparency_alpha >= 0 && transparency_alpha <= 1,
+              "Invalid transparency alpha: ", transparency_alpha);
+    BN_ASSERT(intensity_alpha >= 0 && intensity_alpha <= 1,
+              "Invalid intensity alpha: ", intensity_alpha);
+    BN_BASIC_ASSERT((transparency_alpha == 1 && intensity_alpha == 0) || ! display_manager::blending_fade_enabled(),
+                    "Transparency and fade blendings can't be enabled at the same time");
+
+    display_manager::set_blending_transparency_and_intensity_alpha(transparency_alpha, intensity_alpha);
 }
 
 fixed transparency_top_weight()

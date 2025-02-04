@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -17,6 +17,7 @@
 #include "bn_utility.h"
 #include "bn_iterator.h"
 #include "bn_algorithm.h"
+#include "bn_type_traits.h"
 #include "bn_array_fwd.h"
 
 namespace bn
@@ -314,17 +315,6 @@ public:
     }
 
     /**
-     * @brief Not equal operator.
-     * @param a First array to compare.
-     * @param b Second array to compare.
-     * @return `true` if the first array is not equal to the second one, otherwise `false`.
-     */
-    [[nodiscard]] constexpr friend bool operator!=(const array& a, const array& b)
-    {
-        return ! (a == b);
-    }
-
-    /**
      * @brief Less than operator.
      * @param a First array to compare.
      * @param b Second array to compare.
@@ -582,17 +572,6 @@ public:
     [[nodiscard]] constexpr friend bool operator==([[maybe_unused]] const array& a, [[maybe_unused]] const array& b)
     {
         return true;
-    }
-
-    /**
-     * @brief Not equal operator.
-     * @param a First array to compare.
-     * @param b Second array to compare.
-     * @return `true` if the first array is not equal to the second one, otherwise `false`.
-     */
-    [[nodiscard]] constexpr friend bool operator!=(const array& a, const array& b)
-    {
-        return ! (a == b);
     }
 
     /**

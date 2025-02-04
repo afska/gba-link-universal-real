@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -1145,7 +1145,7 @@ namespace
 
 void init()
 {
-    new(&external_data) static_external_data();
+    ::new(static_cast<void*>(&external_data)) static_external_data();
 
     hw::hblank_effects::commit_entries(internal_data.entries_b);
 
@@ -1189,6 +1189,17 @@ void disable()
     {
         hw::hblank_effects::disable();
     }
+}
+
+void stop()
+{
+    disable();
+
+    external_data.first_visible_item_index = max_items - 1;
+    external_data.last_visible_item_index = 0;
+    external_data.update = false;
+    external_data.commit = false;
+    external_data.enabled = false;
 }
 
 int create(const void* values_ptr, [[maybe_unused]] int values_count, intptr_t target_id, handler_type handler)
@@ -1393,12 +1404,8 @@ bool commit()
         {
             hw_entries* entries = external_data.entries_a_active ? &internal_data.entries_a : &internal_data.entries_b;
             hw::hblank_effects::commit_entries(*entries);
-
-            if(! external_data.enabled)
-            {
-                external_data.enabled = true;
-                hw::hblank_effects::enable();
-            }
+            hw::hblank_effects::enable();
+            external_data.enabled = true;
         }
         else
         {
@@ -1407,6 +1414,13 @@ bool commit()
                 external_data.enabled = false;
                 hw::hblank_effects::disable();
             }
+        }
+    }
+    else
+    {
+        if(external_data.enabled)
+        {
+            hw::hblank_effects::enable();
         }
     }
 

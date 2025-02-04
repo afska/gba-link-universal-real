@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -37,6 +37,19 @@
  */
 #ifndef BN_CFG_BG_BLOCKS_LOG_ENABLED
     #define BN_CFG_BG_BLOCKS_LOG_ENABLED false
+#endif
+
+/**
+ * @def BN_CFG_BG_BLOCKS_SANITY_CHECK_ENABLED
+ *
+ * Specifies if the background blocks manager sanity check is enabled or not.
+ *
+ * Sanity check asserts if the internal state of the manager is valid.
+ *
+ * @ingroup bg
+ */
+#ifndef BN_CFG_BG_BLOCKS_SANITY_CHECK_ENABLED
+    #define BN_CFG_BG_BLOCKS_SANITY_CHECK_ENABLED false
 #endif
 
 #endif

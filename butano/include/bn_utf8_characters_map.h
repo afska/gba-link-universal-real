@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -74,8 +74,6 @@ public:
 
 private:
     using item_type = utf8_characters_map_ref::item_type;
-
-    static_assert(! Utf8Characters.empty());
 
     [[nodiscard]] constexpr static int _calculate_items_count()
     {

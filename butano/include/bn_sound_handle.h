@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -53,7 +53,10 @@ public:
     void stop();
 
     /**
-     * @brief Releases this sound effect, allowing its interruption.
+     * @brief Marks this sound effect as unimportant. This enables the sound effect to be interrupted
+     * by music and other sound effects if the need arises.
+     *
+     * The handle will be invalidated after calling this method.
      */
     void release();
 

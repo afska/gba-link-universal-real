@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -70,10 +70,13 @@ public:
         using size_type = iforward_list::size_type; //!< Size type alias.
         using difference_type = iforward_list::difference_type; //!< Difference type alias.
         using reference = iforward_list::reference; //!< Reference alias.
-        using const_reference = iforward_list::const_reference; //!< Const reference alias.
         using pointer = iforward_list::pointer; //!< Pointer alias.
-        using const_pointer = iforward_list::const_pointer; //!< Const pointer alias.
         using iterator_category = forward_iterator_tag; //!< Iterator category alias.
+
+        /**
+         * @brief Default constructor.
+         */
+        iterator() = default;
 
         /**
          * @brief Increments the position.
@@ -86,33 +89,28 @@ public:
         }
 
         /**
-         * @brief Returns a const reference to the pointed value.
+         * @brief Increments the position.
+         * @return The iterator before being incremented.
          */
-        [[nodiscard]] const_reference operator*() const
+        iterator operator++(int)
         {
-            return static_cast<const value_node_type*>(_node)->value;
+            iterator copy(*this);
+            _node = _node->next;
+            return copy;
         }
 
         /**
          * @brief Returns a reference to the pointed value.
          */
-        [[nodiscard]] reference operator*()
+        [[nodiscard]] reference operator*() const
         {
             return static_cast<value_node_type*>(_node)->value;
         }
 
         /**
-         * @brief Returns a const pointer to the pointed value.
-         */
-        const_pointer operator->() const
-        {
-            return &static_cast<const value_node_type*>(_node)->value;
-        }
-
-        /**
          * @brief Returns a pointer to the pointed value.
          */
-        pointer operator->()
+        pointer operator->() const
         {
             return &static_cast<value_node_type*>(_node)->value;
         }
@@ -127,8 +125,6 @@ public:
         friend class const_iterator;
 
         node_type* _node = nullptr;
-
-        iterator() = default;
 
         explicit iterator(node_type* node) :
             _node(node)
@@ -146,14 +142,17 @@ public:
         using value_type = iforward_list::value_type; //!< Value type alias.
         using size_type = iforward_list::size_type; //!< Size type alias.
         using difference_type = iforward_list::difference_type; //!< Difference type alias.
-        using reference = iforward_list::reference; //!< Reference alias.
-        using const_reference = iforward_list::const_reference; //!< Const reference alias.
-        using pointer = iforward_list::pointer; //!< Pointer alias.
-        using const_pointer = iforward_list::const_pointer; //!< Const pointer alias.
+        using reference = iforward_list::const_reference; //!< Reference alias.
+        using pointer = iforward_list::const_pointer; //!< Pointer alias.
         using iterator_category = forward_iterator_tag; //!< Iterator category alias.
 
         /**
-         * @brief Public constructor.
+         * @brief Default constructor.
+         */
+        const_iterator() = default;
+
+        /**
+         * @brief Constructor.
          * @param it Non const iterator.
          */
         const_iterator(iterator it) :
@@ -169,6 +168,17 @@ public:
         {
             _node = _node->next;
             return *this;
+        }
+
+        /**
+         * @brief Increments the position.
+         * @return The iterator before being incremented.
+         */
+        const_iterator operator++(int)
+        {
+            const_iterator copy(*this);
+            _node = _node->next;
+            return copy;
         }
 
         /**
@@ -196,8 +206,6 @@ public:
         friend class iforward_list;
 
         const node_type* _node = nullptr;
-
-        const_iterator() = default;
 
         explicit const_iterator(const node_type* node) :
             _node(node)
@@ -697,17 +705,6 @@ public:
         }
 
         return equal(a.begin(), a.end(), b.begin());
-    }
-
-    /**
-     * @brief Not equal operator.
-     * @param a First iforward_list to compare.
-     * @param b Second iforward_list to compare.
-     * @return `true` if the first iforward_list is not equal to the second one, otherwise `false`.
-     */
-    [[nodiscard]] friend bool operator!=(const iforward_list& a, const iforward_list& b)
-    {
-        return ! (a == b);
     }
 
     /**

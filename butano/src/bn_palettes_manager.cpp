@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -31,7 +31,7 @@ namespace
 
 void init(const optional<color>& transparent_color)
 {
-    new(&data) static_data();
+    ::new(static_cast<void*>(&data)) static_data();
 
     bg_palettes_bank().set_transparent_color(transparent_color);
 }

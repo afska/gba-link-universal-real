@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -93,9 +93,9 @@ public:
         _compression(compression),
         _big(_big_dimensions(dimensions))
     {
-        BN_ASSERT(dimensions.width() >= 32 && dimensions.width() % 32 == 0,
+        BN_ASSERT(dimensions.width() >= 32 && dimensions.width() <= 2048 && dimensions.width() % 32 == 0,
                   "Invalid width: ", dimensions.width());
-        BN_ASSERT(dimensions.height() >= 32 && dimensions.height() % 32 == 0,
+        BN_ASSERT(dimensions.height() >= 32 && dimensions.height() <= 2048 && dimensions.height() % 32 == 0,
                   "Invalid height: ", dimensions.height());
     }
 
@@ -119,9 +119,9 @@ public:
         _compression(compression),
         _big(_big_dimensions(dimensions))
     {
-        BN_ASSERT(dimensions.width() >= 32 && dimensions.width() % 32 == 0,
+        BN_ASSERT(dimensions.width() >= 32 && dimensions.width() <= 2048 && dimensions.width() % 32 == 0,
                   "Invalid width: ", dimensions.width());
-        BN_ASSERT(dimensions.height() >= 32 && dimensions.height() % 32 == 0,
+        BN_ASSERT(dimensions.height() >= 32 && dimensions.height() <= 2048 && dimensions.height() % 32 == 0,
                   "Invalid height: ", dimensions.height());
         BN_ASSERT(maps_count > 0 && maps_count < 65536, "Invalid maps count: ", maps_count);
     }
@@ -149,9 +149,9 @@ public:
         _compression(compression),
         _big(big)
     {
-        BN_ASSERT(dimensions.width() >= 32 && dimensions.width() % 32 == 0,
+        BN_ASSERT(dimensions.width() >= 32 && dimensions.width() <= 2048 && dimensions.width() % 32 == 0,
                   "Invalid width: ", dimensions.width());
-        BN_ASSERT(dimensions.height() >= 32 && dimensions.height() % 32 == 0,
+        BN_ASSERT(dimensions.height() >= 32 && dimensions.height() <= 2048 && dimensions.height() % 32 == 0,
                   "Invalid height: ", dimensions.height());
         BN_ASSERT(! big || dimensions.width() > 32 || dimensions.height() > 32,
                   "Too small for a big map: ", dimensions.width(), " - ", dimensions.height());
@@ -419,39 +419,16 @@ public:
     [[nodiscard]] regular_bg_map_ptr create_map(
             regular_bg_tiles_ptr tiles, bg_palette_ptr palette, int map_index) const;
 
-    /**
-     * @brief Creates a regular_bg_map_ptr which references the information provided by this item.
-     *
-     * The map system does not support multiple regular_bg_map_ptr items referencing to the same map cells.
-     * If you are not sure if the information provided by this item is already referenced or not,
-     * you should use the create_map method instead.
-     *
-     * The map cells are not copied but referenced,
-     * so they should outlive the regular_bg_map_ptr to avoid dangling references.
-     *
-     * @param tiles Referenced tiles of the map to handle.
-     * @param palette Referenced color palette of the map to handle.
-     * @return regular_bg_map_ptr which references the information provided by this item.
-     */
+    /// @cond DO_NOT_DOCUMENT
+
+    [[deprecated("Call create_map() method instead")]]
     [[nodiscard]] regular_bg_map_ptr create_new_map(regular_bg_tiles_ptr tiles, bg_palette_ptr palette) const;
 
-    /**
-     * @brief Creates a regular_bg_map_ptr which references the information provided by this item.
-     *
-     * The map system does not support multiple regular_bg_map_ptr items referencing to the same map cells.
-     * If you are not sure if the information provided by this item is already referenced or not,
-     * you should use the create_map method instead.
-     *
-     * The map cells are not copied but referenced,
-     * so they should outlive the regular_bg_map_ptr to avoid dangling references.
-     *
-     * @param tiles Referenced tiles of the map to handle.
-     * @param palette Referenced color palette of the map to handle.
-     * @param map_index Index of the referenced map to handle.
-     * @return regular_bg_map_ptr which references the information provided by this item.
-     */
+    [[deprecated("Call create_map() method instead")]]
     [[nodiscard]] regular_bg_map_ptr create_new_map(
             regular_bg_tiles_ptr tiles, bg_palette_ptr palette, int map_index) const;
+
+    /// @endcond
 
     /**
      * @brief Searches for a regular_bg_map_ptr which references the information provided by this item.
@@ -486,42 +463,17 @@ public:
     [[nodiscard]] optional<regular_bg_map_ptr> create_map_optional(
             regular_bg_tiles_ptr tiles, bg_palette_ptr palette, int map_index) const;
 
-    /**
-     * @brief Creates a regular_bg_map_ptr which references the information provided by this item.
-     *
-     * The map system does not support multiple regular_bg_map_ptr items referencing to the same map cells.
-     * If you are not sure if the information provided by this item is already referenced or not,
-     * you should use the create_map_optional method instead.
-     *
-     * The map cells are not copied but referenced,
-     * so they should outlive the regular_bg_map_ptr to avoid dangling references.
-     *
-     * @param tiles Referenced tiles of the map to handle.
-     * @param palette Referenced color palette of the map to handle.
-     * @return regular_bg_map_ptr which references the information provided by this item
-     * if the regular_bg_map_ptr can be allocated; bn::nullopt otherwise.
-     */
+    /// @cond DO_NOT_DOCUMENT
+
+    [[deprecated("Call create_map_optional() method instead")]]
     [[nodiscard]] optional<regular_bg_map_ptr> create_new_map_optional(
             regular_bg_tiles_ptr tiles, bg_palette_ptr palette) const;
 
-    /**
-     * @brief Creates a regular_bg_map_ptr which references the information provided by this item.
-     *
-     * The map system does not support multiple regular_bg_map_ptr items referencing to the same map cells.
-     * If you are not sure if the information provided by this item is already referenced or not,
-     * you should use the create_map_optional method instead.
-     *
-     * The map cells are not copied but referenced,
-     * so they should outlive the regular_bg_map_ptr to avoid dangling references.
-     *
-     * @param tiles Referenced tiles of the map to handle.
-     * @param palette Referenced color palette of the map to handle.
-     * @param map_index Index of the referenced map to handle.
-     * @return regular_bg_map_ptr which references the information provided by this item
-     * if the regular_bg_map_ptr can be allocated; bn::nullopt otherwise.
-     */
+    [[deprecated("Call create_map_optional() method instead")]]
     [[nodiscard]] optional<regular_bg_map_ptr> create_new_map_optional(
             regular_bg_tiles_ptr tiles, bg_palette_ptr palette, int map_index) const;
+
+    /// @endcond
 
     /**
      * @brief Default equal operator.

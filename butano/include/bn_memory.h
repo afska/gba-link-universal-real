@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -139,6 +139,13 @@ namespace bn::memory
      * @brief Returns the size of the ROM in bytes.
      */
     [[nodiscard]] int used_rom();
+
+    /**
+     * @brief Indicates if EWRAM access time is 1+1 clock cycles for sequential accesses or not.
+     *
+     * See @ref BN_EWRAM_WAIT_STATE_1.
+     */
+    [[nodiscard]] bool fast_ewram();
 
     /**
      * @brief Copies the given amount of elements from the object referenced by source_ref

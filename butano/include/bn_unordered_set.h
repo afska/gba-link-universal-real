@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -57,10 +57,13 @@ public:
         using hasher = iunordered_set::hasher; //!< Hash functor alias.
         using key_equal = iunordered_set::key_equal; //!< Equality functor alias.
         using reference = iunordered_set::reference; //!< Reference alias.
-        using const_reference = iunordered_set::const_reference; //!< Const reference alias.
         using pointer = iunordered_set::pointer; //!< Pointer alias.
-        using const_pointer = iunordered_set::const_pointer; //!< Const pointer alias.
         using iterator_category = bidirectional_iterator_tag; //!< Iterator category alias.
+
+        /**
+         * @brief Default constructor.
+         */
+        iterator() = default;
 
         /**
          * @brief Increments the position.
@@ -88,6 +91,17 @@ public:
         }
 
         /**
+         * @brief Increments the position.
+         * @return The iterator before being incremented.
+         */
+        iterator operator++(int)
+        {
+            iterator copy(*this);
+            operator++();
+            return copy;
+        }
+
+        /**
          * @brief Decrements the position.
          * @return Reference to this.
          */
@@ -108,33 +122,28 @@ public:
         }
 
         /**
-         * @brief Returns a const reference to the pointed value.
+         * @brief Decrements the position.
+         * @return The iterator before being decremented.
          */
-        [[nodiscard]] const_reference operator*() const
+        iterator operator--(int)
         {
-            return _set->_storage[_index];
+            iterator copy(*this);
+            operator--();
+            return copy;
         }
 
         /**
          * @brief Returns a reference to the pointed value.
          */
-        [[nodiscard]] reference operator*()
+        [[nodiscard]] reference operator*() const
         {
             return _set->_storage[_index];
         }
 
         /**
-         * @brief Returns a const pointer to the pointed value.
-         */
-        const_pointer operator->() const
-        {
-            return _set->_storage + _index;
-        }
-
-        /**
          * @brief Returns a pointer to the pointed value.
          */
-        pointer operator->()
+        pointer operator->() const
         {
             return _set->_storage + _index;
         }
@@ -158,14 +167,14 @@ public:
          */
         [[nodiscard]] friend bool operator!=(const iterator& a, const iterator& b)
         {
-            return ! (a == b);
+            return a._index != b._index;
         }
 
     private:
         friend class iunordered_set;
 
-        size_type _index;
-        iunordered_set* _set;
+        size_type _index = 0;
+        iunordered_set* _set = nullptr;
 
         iterator(size_type index, iunordered_set& set) :
             _index(index),
@@ -190,14 +199,17 @@ public:
         using hash_type = iunordered_set::hash_type; //!< Hash type alias.
         using hasher = iunordered_set::hasher; //!< Hash functor alias.
         using key_equal = iunordered_set::key_equal; //!< Equality functor alias.
-        using reference = iunordered_set::reference; //!< Reference alias.
-        using const_reference = iunordered_set::const_reference; //!< Const reference alias.
-        using pointer = iunordered_set::pointer; //!< Pointer alias.
-        using const_pointer = iunordered_set::const_pointer; //!< Const pointer alias.
+        using reference = iunordered_set::const_reference; //!< Reference alias.
+        using pointer = iunordered_set::const_pointer; //!< Pointer alias.
         using iterator_category = bidirectional_iterator_tag; //!< Iterator category alias.
 
         /**
-         * @brief Public constructor.
+         * @brief Default constructor.
+         */
+        const_iterator() = default;
+
+        /**
+         * @brief Constructor.
          * @param it Non const iterator.
          */
         const_iterator(const iterator& it) :
@@ -232,6 +244,17 @@ public:
         }
 
         /**
+         * @brief Increments the position.
+         * @return The iterator before being incremented.
+         */
+        const_iterator operator++(int)
+        {
+            const_iterator copy(*this);
+            operator++();
+            return copy;
+        }
+
+        /**
          * @brief Decrements the position.
          * @return Reference to this.
          */
@@ -249,6 +272,17 @@ public:
 
             _index = index;
             return *this;
+        }
+
+        /**
+         * @brief Decrements the position.
+         * @return The iterator before being decremented.
+         */
+        const_iterator operator--(int)
+        {
+            const_iterator copy(*this);
+            operator--();
+            return copy;
         }
 
         /**
@@ -286,15 +320,15 @@ public:
          */
         [[nodiscard]] friend bool operator!=(const const_iterator& a, const const_iterator& b)
         {
-            return ! (a == b);
+            return a._index != b._index;
         }
 
     private:
         friend class iunordered_set;
         friend class iterator;
 
-        size_type _index;
-        const iunordered_set* _set;
+        size_type _index = 0;
+        const iunordered_set* _set = nullptr;
 
         const_iterator(size_type index, const iunordered_set& set) :
             _index(index),
@@ -684,7 +718,7 @@ public:
             BN_BASIC_ASSERT(current_index != index, "All indices are allocated");
         }
 
-        new(storage + current_index) value_type(move(value));
+        ::new(static_cast<void*>(storage + current_index)) value_type(move(value));
         allocated[current_index] = true;
         _first_valid_index = min(_first_valid_index, current_index);
         _last_valid_index = max(_last_valid_index, current_index);
@@ -917,7 +951,7 @@ public:
                     }
                     else
                     {
-                        new(storage + index) value_type(move(other_storage[index]));
+                        ::new(static_cast<void*>(storage + index)) value_type(move(other_storage[index]));
                         ++size;
                     }
                 }
@@ -1004,7 +1038,7 @@ public:
                     }
                     else
                     {
-                        new(storage + index) value_type(move(other_storage[index]));
+                        ::new(static_cast<void*>(storage + index)) value_type(move(other_storage[index]));
                         other_storage[index].~value_type();
                         other_allocated[index] = false;
                         allocated[index] = true;
@@ -1014,7 +1048,7 @@ public:
                 {
                     if(allocated[index])
                     {
-                        new(other_storage + index) value_type(move(storage[index]));
+                        ::new(static_cast<void*>(other_storage + index)) value_type(move(storage[index]));
                         storage[index].~value_type();
                         allocated[index] = false;
                         other_allocated[index] = true;
@@ -1076,18 +1110,6 @@ public:
         }
 
         return true;
-    }
-
-
-    /**
-     * @brief Not equal operator.
-     * @param a First iunordered_set to compare.
-     * @param b Second iunordered_set to compare.
-     * @return `true` if the first iunordered_set is not equal to the second one, otherwise `false`.
-     */
-    [[nodiscard]] friend bool operator!=(const iunordered_set& a, const iunordered_set& b)
-    {
-        return ! (a == b);
     }
 
     /**
@@ -1162,7 +1184,7 @@ protected:
         {
             if(allocated[index])
             {
-                new(storage + index) value_type(other_storage[index]);
+                ::new(static_cast<void*>(storage + index)) value_type(other_storage[index]);
             }
         }
 
@@ -1185,7 +1207,7 @@ protected:
         {
             if(allocated[index])
             {
-                new(storage + index) value_type(move(other_storage[index]));
+                ::new(static_cast<void*>(storage + index)) value_type(move(other_storage[index]));
             }
         }
 

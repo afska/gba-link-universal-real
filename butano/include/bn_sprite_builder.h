@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -159,6 +159,57 @@ public:
     }
 
     /**
+     * @brief Returns the horizontal top-left position of the sprites to generate
+     * (relative to their camera, if they are going to have one).
+     */
+    [[nodiscard]] fixed top_left_x() const;
+
+    /**
+     * @brief Sets the horizontal top-left position of the sprites to generate
+     * (relative to their camera, if they are going to have one).
+     * @param top_left_x Horizontal top-left position of the sprites to generate.
+     * @return Reference to this.
+     */
+    sprite_builder& set_top_left_x(fixed top_left_x);
+
+    /**
+     * @brief Returns the vertical top-left position of the sprites to generate
+     * (relative to their camera, if they are going to have one).
+     */
+    [[nodiscard]] fixed top_left_y() const;
+
+    /**
+     * @brief Sets the vertical top-left position of the sprites to generate
+     * (relative to their camera, if they are going to have one).
+     * @param top_left_y Vertical top-left position of the sprites to generate.
+     * @return Reference to this.
+     */
+    sprite_builder& set_top_left_y(fixed top_left_y);
+
+    /**
+     * @brief Returns the top-left position of the sprites to generate
+     * (relative to their camera, if they are going to have one).
+     */
+    [[nodiscard]] fixed_point top_left_position() const;
+
+    /**
+     * @brief Sets the top-left position of the sprites to generate
+     * (relative to their camera, if they are going to have one).
+     * @param top_left_x Horizontal top-left position of the sprites to generate.
+     * @param top_left_y Vertical top-left position of the sprites to generate.
+     * @return Reference to this.
+     */
+    sprite_builder& set_top_left_position(fixed top_left_x, fixed top_left_y);
+
+    /**
+     * @brief Sets the top-left position of the sprites to generate
+     * (relative to their camera, if they are going to have one).
+     * @param top_left_position Top-left position of the sprites to generate.
+     * @return Reference to this.
+     */
+    sprite_builder& set_top_left_position(const fixed_point& top_left_position);
+
+    /**
      * @brief Returns the rotation angle in degrees of the sprites to generate.
      */
     [[nodiscard]] fixed rotation_angle() const;
@@ -173,6 +224,17 @@ public:
      * @return Reference to this.
      */
     sprite_builder& set_rotation_angle(fixed rotation_angle);
+
+    /**
+     * @brief Sets the rotation angle in degrees of the sprites to generate.
+     * @param rotation_angle Rotation angle in degrees, in any range.
+     *
+     * If the rotation angle is != 0 and the builder doesn't have an attached sprite_affine_mat_ptr,
+     * a new one with the given rotation angle is attached to it.
+     *
+     * @return Reference to this.
+     */
+    sprite_builder& set_rotation_angle_safe(fixed rotation_angle);
 
     /**
      * @brief Returns the horizontal scale of the sprites to generate.
@@ -522,10 +584,7 @@ public:
     /**
      * @brief Releases and returns the camera_ptr to attach to the sprites to generate (if any).
      */
-    [[nodiscard]] optional<camera_ptr> release_camera()
-    {
-        return move(_camera);
-    }
+    [[nodiscard]] optional<camera_ptr> release_camera();
 
     /**
      * @brief Generates and returns a sprite_ptr without releasing the acquired resources.
@@ -535,7 +594,7 @@ public:
     /**
      * @brief Generates and returns a sprite_ptr releasing the acquired resources.
      *
-     * This method must be called once at most.
+     * sprite_ptr generation after calling this method may stop working.
      */
     [[nodiscard]] sprite_ptr release_build();
 
@@ -549,7 +608,7 @@ public:
      * @brief Generates and returns a sprite_ptr releasing the acquired resources if it could be allocated;
      * bn::nullopt otherwise.
      *
-     * This method must be called once at most.
+     * sprite_ptr generation after calling this method may stop working.
      */
     [[nodiscard]] optional<sprite_ptr> release_build_optional();
 
@@ -578,14 +637,14 @@ public:
     /**
      * @brief Generates and returns a sprite_tiles_ptr releasing the acquired resources.
      *
-     * This method must be called once at most.
+     * sprite_ptr generation after calling this method may stop working.
      */
     [[nodiscard]] sprite_tiles_ptr release_tiles();
 
     /**
      * @brief Generates and returns a sprite_palette_ptr releasing the acquired resources.
      *
-     * This method must be called once at most.
+     * sprite_ptr generation after calling this method may stop working.
      */
     [[nodiscard]] sprite_palette_ptr release_palette();
 
@@ -593,7 +652,7 @@ public:
      * @brief Generates and returns a sprite_tiles_ptr releasing the acquired resources
      * if it could be allocated; bn::nullopt otherwise.
      *
-     * This method must be called once at most.
+     * sprite_ptr generation after calling this method may stop working.
      */
     [[nodiscard]] optional<sprite_tiles_ptr> release_tiles_optional();
 
@@ -601,7 +660,7 @@ public:
      * @brief Generates and returns a sprite_palette_ptr releasing the acquired resources
      * if it could be allocated; bn::nullopt otherwise.
      *
-     * This method must be called once at most.
+     * sprite_ptr generation after calling this method may stop working.
      */
     [[nodiscard]] optional<sprite_palette_ptr> release_palette_optional();
 
@@ -668,10 +727,7 @@ public:
     /**
      * @brief Releases and returns the sprite_affine_mat_ptr to attach to the sprites to generate (if any).
      */
-    [[nodiscard]] optional<sprite_affine_mat_ptr> release_affine_mat()
-    {
-        return move(_affine_mat);
-    }
+    [[nodiscard]] optional<sprite_affine_mat_ptr> release_affine_mat();
 
     /**
      * @brief Indicates if the sprite_affine_mat_ptr attached to the sprites to generate (if any) must be removed

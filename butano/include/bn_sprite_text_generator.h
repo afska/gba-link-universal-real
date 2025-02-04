@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -15,7 +15,7 @@
  */
 
 #include "bn_vector.h"
-#include "bn_fixed_point.h"
+#include "bn_camera_ptr.h"
 #include "bn_sprite_font.h"
 #include "bn_string_view.h"
 
@@ -167,6 +167,107 @@ public:
     void set_z_order(int z_order);
 
     /**
+     * @brief Indicates if the mosaic effect must be applied to the output sprites or not.
+     */
+    [[nodiscard]] bool mosaic_enabled() const
+    {
+        return _mosaic_enabled;
+    }
+
+    /**
+     * @brief Sets if the mosaic effect must be applied to the output sprites or not.
+     */
+    void set_mosaic_enabled(bool mosaic_enabled)
+    {
+        _mosaic_enabled = mosaic_enabled;
+    }
+
+    /**
+     * @brief Indicates if blending must be applied to the output sprites or not.
+     */
+    [[nodiscard]] bool blending_enabled() const
+    {
+        return _blending_enabled;
+    }
+
+    /**
+     * @brief Sets if blending must be applied to the output sprites or not.
+     */
+    void set_blending_enabled(bool blending_enabled)
+    {
+        _blending_enabled = blending_enabled;
+    }
+
+    /**
+     * @brief Indicates if the output sprites must be committed to the GBA or not.
+     */
+    [[nodiscard]] bool visible() const
+    {
+        return _visible;
+    }
+
+    /**
+     * @brief Sets if the output sprites must be committed to the GBA or not.
+     */
+    void set_visible(bool visible)
+    {
+        _visible = visible;
+    }
+
+    /**
+     * @brief Returns the camera_ptr to attach to the output sprites (if any).
+     */
+    [[nodiscard]] const optional<camera_ptr>& camera() const
+    {
+        return _camera;
+    }
+
+    /**
+     * @brief Sets the camera_ptr to attach to the output sprites.
+     */
+    void set_camera(const camera_ptr& camera)
+    {
+        _camera = camera;
+    }
+
+    /**
+     * @brief Sets the camera_ptr to attach to the output sprites.
+     */
+    void set_camera(camera_ptr&& camera)
+    {
+        _camera = move(camera);
+    }
+
+    /**
+     * @brief Sets or removes the camera_ptr to attach to the output sprites.
+     */
+    void set_camera(const optional<camera_ptr>& camera)
+    {
+        _camera = camera;
+    }
+
+    /**
+     * @brief Sets or removes the camera_ptr to attach to the output sprites.
+     */
+    void set_camera(optional<camera_ptr>&& camera)
+    {
+        _camera = move(camera);
+    }
+
+    /**
+     * @brief Removes the camera_ptr to attach to the output sprites.
+     */
+    void remove_camera()
+    {
+        _camera.reset();
+    }
+
+    /**
+     * @brief Releases and returns the camera_ptr to attach to the output sprites (if any).
+     */
+    [[nodiscard]] optional<camera_ptr> release_camera();
+
+    /**
      * @brief Indicates if this sprite_text_generator must generate one sprite per character or
      * print multiple characters in each output sprite, generating as less sprites as possible.
      */
@@ -188,6 +289,20 @@ public:
      * @brief Returns the width in pixels of the given text.
      */
     [[nodiscard]] int width(const string_view& text) const;
+
+    /**
+     * @brief Generates text sprites for the given single line of text.
+     * @tparam MaxSprites Maximum size of the returned sprite_ptr vector.
+     * @param text Single line of text to print.
+     * @return sprite_ptr vector containing the generated text sprites.
+     */
+    template<int MaxSprites>
+    [[nodiscard]] vector<sprite_ptr, MaxSprites> generate(const string_view& text) const
+    {
+        vector<sprite_ptr, MaxSprites> output_sprites;
+        generate(text, output_sprites);
+        return output_sprites;
+    }
 
     /**
      * @brief Generates text sprites for the given single line of text.
@@ -222,6 +337,15 @@ public:
 
     /**
      * @brief Generates text sprites for the given single line of text.
+     * @param text Single line of text to print.
+     * @param output_sprites Generated text sprites are stored in this vector.
+     *
+     * Keep in mind that this vector is not cleared before generating text.
+     */
+    void generate(const string_view& text, ivector<sprite_ptr>& output_sprites) const;
+
+    /**
+     * @brief Generates text sprites for the given single line of text.
      * @param x Horizontal position of the first generated sprite, considering the current alignment.
      * @param y Vertical position of the first generated sprite, considering the current alignment.
      * @param text Single line of text to print.
@@ -240,6 +364,76 @@ public:
      * Keep in mind that this vector is not cleared before generating text.
      */
     void generate(const fixed_point& position, const string_view& text, ivector<sprite_ptr>& output_sprites) const;
+
+    /**
+     * @brief Generates text sprites for the given single line of text.
+     * @tparam MaxSprites Maximum size of the returned sprite_ptr vector.
+     * @param top_left_x Horizontal top-left position of the first generated sprite, considering the current alignment.
+     * @param top_left_y Vertical top-left position of the first generated sprite, considering the current alignment.
+     * @param text Single line of text to print.
+     * @return sprite_ptr vector containing the generated text sprites.
+     */
+    template<int MaxSprites>
+    [[nodiscard]] vector<sprite_ptr, MaxSprites> generate_top_left(
+            fixed top_left_x, fixed top_left_y, const string_view& text) const
+    {
+        vector<sprite_ptr, MaxSprites> output_sprites;
+        generate_top_left(top_left_x, top_left_y, text, output_sprites);
+        return output_sprites;
+    }
+
+    /**
+     * @brief Generates text sprites for the given single line of text.
+     * @tparam MaxSprites Maximum size of the returned sprite_ptr vector.
+     * @param top_left_position Top-left position of the first generated sprite, considering the current alignment.
+     * @param text Single line of text to print.
+     * @return sprite_ptr vector containing the generated text sprites.
+     */
+    template<int MaxSprites>
+    [[nodiscard]] vector<sprite_ptr, MaxSprites> generate_top_left(
+            const fixed_point& top_left_position, const string_view& text) const
+    {
+        vector<sprite_ptr, MaxSprites> output_sprites;
+        generate_top_left(top_left_position, text, output_sprites);
+        return output_sprites;
+    }
+
+    /**
+     * @brief Generates text sprites for the given single line of text.
+     * @param top_left_x Horizontal top-left position of the first generated sprite, considering the current alignment.
+     * @param top_left_y Vertical top-left position of the first generated sprite, considering the current alignment.
+     * @param text Single line of text to print.
+     * @param output_sprites Generated text sprites are stored in this vector.
+     *
+     * Keep in mind that this vector is not cleared before generating text.
+     */
+    void generate_top_left(fixed top_left_x, fixed top_left_y, const string_view& text,
+                           ivector<sprite_ptr>& output_sprites) const
+    {
+        generate_top_left(fixed_point(top_left_x, top_left_y), text, output_sprites);
+    }
+
+    /**
+     * @brief Generates text sprites for the given single line of text.
+     * @param top_left_position Top-left position of the first generated sprite, considering the current alignment.
+     * @param text Single line of text to print.
+     * @param output_sprites Generated text sprites are stored in this vector.
+     *
+     * Keep in mind that this vector is not cleared before generating text.
+     */
+    void generate_top_left(const fixed_point& top_left_position, const string_view& text,
+                           ivector<sprite_ptr>& output_sprites) const;
+
+    /**
+     * @brief Generates text sprites for the given single line of text.
+     * @param text Single line of text to print.
+     * @param output_sprites Generated text sprites are stored in this vector.
+     *
+     * Keep in mind that this vector is not cleared before generating text.
+     *
+     * @return `true` if the text generation finished successfully, otherwise `false`.
+     */
+    [[nodiscard]] bool generate_optional(const string_view& text, ivector<sprite_ptr>& output_sprites) const;
 
     /**
      * @brief Generates text sprites for the given single line of text.
@@ -268,12 +462,44 @@ public:
     [[nodiscard]] bool generate_optional(const fixed_point& position, const string_view& text,
                                          ivector<sprite_ptr>& output_sprites) const;
 
+    /**
+     * @brief Generates text sprites for the given single line of text.
+     * @param top_left_x Horizontal top-left position of the first generated sprite, considering the current alignment.
+     * @param top_left_y Vertical top-left position of the first generated sprite, considering the current alignment.
+     * @param text Single line of text to print.
+     * @param output_sprites Generated text sprites are stored in this vector.
+     *
+     * Keep in mind that this vector is not cleared before generating text.
+     */
+    [[nodiscard]] bool generate_top_left_optional(fixed top_left_x, fixed top_left_y, const string_view& text,
+                                                  ivector<sprite_ptr>& output_sprites) const
+    {
+        return generate_top_left_optional(fixed_point(top_left_x, top_left_y), text, output_sprites);
+    }
+
+    /**
+     * @brief Generates text sprites for the given single line of text.
+     * @param top_left_position Top-left position of the first generated sprite, considering the current alignment.
+     * @param text Single line of text to print.
+     * @param output_sprites Generated text sprites are stored in this vector.
+     *
+     * Keep in mind that this vector is not cleared before generating text.
+     *
+     * @return `true` if the text generation finished successfully, otherwise `false`.
+     */
+    [[nodiscard]] bool generate_top_left_optional(const fixed_point& top_left_position, const string_view& text,
+                                                  ivector<sprite_ptr>& output_sprites) const;
+
 private:
     sprite_font _font;
     sprite_palette_item _palette_item;
+    optional<camera_ptr> _camera;
     int8_t _bg_priority = 3;
     int8_t _z_order = 0;
     alignment_type _alignment = alignment_type::LEFT;
+    bool _mosaic_enabled = false;
+    bool _blending_enabled = false;
+    bool _visible = true;
     bool _one_sprite_per_character = false;
     int8_t _max_character_width;
     int8_t _character_height;

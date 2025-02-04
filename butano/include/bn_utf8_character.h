@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -95,7 +95,7 @@ public:
 
             _data |= (*src++ & 0x3F) <<  0;
         }
-        else if(0xF0 <= ch8 && ch8 < 0xF8)
+        else if(0xF0 <= ch8 && ch8 < 0xF5)
         {
             // 21bit
             _data  = (*src++ & 0x0F) << 18;

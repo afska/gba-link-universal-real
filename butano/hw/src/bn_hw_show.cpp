@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -237,17 +237,20 @@ namespace
                 int64_t global_var;
                 tte_set_pos(init_x, init_y);
                 tte_set_ink(colors::green.data());
+                buffer.clear();
 
                 if(show_total)
                 {
-                    tte_write("PROFILER results - TOTAL ticks");
+                    buffer_stream << "PROFILER - Total ticks: " << total_ticks;
                     global_var = total_ticks;
                 }
                 else
                 {
-                    tte_write("PROFILER results - MAX ticks");
+                    buffer_stream << "PROFILER - Max ticks: " << max_ticks;
                     global_var = max_ticks;
                 }
+
+                tte_write(buffer.c_str());
 
                 if(num_entries > max_visible_entries)
                 {

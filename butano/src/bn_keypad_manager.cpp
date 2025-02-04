@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -74,7 +74,7 @@ namespace
 
 void init(const string_view& commands)
 {
-    new(&data) static_data();
+    ::new(static_cast<void*>(&data)) static_data();
 
     BN_ASSERT(commands.size() % 2 == 0, "Invalid commands size: ", commands.size());
 
@@ -152,7 +152,7 @@ void update()
 
 void set_interrupt(const span<const key_type>& keys)
 {
-    BN_ASSERT(! keys.empty(), "There's no keys");
+    BN_BASIC_ASSERT(! keys.empty(), "There are no keys");
 
     hw::keypad::set_interrupt(keys);
 }

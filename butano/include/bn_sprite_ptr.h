@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -48,6 +48,31 @@ class sprite_ptr
 {
 
 public:
+    /**
+     * @brief Creates a sprite_ptr from the given sprite_item.
+     * @param item sprite_item containing the required information to generate the sprite.
+     * @return The requested sprite_ptr.
+     */
+    [[nodiscard]] static sprite_ptr create(const sprite_item& item);
+
+    /**
+     * @brief Creates a sprite_ptr from the given sprite_item.
+     * @param item sprite_item containing the required information to generate the sprite.
+     * @param graphics_index Index of the tile set to reference in item.tiles_item().
+     * @return The requested sprite_ptr.
+     */
+    [[nodiscard]] static sprite_ptr create(const sprite_item& item, int graphics_index);
+
+    /**
+     * @brief Creates a sprite_ptr.
+     * @param shape_size Shape and size of the sprite.
+     * @param tiles Smart pointer to a sprite tile set.
+     * @param palette Smart pointer to a sprite color palette.
+     * @return The requested sprite_ptr.
+     */
+    [[nodiscard]] static sprite_ptr create(
+            const sprite_shape_size& shape_size, sprite_tiles_ptr tiles, sprite_palette_ptr palette);
+
     /**
      * @brief Creates a sprite_ptr from the given sprite_item.
      * @param x Horizontal position of the sprite.
@@ -120,6 +145,31 @@ public:
      * @return The requested sprite_ptr.
      */
     [[nodiscard]] static sprite_ptr create(sprite_builder&& builder);
+
+    /**
+     * @brief Creates a sprite_ptr from the given sprite_item.
+     * @param item sprite_item containing the required information to generate the sprite.
+     * @return The requested sprite_ptr if it could be allocated; bn::nullopt otherwise.
+     */
+    [[nodiscard]] static optional<sprite_ptr> create_optional(const sprite_item& item);
+
+    /**
+     * @brief Creates a sprite_ptr from the given sprite_item.
+     * @param item sprite_item containing the required information to generate the sprite.
+     * @param graphics_index Index of the tile set to reference in item.tiles_item().
+     * @return The requested sprite_ptr if it could be allocated; bn::nullopt otherwise.
+     */
+    [[nodiscard]] static optional<sprite_ptr> create_optional(const sprite_item& item, int graphics_index);
+
+    /**
+     * @brief Creates a sprite_ptr.
+     * @param shape_size Shape and size of the sprite.
+     * @param tiles Smart pointer to a sprite tile set.
+     * @param palette Smart pointer to a sprite color palette.
+     * @return The requested sprite_ptr if it could be allocated; bn::nullopt otherwise.
+     */
+    [[nodiscard]] static optional<sprite_ptr> create_optional(
+            const sprite_shape_size& shape_size, sprite_tiles_ptr tiles, sprite_palette_ptr palette);
 
     /**
      * @brief Creates a sprite_ptr from the given sprite_item.
@@ -451,6 +501,43 @@ public:
     void set_position(const fixed_point& position);
 
     /**
+     * @brief Returns the horizontal top-left position of the sprite (relative to its camera, if it has one).
+     */
+    [[nodiscard]] fixed top_left_x() const;
+
+    /**
+     * @brief Sets the horizontal top-left position of the sprite (relative to its camera, if it has one).
+     */
+    void set_top_left_x(fixed top_left_x);
+
+    /**
+     * @brief Returns the vertical top-left position of the sprite (relative to its camera, if it has one).
+     */
+    [[nodiscard]] fixed top_left_y() const;
+
+    /**
+     * @brief Sets the vertical top-left position of the sprite (relative to its camera, if it has one).
+     */
+    void set_top_left_y(fixed top_left_y);
+
+    /**
+     * @brief Returns the top-left position of the sprite (relative to its camera, if it has one).
+     */
+    [[nodiscard]] fixed_point top_left_position() const;
+
+    /**
+     * @brief Sets the top-left position of the sprite (relative to its camera, if it has one).
+     * @param top_left_x Horizontal top-left position of the sprite (relative to its camera, if it has one).
+     * @param top_left_y Vertical top-left position of the sprite (relative to its camera, if it has one).
+     */
+    void set_top_left_position(fixed top_left_x, fixed top_left_y);
+
+    /**
+     * @brief Sets the top-left position of the sprite (relative to its camera, if it has one).
+     */
+    void set_top_left_position(const fixed_point& top_left_position);
+
+    /**
      * @brief Returns the rotation angle in degrees of the sprite.
      */
     [[nodiscard]] fixed rotation_angle() const;
@@ -463,6 +550,15 @@ public:
      * a new one with the given rotation angle is attached to it.
      */
     void set_rotation_angle(fixed rotation_angle);
+
+    /**
+     * @brief Sets the rotation angle in degrees of the sprite.
+     * @param rotation_angle Rotation angle in degrees, in any range.
+     *
+     * If the rotation angle is != 0 and the sprite doesn't have an attached sprite_affine_mat_ptr,
+     * a new one with the given rotation angle is attached to it.
+     */
+    void set_rotation_angle_safe(fixed rotation_angle);
 
     /**
      * @brief Returns the horizontal scale of the sprite.

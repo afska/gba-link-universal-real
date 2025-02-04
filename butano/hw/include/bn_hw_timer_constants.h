@@ -1,18 +1,18 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
 #ifndef BN_HW_TIMER_CONSTANTS_H
 #define BN_HW_TIMER_CONSTANTS_H
 
-#include "bn_common.h"
+#include "bn_config_timer.h"
 
 namespace bn::hw::timers
 {
     [[nodiscard]] constexpr int divisor()
     {
-        return 64;
+        return BN_CFG_TIMER_FREQUENCY;
     }
 
     [[nodiscard]] constexpr int ticks_per_frame()
@@ -20,6 +20,13 @@ namespace bn::hw::timers
         // http://problemkaputt.de/gbatek.htm#lcddimensionsandtimings
 
         return 280896 / divisor();
+    }
+
+    [[nodiscard]] constexpr int ticks_per_second()
+    {
+        // http://problemkaputt.de/gbatek.htm#lcddimensionsandtimings
+
+        return (16 * 1024 * 1024) / divisor();
     }
 
     [[nodiscard]] constexpr int ticks_per_vblank()

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -68,12 +68,12 @@
  * @image html qt_creator/qt_7.png
  *
  *
- * @section qt_creator_cpp_20 C++20
+ * @section qt_creator_cpp_23 C++23
  *
- * Enable C++20 support in the `template.cxxflags` file with the following line:
+ * Enable C++23 support in the `template.cxxflags` file with the following line:
  *
  * @code{.cpp}
- * -std=c++20
+ * -std=c++23
  * @endcode
  *
  *

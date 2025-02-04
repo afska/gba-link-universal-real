@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -60,7 +60,7 @@ class green_swap_toggle_action : public bool_toggle_template_action<green_swap_m
 public:
     /**
      * @brief Constructor.
-     * @param duration_updates How much times the action has to be updated to toggle
+     * @param duration_updates How many times the action has to be updated to toggle
      * if green swap must be inverted or not.
      */
     explicit green_swap_toggle_action(int duration_updates) :

@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
 #include "bn_sprite_ptr.h"
 
-#include "bn_size.h"
 #include "bn_sprite_builder.h"
+#include "bn_top_left_utils.h"
 #include "bn_sprites_manager.h"
 #include "bn_affine_mat_attributes.h"
 #include "bn_sprite_first_attributes.h"
@@ -17,32 +17,54 @@
 namespace bn
 {
 
+sprite_ptr sprite_ptr::create(const sprite_item& item)
+{
+    return sprite_ptr(sprites_manager::create(
+            fixed_point(), item.shape_size(), sprite_tiles_ptr::create(item.tiles_item()),
+            sprite_palette_ptr::create(item.palette_item())));
+}
+
+sprite_ptr sprite_ptr::create(const sprite_item& item, int graphics_index)
+{
+    return sprite_ptr(sprites_manager::create(
+            fixed_point(), item.shape_size(), sprite_tiles_ptr::create(item.tiles_item(), graphics_index),
+            sprite_palette_ptr::create(item.palette_item())));
+}
+
+sprite_ptr sprite_ptr::create(const sprite_shape_size& shape_size, sprite_tiles_ptr tiles, sprite_palette_ptr palette)
+{
+    BN_ASSERT(tiles.tiles_count() == shape_size.tiles_count(palette.bpp()),
+              "Invalid tiles count: ", tiles.tiles_count(), " - ", shape_size.tiles_count(palette.bpp()));
+
+    return sprite_ptr(sprites_manager::create(fixed_point(), shape_size, move(tiles), move(palette)));
+}
+
 sprite_ptr sprite_ptr::create(fixed x, fixed y, const sprite_item& item)
 {
     return sprite_ptr(sprites_manager::create(fixed_point(x, y), item.shape_size(),
-                                              item.tiles_item().create_tiles(),
-                                              item.palette_item().create_palette()));
+                                              sprite_tiles_ptr::create(item.tiles_item()),
+                                              sprite_palette_ptr::create(item.palette_item())));
 }
 
 sprite_ptr sprite_ptr::create(fixed x, fixed y, const sprite_item& item, int graphics_index)
 {
     return sprite_ptr(sprites_manager::create(fixed_point(x, y), item.shape_size(),
-                                              item.tiles_item().create_tiles(graphics_index),
-                                              item.palette_item().create_palette()));
+                                              sprite_tiles_ptr::create(item.tiles_item(), graphics_index),
+                                              sprite_palette_ptr::create(item.palette_item())));
 }
 
 sprite_ptr sprite_ptr::create(const fixed_point& position, const sprite_item& item)
 {
     return sprite_ptr(sprites_manager::create(position, item.shape_size(),
-                                              item.tiles_item().create_tiles(),
-                                              item.palette_item().create_palette()));
+                                              sprite_tiles_ptr::create(item.tiles_item()),
+                                              sprite_palette_ptr::create(item.palette_item())));
 }
 
 sprite_ptr sprite_ptr::create(const fixed_point& position, const sprite_item& item, int graphics_index)
 {
     return sprite_ptr(sprites_manager::create(position, item.shape_size(),
-                                              item.tiles_item().create_tiles(graphics_index),
-                                              item.palette_item().create_palette()));
+                                              sprite_tiles_ptr::create(item.tiles_item(), graphics_index),
+                                              sprite_palette_ptr::create(item.palette_item())));
 }
 
 sprite_ptr sprite_ptr::create(fixed x, fixed y, const sprite_shape_size& shape_size, sprite_tiles_ptr tiles,
@@ -54,8 +76,8 @@ sprite_ptr sprite_ptr::create(fixed x, fixed y, const sprite_shape_size& shape_s
     return sprite_ptr(sprites_manager::create(fixed_point(x, y), shape_size, move(tiles), move(palette)));
 }
 
-sprite_ptr sprite_ptr::create(const fixed_point& position, const sprite_shape_size& shape_size, sprite_tiles_ptr tiles,
-                              sprite_palette_ptr palette)
+sprite_ptr sprite_ptr::create(const fixed_point& position, const sprite_shape_size& shape_size,
+                              sprite_tiles_ptr tiles, sprite_palette_ptr palette)
 {
     BN_ASSERT(tiles.tiles_count() == shape_size.tiles_count(palette.bpp()),
               "Invalid tiles count: ", tiles.tiles_count(), " - ", shape_size.tiles_count(palette.bpp()));
@@ -73,6 +95,32 @@ sprite_ptr sprite_ptr::create(sprite_builder&& builder)
     return sprite_ptr(sprites_manager::create(move(builder)));
 }
 
+optional<sprite_ptr> sprite_ptr::create_optional(const sprite_item& item)
+{
+    return create_optional(fixed_point(), item);
+}
+
+optional<sprite_ptr> sprite_ptr::create_optional(const sprite_item& item, int graphics_index)
+{
+    return create_optional(fixed_point(), item, graphics_index);
+}
+
+optional<sprite_ptr> sprite_ptr::create_optional(
+    const sprite_shape_size& shape_size, sprite_tiles_ptr tiles, sprite_palette_ptr palette)
+{
+    BN_ASSERT(tiles.tiles_count() == shape_size.tiles_count(palette.bpp()),
+              "Invalid tiles count: ", tiles.tiles_count(), " - ", shape_size.tiles_count(palette.bpp()));
+
+    optional<sprite_ptr> result;
+
+    if(handle_type handle = sprites_manager::create_optional(fixed_point(), shape_size, move(tiles), move(palette)))
+    {
+        result = sprite_ptr(handle);
+    }
+
+    return result;
+}
+
 optional<sprite_ptr> sprite_ptr::create_optional(fixed x, fixed y, const sprite_item& item)
 {
     return create_optional(fixed_point(x, y), item);
@@ -85,12 +133,12 @@ optional<sprite_ptr> sprite_ptr::create_optional(fixed x, fixed y, const sprite_
 
 optional<sprite_ptr> sprite_ptr::create_optional(const fixed_point& position, const sprite_item& item)
 {
-    optional<sprite_tiles_ptr> tiles = item.tiles_item().create_tiles();
+    optional<sprite_tiles_ptr> tiles = sprite_tiles_ptr::create_optional(item.tiles_item());
     optional<sprite_ptr> result;
 
     if(sprite_tiles_ptr* tiles_ptr = tiles.get())
     {
-        optional<sprite_palette_ptr> palette = item.palette_item().create_palette();
+        optional<sprite_palette_ptr> palette = sprite_palette_ptr::create_optional(item.palette_item());
 
         if(sprite_palette_ptr* palette_ptr = palette.get())
         {
@@ -108,12 +156,12 @@ optional<sprite_ptr> sprite_ptr::create_optional(const fixed_point& position, co
 optional<sprite_ptr> sprite_ptr::create_optional(const fixed_point& position, const sprite_item& item,
                                                  int graphics_index)
 {
-    optional<sprite_tiles_ptr> tiles = item.tiles_item().create_tiles(graphics_index);
+    optional<sprite_tiles_ptr> tiles = sprite_tiles_ptr::create_optional(item.tiles_item(), graphics_index);
     optional<sprite_ptr> result;
 
     if(sprite_tiles_ptr* tiles_ptr = tiles.get())
     {
-        optional<sprite_palette_ptr> palette = item.palette_item().create_palette();
+        optional<sprite_palette_ptr> palette = sprite_palette_ptr::create_optional(item.palette_item());
 
         if(sprite_palette_ptr* palette_ptr = palette.get())
         {
@@ -261,7 +309,7 @@ void sprite_ptr::set_tiles(const sprite_tiles_item& tiles_item)
     else
     {
         sprites_manager::remove_tiles(_handle);
-        sprites_manager::set_tiles(_handle, tiles_item.create_tiles());
+        sprites_manager::set_tiles(_handle, sprite_tiles_ptr::create(tiles_item));
     }
 }
 
@@ -276,7 +324,7 @@ void sprite_ptr::set_tiles(const sprite_tiles_item& tiles_item, int graphics_ind
     else
     {
         sprites_manager::remove_tiles(_handle);
-        sprites_manager::set_tiles(_handle, tiles_item.create_tiles(graphics_index));
+        sprites_manager::set_tiles(_handle, sprite_tiles_ptr::create(tiles_item, graphics_index));
     }
 }
 
@@ -291,7 +339,7 @@ void sprite_ptr::set_tiles(const sprite_tiles_item& tiles_item, const sprite_sha
     else
     {
         sprites_manager::remove_tiles(_handle);
-        sprites_manager::set_tiles(_handle, shape_size, tiles_item.create_tiles());
+        sprites_manager::set_tiles(_handle, shape_size, sprite_tiles_ptr::create(tiles_item));
     }
 }
 
@@ -307,7 +355,7 @@ void sprite_ptr::set_tiles(const sprite_tiles_item& tiles_item, const sprite_sha
     else
     {
         sprites_manager::remove_tiles(_handle);
-        sprites_manager::set_tiles(_handle, shape_size, tiles_item.create_tiles(graphics_index));
+        sprites_manager::set_tiles(_handle, shape_size, sprite_tiles_ptr::create(tiles_item, graphics_index));
     }
 }
 
@@ -341,12 +389,12 @@ void sprite_ptr::set_palette(const sprite_palette_item& palette_item)
         else
         {
             sprites_manager::remove_palette(_handle);
-            sprites_manager::set_palette(_handle, old_bpp, palette_item.create_new_palette());
+            sprites_manager::set_palette(_handle, old_bpp, sprite_palette_ptr::create_new(palette_item));
         }
     }
     else
     {
-        sprites_manager::set_palette(_handle, old_bpp, palette_item.create_palette());
+        sprites_manager::set_palette(_handle, old_bpp, sprite_palette_ptr::create(palette_item));
     }
 }
 
@@ -370,7 +418,7 @@ void sprite_ptr::set_item(const sprite_item& item)
     if(! tiles_ptr)
     {
         sprites_manager::remove_tiles(_handle);
-        tiles = tiles_item.create_tiles();
+        tiles = sprite_tiles_ptr::create(tiles_item);
         tiles_ptr = tiles.get();
     }
 
@@ -385,7 +433,7 @@ void sprite_ptr::set_item(const sprite_item& item)
             sprites_manager::remove_palette(_handle);
         }
 
-        palette = palette_item.create_new_palette();
+        palette = sprite_palette_ptr::create_new(palette_item);
         palette_ptr = palette.get();
     }
 
@@ -401,7 +449,7 @@ void sprite_ptr::set_item(const sprite_item& item, int graphics_index)
     if(! tiles_ptr)
     {
         sprites_manager::remove_tiles(_handle);
-        tiles = tiles_item.create_tiles(graphics_index);
+        tiles = sprite_tiles_ptr::create(tiles_item, graphics_index);
         tiles_ptr = tiles.get();
     }
 
@@ -416,7 +464,7 @@ void sprite_ptr::set_item(const sprite_item& item, int graphics_index)
             sprites_manager::remove_palette(_handle);
         }
 
-        palette = palette_item.create_new_palette();
+        palette = sprite_palette_ptr::create_new(palette_item);
         palette_ptr = palette.get();
     }
 
@@ -458,6 +506,41 @@ void sprite_ptr::set_position(const fixed_point& position)
     sprites_manager::set_position(_handle, position);
 }
 
+fixed sprite_ptr::top_left_x() const
+{
+    return to_top_left_x(position().x(), dimensions().width());
+}
+
+void sprite_ptr::set_top_left_x(fixed top_left_x)
+{
+    set_x(from_top_left_x(top_left_x, dimensions().width()));
+}
+
+fixed sprite_ptr::top_left_y() const
+{
+    return to_top_left_y(position().y(), dimensions().height());
+}
+
+void sprite_ptr::set_top_left_y(fixed top_left_y)
+{
+    set_y(from_top_left_y(top_left_y, dimensions().height()));
+}
+
+fixed_point sprite_ptr::top_left_position() const
+{
+    return to_top_left_position(position(), dimensions());
+}
+
+void sprite_ptr::set_top_left_position(fixed top_left_x, fixed top_left_y)
+{
+    set_position(from_top_left_position(fixed_point(top_left_x, top_left_y), dimensions()));
+}
+
+void sprite_ptr::set_top_left_position(const fixed_point& top_left_position)
+{
+    set_position(from_top_left_position(top_left_position, dimensions()));
+}
+
 fixed sprite_ptr::rotation_angle() const
 {
     optional<sprite_affine_mat_ptr>& affine_mat = sprites_manager::affine_mat(_handle);
@@ -484,6 +567,11 @@ void sprite_ptr::set_rotation_angle(fixed rotation_angle)
         mat_attributes.set_rotation_angle(rotation_angle);
         sprites_manager::set_new_affine_mat(_handle, mat_attributes);
     }
+}
+
+void sprite_ptr::set_rotation_angle_safe(fixed rotation_angle)
+{
+    set_rotation_angle(safe_degrees_angle(rotation_angle));
 }
 
 fixed sprite_ptr::horizontal_scale() const
@@ -583,7 +671,7 @@ fixed sprite_ptr::horizontal_shear() const
         return affine_mat_ptr->horizontal_shear();
     }
 
-    return 1;
+    return 0;
 }
 
 void sprite_ptr::set_horizontal_shear(fixed horizontal_shear)
@@ -611,7 +699,7 @@ fixed sprite_ptr::vertical_shear() const
         return affine_mat_ptr->vertical_shear();
     }
 
-    return 1;
+    return 0;
 }
 
 void sprite_ptr::set_vertical_shear(fixed vertical_shear)

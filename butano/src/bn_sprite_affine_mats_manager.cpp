@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -295,10 +295,15 @@ namespace
 
         if(first_index_to_update < max_items)
         {
+            data.first_index_to_update = max_items;
+
+            int last_index_to_update = data.last_index_to_update;
+            data.last_index_to_update = 0;
+
             int first_index_to_commit = data.first_index_to_commit;
             int last_index_to_commit = data.last_index_to_commit;
 
-            for(int index = first_index_to_update, last = data.last_index_to_update; index <= last; ++index)
+            for(int index = first_index_to_update; index <= last_index_to_update; ++index)
             {
                 item_type& item = data.items[index];
 
@@ -385,8 +390,6 @@ namespace
                 }
             }
 
-            data.first_index_to_update = max_items;
-            data.last_index_to_update = 0;
             data.first_index_to_commit = first_index_to_commit;
             data.last_index_to_commit = last_index_to_commit;
         }
@@ -395,7 +398,7 @@ namespace
 
 void init(void* handles)
 {
-    new(&data) static_data();
+    ::new(static_cast<void*>(&data)) static_data();
 
     data.handles_ptr = static_cast<hw::sprite_affine_mats::handle*>(handles);
 
@@ -468,7 +471,7 @@ void decrease_usages(int id)
     item_type& item = data.items[id];
     --item.usages;
 
-    if(! item.usages)
+    if(! item.usages) [[unlikely]]
     {
         item.update = false;
         item.remove_if_not_needed = false;
@@ -737,7 +740,8 @@ void set_attributes(int id, const affine_mat_attributes& attributes)
 bool identity(int id)
 {
     const item_type& item = data.items[id];
-    return item.attributes.identity();
+    return item.flipped_identity && ! item.attributes.horizontal_flip() && ! item.attributes.vertical_flip() &&
+           item.attributes.pa_register_value() == 256 && item.attributes.pd_register_value() == 256;
 }
 
 bool flipped_identity(int id)
@@ -750,7 +754,7 @@ bool sprite_double_size(int id, const sprite_shape_size& shape_size)
 {
     const item_type& item = data.items[id];
 
-    if(item.flipped_identity)
+    if(item.flipped_identity) [[unlikely]]
     {
         return false;
     }

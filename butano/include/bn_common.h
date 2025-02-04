@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -26,14 +26,11 @@
  */
 #define BN_CONST __attribute__((const))
 
-/**
- * @def BN_UNREACHABLE
- *
- * If control flow reaches the point of this macro, the program is undefined.
- *
- * @ingroup other
- */
+/// @cond DO_NOT_DOCUMENT
+
 #define BN_UNREACHABLE __builtin_unreachable
+
+/// @endcond
 
 namespace bn
 {

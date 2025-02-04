@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -230,6 +230,7 @@ namespace bn::hw::display
     {
         REG_BLDCNT = 0;
         REG_MOSAIC_U16 = 0;
+        REG_DISPCNT_U16_2 = 0;
     }
 
     inline void set_show_mode()

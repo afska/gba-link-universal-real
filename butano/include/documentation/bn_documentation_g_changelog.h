@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -12,13 +12,205 @@
  * @tableofcontents
  *
  *
- * @section changelog_17_6_0 17.6.0 (next release)
+ * @section changelog_18_8_0 18.8.0 (next release)
+ *
+ * * bn::best_fit_allocator::check_empty_on_destructor and bn::best_fit_allocator::set_check_empty_on_destructor added.
+ * * @ref BN_CFG_ASSERT_TAG added.
+ * * Import tool now allows to specify the width of sprites and sprite tiles.
+ *   See the @ref import_image import guide to learn how to specify it.
+ * * Show the sum of the ticks of all entries in the profiler results.
+ * * CPU usage reduced in most resource managers.
+ * * @ref getting_started guide improved.
+ *
+ *
+ * @section changelog_18_7_1 18.7.1
+ *
+ * * Placement `new` calls with user-provided `operator new` overloads fixed.
+ * * bn::unordered_map and bn::unordered_set clangd warnings fixed.
+ *
+ *
+ * @section changelog_18_7_0 18.7.0
+ *
+ * * bn::green_swap_mode added (thanks Sono!). Check the `green_swap` example to see how to set
+ *   how a background must be displayed when green swap is enabled.
+ * * bn::unique_ptr `operator<<` added.
+ * * bn::ibitset `operator<<` added.
+ * * Hash support for bn::ibitset added.
+ * * More bn::istring_base comparison operators added.
+ * * bn::utf8_character validation improved.
+ * * Green swap disabled when the display is stopped.
+ * * `libstdc++` is now linked by default (thanks asie!).
+ * * @ref faq_delta_time, @ref faq_sprites_metasprites and @ref faq_backgrounds_animated questions
+ *   added to the @ref faq page.
+ * * @ref faq_standard and @ref faq_memory_heap questions improved.
+ * * @ref getting_started_wt guide updated.
+ * * @ref qt_creator improved.
+ * * Some spelling mistakes fixed.
+ *
+ *
+ * @section changelog_18_6_0 18.6.0
+ *
+ * * Big maps maximum size is limited to 16384 pixels.
+ * * `create_new` map methods are deprecated.
+ * * Small ROM usage reduction.
+ * * bn::sprite_ptr::create_optional fixed.
+ * * @ref faq_subfolder question added to the @ref faq page.
+ *
+ *
+ * @section changelog_18_5_0 18.5.0
+ *
+ * * bn::sprite_text_generator uses one sprite per character if the space between characters is too big.
+ * * bn::sprite_ptr::horizontal_shear and bn::sprite_ptr::vertical_shear fixed.
+ * * bn::sprite_font space between characters validation fixed.
+ * * @ref faq_memory_arm_iwram question added to the @ref faq page.
+ *
+ *
+ * @section changelog_18_4_0 18.4.0
+ *
+ * * bn::random::get_bool and bn::seed_random::get_bool added.
+ * * bn::bitset_ref move constructor added.
+ * * @ref BN_CFG_BG_BLOCKS_SANITY_CHECK_ENABLED and @ref BN_CFG_SPRITE_TILES_SANITY_CHECK_ENABLED added.
+ * * bn::random::get_int and bn::seed_random::get_int optimized.
+ * * BG blocks manager allocation fixed.
+ * * bn::sprite_tiles::log_status items count fixed.
+ *
+ *
+ * @section changelog_18_3_0 18.3.0
+ *
+ * * bn::sprite_text_generator::generate_top_left and bn::sprite_text_generator::generate_top_left_optional added.
+ * * bn::sprite_text_generator allows to setup the mosaic, the blending, the visibility and the camera
+ *   of the output sprites.
+ * * bn::sprite_builder::release_affine_mat, bn::sprite_builder::release_camera,
+ *   bn::regular_bg_builder::release_camera and bn::affine_bg_builder::release_camera fixed.
+ * * bn::sprite_builder, bn::regular_bg_builder and bn::affine_bg_builder documentation improved.
+ *
+ *
+ * @section changelog_18_2_1 18.2.1
+ *
+ * * bn::forward_list and bn::intrusive_forward_list forward iterator requirements fixed.
+ * * bn::list, bn::intrusive_list, bn::unordered_map and bn::unordered_set bidirectional iterator requirements fixed.
+ * * bn::deque iterator random access requirements fixed.
+ * * bn::deque, bn::list, bn::intrusive_list, bn::forward_list, bn::intrusive_forward_list, bn::unordered_map
+ *   and bn::unordered_set iterator type aliases fixed.
+ *
+ *
+ * @section changelog_18_2_0 18.2.0
+ *
+ * * bn::regular_bg_ptr, bn::regular_bg_builder, bn::affine_bg_ptr, bn::affine_bg_builder,
+ *   bn::affine_bg_mat_attributes, bn::sprite_ptr and bn::sprite_builder
+ *   support top-left coordinates for their position.
+ * * bn::regular_bg_top_left_move_to_action, bn::regular_bg_top_left_move_loop_action,
+ *   bn::regular_bg_top_left_move_toggle_action, bn::affine_bg_top_left_move_to_action,
+ *   bn::affine_bg_top_left_move_loop_action, bn::affine_bg_top_left_move_toggle_action,
+ *   bn::sprite_top_left_move_to_action, bn::sprite_top_left_move_loop_action
+ *   and bn::sprite_top_left_move_toggle_action added.
+ * * bn::safe_degrees_angle, bn::degrees_lut_sin_safe, bn::degrees_lut_cos_safe
+ *   and bn::degrees_lut_sin_and_cos_safe added.
+ * * bn::affine_mat_attributes::set_rotation_angle_safe, bn::affine_bg_builder::set_rotation_angle_safe,
+ *   bn::affine_bg_mat_attributes::set_rotation_angle_safe, bn::affine_bg_ptr::set_rotation_angle_safe,
+ *   bn::sprite_affine_mat_ptr::set_rotation_angle_safe, bn::sprite_builder::set_rotation_angle_safe
+ *   and bn::sprite_ptr::set_rotation_angle_safe added.
+ * * Position in `create` methods is now optional.
+ * * bn::intrusive_list and bn::intrusive_forward_list iterator constructors are now public.
+ * * Real time clock (RTC) string added.
+ * * SRAM string with link-time optimization fixed.
+ * * @ref faq_backgrounds_top_left and @ref faq_sprites_top_left questions added to the @ref faq page.
+ * * @ref faq_flash_carts_sram question improved.
+ *
+ *
+ * @section changelog_18_1_0 18.1.0
+ *
+ * * bn::blending::set_transparency_and_intensity_alpha added.
+ * * bn::timer::elapsed_ticks_with_restart added.
+ * * bn::timers::ticks_per_second added.
+ * * @ref BN_CFG_TIMER_FREQUENCY added.
+ * * bn::timer overflow fixed.
+ * * bn::degrees_lut_sin, bn::degrees_lut_cos and bn::degrees_lut_sin_and_cos optimized.
+ * * Color palettes, sprite tiles and audio management ROM usage reduced.
+ * * `timer` example added.
+ * * @ref faq_sprites_item_from_ptr question added to the @ref faq page.
+ * * <a href="https://github.com/chrislewisdev/gba-pseudo-3d">GBA pseudo-3D demo</a> added to `README.md`.
+ *
+ *
+ * @section changelog_18_0_1 18.0.1
+ *
+ * Tools no longer crash on Windows with more than 60 logical CPU cores.
+ *
+ *
+ * @section changelog_18_0_0 18.0.0
+ *
+ * * Language standard updated to C++23.
+ * * Old bn::hdma::start and bn::hdma::high_priority_start API deprecated.
+ * * `BN_UNREACHABLE` deprecated.
+ * * Construction of bn::string and bn::string_view from `nullptr` is disallowed (thanks C++23).
+ * * bn::string::starts_with, bn::string::ends_with, bn::string_view::starts_with and bn::string_view::ends_with
+ *   a `nullptr` char array is disallowed.
+ * * bn::unique_ptr is now `constexpr`.
+ * * bn::bitset and bn::string aren't `constexpr` anymore (it didn't work before).
+ * * More overloads added to bn::string construction, assignment, bn::string::assign and bn::string::append.
+ * * bn::string::find and bn::string_view::find added.
+ * * bn::string::contains and bn::string_view::contains added.
+ * * bn::string::substr added.
+ * * bn::string_view::ends_with a char array added.
+ * * `nullptr` constructor and method overloads added to bn::unique_ptr.
+ * * Non-throwing `new` and `delete` supported.
+ * * bn::string_view::remove_prefix and bn::string_view::remove_suffix assert fixed.
+ * * `bn::is_constant_evaluated` replaced with `consteval`.
+ * * Unnecessary `operator!=` implementations removed.
+ * * bn::regular_bg_builder::release_map, bn::affine_bg_builder::release_map,
+ *   bn::sprite_builder::release_tiles and bn::sprite_builder::release_palette ROM usage reduced.
+ * * bn::deque iterators order operators optimized.
+ *
+ *
+ * @section changelog_17_9_0 17.9.0
+ *
+ * * bn::hdma::start and bn::hdma::high_priority_start API improved.
+ * * Some assert messages improved.
+ * * Missing header includes added.
+ * * `hdma_palette` example added.
+ * * Dead links updated.
+ * * New games made with Butano added to `README.md`.
+ *
+ *
+ * @section changelog_17_8_1 17.8.1
+ *
+ * * bn::deque::erase fixed (thanks <a href="https://github.com/copyrat90">copyrat90</a>!).
+ * * @ref faq_sell_money question improved.
+ *
+ *
+ * @section changelog_17_8_0 17.8.0
+ *
+ * * H-Blank effects stop fixed.
+ * * `random` example added.
+ * * `log` example improved.
+ * * @ref nocashgba_exception added.
+ * * @ref faq_code_crash question added to the @ref faq page.
+ * * @ref BN_LOG_BACKEND_MGBA also works with <a href="https://github.com/SourMesen/Mesen2">Mesen</a>.
+ * * bn::sram documentation improved.
+ * * @ref import_regular_bg and @ref import_affine_bg import guides improved.
+ *
+ *
+ * @section changelog_17_7_0 17.7.0
+ *
+ * * bn::bg_palette_ptr::set_color and bn::sprite_palette_ptr::set_color added.
+ * * Empty bn::utf8_characters_map and bn::utf8_characters_map_ref allowed.
+ *
+ *
+ * @section changelog_17_6_0 17.6.0
  *
  * * bn::bg_palette_ptr::rotate_range_start, bn::bg_palette_ptr::rotate_range_size
  *   and bn::bg_palette_ptr::set_rotate_range added.
  * * bn::sprite_palette_ptr::rotate_range_start, bn::sprite_palette_ptr::rotate_range_size
  *   and bn::sprite_palette_ptr::set_rotate_range added.
  * * bn::fixed::modulo added.
+ * * bn::memory::fast_ewram added.
+ * * bn::random::get_unbiased_int, bn::random::get_unbiased_fixed, bn::seed_random::get_unbiased_int
+ *   and bn::seed_random::get_unbiased_fixed added (thanks <a href="https://github.com/alope107">alope107</a>!).
+ * * H-Blank effects management optimized.
+ * * @ref BN_EWRAM_WAIT_STATE_1 crash after boot documented.
+ * * Slow EWRAM test added.
+ * * IWRAM vs EWRAM stack tests added to the `profiler` coroutine test.
+ * * Slow game pak test improved.
  * * GCC14 false build warnings in Butano Fighter fixed.
  *
  *
@@ -66,12 +258,12 @@
  *   bn::iregular_bg_animate_action::next_change_updates, bn::iregular_bg_cached_animate_action::next_change_updates,
  *   bn::iaffine_bg_animate_action::next_change_updates and bn::iaffine_bg_cached_animate_action::next_change_updates added.
  * * `bn::pair` is now a `std::pair` alias.
- * * <a href="https://www.coranac.com/projects/#tonc">Tonclib</a> ASM ROM usage reduced.
+ * * <a href="https://www.coranac.com/man/tonclib/">Tonclib</a> ASM ROM usage reduced.
  * * `profiler` example simplified.
  * * Compression algorithms added to the `profiler` test.
  * * @ref faq_stack_trace question added to the @ref faq page.
- * * @ref faq_8bpp_palette_change question added to the @ref faq page.
- * * @ref faq_sprites_hidden and @ref faq_background_hidden questions added to the @ref faq page.
+ * * @ref faq_color_8bpp_palette_change question added to the @ref faq page.
+ * * @ref faq_sprites_hidden and @ref faq_backgrounds_hidden questions added to the @ref faq page.
  * * @ref getting_started guide improved.
  * * @ref faq_memory_types question improved.
  * * <a href="https://github.com/nikku4211/wavefront2varooom3d">Wavefront To Varooom 3D</a> added to `README.md`.
@@ -238,8 +430,8 @@
  * * `BN_DATA_EWRAM_BSS` added.
  * * bn::memory::used_static_ewram fixed.
  * * Butano subsystems ROM usage reduced.
- * * <a href="https://www.coranac.com/projects/#tonc">Tonclib</a> tiled surface functions added.
- * * Unused <a href="https://www.coranac.com/projects/#tonc">Tonclib</a> functions and data removed.
+ * * <a href="https://www.coranac.com/man/tonclib/">Tonclib</a> tiled surface functions added.
+ * * Unused <a href="https://www.coranac.com/man/tonclib/">Tonclib</a> functions and data removed.
  *
  *
  * @section changelog_15_4_1 15.4.1
@@ -255,7 +447,7 @@
  * * Import tool now allows to specify whether regular and affine backgrounds are big or not.
  *   See the @ref import_regular_bg and the @ref import_affine_bg import guides to learn how to specify it.
  * * bn::regular_bg_map_item::flat_layout added.
- * * @ref faq_sprites_multiple_8bpp and @ref faq_bg_multiple_8bpp questions added to the @ref faq page.
+ * * @ref faq_sprites_multiple_8bpp and @ref faq_backgrounds_multiple_8bpp questions added to the @ref faq page.
  * * @ref faq_images_invalid_header_size question added to the @ref faq page.
  * * @ref import_image import guide improved.
  *
@@ -386,7 +578,7 @@
  *
  * @section changelog_13_12_1 13.12.1
  *
- * <a href="https://www.coranac.com/projects/#tonc">Tonclib</a> linking error fixed.
+ * <a href="https://www.coranac.com/man/tonclib/">Tonclib</a> linking error fixed.
  *
  *
  * @section changelog_13_12_0 13.12.0
@@ -405,7 +597,7 @@
  *
  * @section changelog_13_10_1 13.10.1
  *
- * `-flto` `memset` undefined references fixed.
+ * `memset` undefined references with link-time optimization fixed.
  *
  *
  * @section changelog_13_10_0 13.10.0
@@ -508,7 +700,7 @@
  * * bn::best_fit_allocator (used by the heap manager) CPU usage reduced.
  * * bn::best_fit_allocator sanity check can be enabled with @ref BN_CFG_BEST_FIT_ALLOCATOR_SANITY_CHECK_ENABLED.
  * * bn::best_fit_allocator::free calls can be validated with @ref BN_CFG_BEST_FIT_ALLOCATOR_FREE_CHECK_ENABLED.
- * * <a href="https://www.coranac.com/projects/#tonc">Tonclib</a> unused components removed
+ * * <a href="https://www.coranac.com/man/tonclib/">Tonclib</a> unused components removed
  *   (EWRAM and ROM usage reduced).
  * * bn::best_fit_allocator::realloc can shrink allocations.
  * * BPP mode can be specified when importing sprites and sprite palettes.
@@ -539,7 +731,7 @@
  * * Destructors of classes with `_ptr` suffix ROM usage reduced.
  * * 4BPP regular backgrounds quantization improved.
  * * Some error messages improved.
- * * @ref import_image "Import images guide" explains why <a href="https://www.coranac.com/projects/usenti/">Usenti</a>
+ * * @ref import_image "Import images guide" explains why <a href="https://github.com/gb-archive/usenti">Usenti</a>
  *   is recommended over other image editors.
  *
  *
@@ -1196,7 +1388,7 @@
  * * Compressed sprites and backgrounds support (see @ref import to learn how to generate them).
  * * bn::degrees_sin and bn::degrees_cos don't use a LUT anymore,
  *   they are replaced by bn::degrees_lut_sin and bn::degrees_lut_cos.
- * * bn::lut_sin and bn::lut_cos input angle range increased to [0, 2048].
+ * * bn::lut_sin and bn::lut_cos input angle range increased to [0..2048].
  * * Enum classes size reduced.
  * * Required fields when importing assets are not defaulted anymore.
  * * bn::rule_of_three_approximation overflow fixed.

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -32,7 +32,7 @@
 
 /**
  * @file
- * bn::bitset implementation header file.
+ * bn::bitset and bn::bitset_ref implementation header file.
  *
  * @ingroup bitset
  */
@@ -40,6 +40,8 @@
 #include "bn_bit.h"
 #include "bn_span.h"
 #include "bn_limits.h"
+#include "bn_sstream.h"
+#include "bn_functional.h"
 #include "bn_bitset_fwd.h"
 
 namespace bn
@@ -484,17 +486,6 @@ public:
         return equal(a_data, a_data + num_elements, b_data);
     }
 
-    /**
-     * @brief Not equal operator.
-     * @param a First ibitset to compare.
-     * @param b Second ibitset to compare.
-     * @return `true` if the first ibitset is not equal to the second one, otherwise `false`.
-     */
-    [[nodiscard]] constexpr friend bool operator!=(const ibitset& a, const ibitset& b)
-    {
-        return ! (a == b);
-    }
-
 protected:
     /// @cond DO_NOT_DOCUMENT
 
@@ -504,6 +495,11 @@ protected:
         _num_elements(num_elements),
         _data(data)
     {
+    }
+
+    [[nodiscard]] constexpr element_t* data()
+    {
+        return _data;
     }
 
     /// @endcond
@@ -546,7 +542,7 @@ public:
     /**
      * @brief Default constructor.
      */
-    constexpr bitset() :
+    bitset() :
         ibitset(_num_elements, _storage_buffer)
     {
     }
@@ -555,7 +551,7 @@ public:
      * @brief Copy constructor.
      * @param other bitset to copy.
      */
-    constexpr bitset(const bitset& other) :
+    bitset(const bitset& other) :
         ibitset(_num_elements, _storage_buffer)
     {
         copy_n(other._storage_buffer, _num_elements, _storage_buffer);
@@ -565,7 +561,7 @@ public:
      * @brief Copy constructor.
      * @param other ibitset to copy.
      */
-    constexpr bitset(const ibitset& other) :
+    bitset(const ibitset& other) :
         ibitset(_num_elements, _storage_buffer)
     {
         ibitset::operator=(other);
@@ -576,7 +572,7 @@ public:
      * @param other bitset to copy.
      * @return Reference to this.
      */
-    constexpr bitset& operator=(const bitset& other)
+    bitset& operator=(const bitset& other)
     {
         if(this != &other)
         {
@@ -591,7 +587,7 @@ public:
      * @param other ibitset to copy.
      * @return Reference to this.
      */
-    constexpr bitset& operator=(const ibitset& other)
+    bitset& operator=(const ibitset& other)
     {
         ibitset::operator=(other);
         return *this;
@@ -601,7 +597,7 @@ public:
      * @brief Sets all bits to `true`.
      * @return Reference to this.
      */
-    constexpr bitset& set()
+    bitset& set()
     {
         ibitset::set();
         return *this;
@@ -612,7 +608,7 @@ public:
      * @param index Index of the bit to set.
      * @return Reference to this.
      */
-    constexpr bitset& set(int index)
+    bitset& set(int index)
     {
         ibitset::set(index);
         return *this;
@@ -624,7 +620,7 @@ public:
      * @param value Value to set.
      * @return Reference to this.
      */
-    constexpr bitset& set(int index, bool value)
+    bitset& set(int index, bool value)
     {
         ibitset::set(index, value);
         return *this;
@@ -634,7 +630,7 @@ public:
      * @brief Sets all bits to `false`.
      * @return Reference to this.
      */
-    constexpr bitset& reset()
+    bitset& reset()
     {
         ibitset::reset();
         return *this;
@@ -645,7 +641,7 @@ public:
      * @param index Index of the bit to set.
      * @return Reference to this.
      */
-    constexpr bitset& reset(int index)
+    bitset& reset(int index)
     {
         ibitset::reset(index);
         return *this;
@@ -655,7 +651,7 @@ public:
      * @brief Flips all values (changes `true` values to `false` and vice versa).
      * @return Reference to this.
      */
-    constexpr bitset& flip()
+    bitset& flip()
     {
         ibitset::flip();
         return *this;
@@ -666,7 +662,7 @@ public:
      * @param index Index of the bit to flip.
      * @return Reference to this.
      */
-    constexpr bitset& flip(int index)
+    bitset& flip(int index)
     {
         ibitset::flip(index);
         return *this;
@@ -677,7 +673,7 @@ public:
      * @param other Another ibitset.
      * @return Reference to this.
      */
-    constexpr bitset& operator&=(const ibitset& other)
+    bitset& operator&=(const ibitset& other)
     {
         ibitset::operator&=(other);
         return *this;
@@ -688,7 +684,7 @@ public:
      * @param other Another ibitset.
      * @return Reference to this.
      */
-    constexpr bitset& operator|=(const ibitset& other)
+    bitset& operator|=(const ibitset& other)
     {
         ibitset::operator|=(other);
         return *this;
@@ -699,7 +695,7 @@ public:
      * @param other Another ibitset.
      * @return Reference to this.
      */
-    constexpr bitset& operator^=(const ibitset& other)
+    bitset& operator^=(const ibitset& other)
     {
         ibitset::operator^=(other);
         return *this;
@@ -708,7 +704,7 @@ public:
     /**
      * @brief Returns this bitset with all bits flipped (binary NOT).
      */
-    [[nodiscard]] constexpr bitset operator~() const
+    [[nodiscard]] bitset operator~() const
     {
         bitset result = *this;
         result.flip();
@@ -718,7 +714,7 @@ public:
     /**
      * @brief Returns a bitset containing the result of binary AND of the given bitsets.
      */
-    [[nodiscard]] constexpr friend bitset operator&(const bitset& a, const bitset& b)
+    [[nodiscard]] friend bitset operator&(const bitset& a, const bitset& b)
     {
         bitset result(a);
         result &= b;
@@ -728,7 +724,7 @@ public:
     /**
      * @brief Returns a bitset containing the result of binary OR of the given bitsets.
      */
-    [[nodiscard]] constexpr friend bitset operator|(const bitset& a, const bitset& b)
+    [[nodiscard]] friend bitset operator|(const bitset& a, const bitset& b)
     {
         bitset result(a);
         result |= b;
@@ -738,7 +734,7 @@ public:
     /**
      * @brief Returns a bitset containing the result of binary XOR of the given bitsets.
      */
-    [[nodiscard]] constexpr friend bitset operator^(const bitset& a, const bitset& b)
+    [[nodiscard]] friend bitset operator^(const bitset& a, const bitset& b)
     {
         bitset result(a);
         result ^= b;
@@ -760,7 +756,7 @@ class bitset_ref : public ibitset
 
 public:
     /**
-     * @brief Default constructor.
+     * @brief Constructor.
      * @param elements_array_ref Elements array reference.
      *
      * The elements are not copied but referenced, so they should outlive the bitset_ref
@@ -774,7 +770,7 @@ public:
     }
 
     /**
-     * @brief Default constructor.
+     * @brief Constructor.
      * @param elements_ref Elements reference.
      *
      * The elements are not copied but referenced, so they should outlive the bitset_ref
@@ -784,6 +780,15 @@ public:
         ibitset(elements_ref.size(), elements_ref.data())
     {
         BN_BASIC_ASSERT(elements_size(), "No elements");
+    }
+
+    /**
+     * @brief Move constructor.
+     * @param other bitset_ref to move.
+     */
+    constexpr bitset_ref(bitset_ref&& other) noexcept :
+        ibitset(other.elements_size(), other.data())
+    {
     }
 
     /**
@@ -905,6 +910,47 @@ public:
         return *this;
     }
 };
+
+/**
+ * @brief Hash support for ibitset.
+ *
+ * @ingroup bitset
+ * @ingroup functional
+ */
+template<>
+struct hash<ibitset>
+{
+    /**
+     * @brief Returns the hash of the given ibitset.
+     */
+    [[nodiscard]] constexpr unsigned operator()(const ibitset& value) const
+    {
+        const ibitset::element_t* data = value.data();
+        unsigned result = make_hash(data[0]);
+
+        for(int index = 1, limit = value.elements_size(); index < limit; ++index)
+        {
+            hash_combine(data[index], result);
+        }
+
+        return result;
+    }
+};
+
+/**
+ * @brief Appends the character representation of the given ibitset to the given ostringstream.
+ *
+ * @ingroup bitset
+ */
+inline ostringstream& operator<<(ostringstream& stream, const ibitset& value)
+{
+    for(int index = 0, limit = value.size(); index < limit; ++index)
+    {
+        stream.append(char(value[index] + '0'));
+    }
+
+    return stream;
+}
 
 }
 

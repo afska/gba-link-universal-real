@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -18,7 +18,7 @@
  *
  * Deep knowledge of GBA hardware is not required, as Butano wraps most of the functionality in its own classes.
  *
- * As always, to understand how the little machine works, <a href="https://www.coranac.com/tonc/text/toc.htm">Tonc</a>
+ * As always, to understand how the little machine works, <a href="https://gbadev.net/tonc/">Tonc</a>
  * and <a href="http://problemkaputt.de/gbatek.htm">GBATEK</a> are your friends.
  *
  * Butano brings multiple examples of most aspects of the engine in `/path/to/butano/examples/`.
@@ -100,7 +100,13 @@
  *
  * See how it looks this undocumented graphic effect.
  *
- * <tr><td> @ref keypad
+ * <tr><td> **HDMA palette**
+ *
+ * @image html examples_hdma_palette.png
+ *
+ * In this example, the background palette is updated with HDMA.
+ *
+ * <td> @ref keypad
  *
  * @image html examples_keypad.png
  *
@@ -112,13 +118,13 @@
  *
  * Multiplayer communication through a link cable.
  *
- * <td> @ref log
+ * <tr><td> @ref log
  *
  * @image html examples_log.png
  *
  * Integration of emulator logging into Butano.
  *
- * <tr><td> **Map collision**
+ * <td> **Map collision**
  *
  * @image html examples_map_collision.png
  *
@@ -130,13 +136,13 @@
  *
  * Basic SNES mode 7 like background example.
  *
- * <td> @ref mosaic
+ * <tr><td> @ref mosaic
  *
  * @image html examples_mosaic.png
  *
  * Sprites and backgrounds mosaic effects.
  *
- * <tr><td> @ref palette
+ * <td> @ref palette
  *
  * @image html examples_palettes.png
  *
@@ -148,19 +154,25 @@
  *
  * Showcases flat polygons rendering with sprites.
  *
- * <td> @ref profiler
+ * <tr><td> @ref profiler
  *
  * @image html examples_profiler.png
  *
  * Basic code blocks profiling.
  *
- * <tr><td> @ref regular_bg
+ * <td> @ref regular_bg
  *
  * @image html examples_regular_bgs.png
  *
  * Shows how to use regular backgrounds with Butano.
  *
- * <td> @ref rumble
+ * <td> @ref random
+ *
+ * @image html examples_random.png
+ *
+ * Simple random number generation example.
+ *
+ * <tr><td> @ref rumble
  *
  * @image html examples_rumble.png
  *
@@ -172,13 +184,13 @@
  *
  * Demonstrates usage of one affine matrix for multiple sprites.
  *
- * <tr><td> @ref sprite
+ * <td> @ref sprite
  *
  * @image html examples_sprites.png
  *
  * Simple sprites examples.
  *
- * <td> @ref sram
+ * <tr><td> @ref sram
  *
  * @image html examples_sram.png
  *
@@ -190,11 +202,17 @@
  *
  * Showcase of Butano sprite text rendering.
  *
- * <tr><td> **Textured polygons**
+ * <td> **Textured polygons**
  *
  * @image html examples_texture_polygons.png
  *
  * Showcases textured polygons rendering with sprites.
+ *
+ * <tr><td> @ref timer
+ *
+ * @image html examples_timer.png
+ *
+ * Simple timer example.
  *
  * <td> @ref window
  *

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -20,8 +20,6 @@ namespace bn
 
 /**
  * @brief Provides a way to calculate elapsed times.
- *
- * One timer tick is equivalent to 64 CPU clock cycles.
  *
  * @ingroup timer
  */
@@ -48,6 +46,11 @@ public:
      * @endcode
      */
     void restart();
+
+    /**
+     * @brief Returns the number of ticks since this timer was built or restarted, restarting its internal state.
+     */
+    [[nodiscard]] int elapsed_ticks_with_restart();
 
 private:
     unsigned _last_ticks;

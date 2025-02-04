@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -32,6 +32,8 @@ class istring : public istring_base
 public:
     using reverse_iterator = bn::reverse_iterator<iterator>; //!< Reverse iterator alias.
     using const_reverse_iterator = bn::reverse_iterator<const_iterator>; //!< Const reverse iterator alias.
+
+    static constexpr size_type npos = -1; //!< Exact meaning depends on context.
 
     /**
      * @brief Copy assignment operator.
@@ -206,27 +208,27 @@ public:
 
     /**
      * @brief Checks if the referenced string begins with the given prefix.
-     * @param other Another string_view.
+     * @param view string_view to check.
      * @return `true` if the referenced string begins with the given prefix; `false` otherwise.
      */
-    [[nodiscard]] constexpr bool starts_with(const string_view& other) const
+    [[nodiscard]] constexpr bool starts_with(const string_view& view) const
     {
-        size_type other_size = other.size();
+        size_type view_size = view.size();
 
-        if(size() < other_size)
+        if(size() < view_size)
         {
             return false;
         }
 
         const_pointer this_data = data();
-        const_pointer other_data = other.data();
+        const_pointer view_data = view.data();
 
-        if(this_data == other_data)
+        if(this_data == view_data)
         {
             return true;
         }
 
-        return equal(this_data, this_data + other_size, other_data);
+        return equal(this_data, this_data + view_size, view_data);
     }
 
     /**
@@ -264,6 +266,8 @@ public:
         return *char_array_ptr == 0;
     }
 
+    [[nodiscard]] constexpr bool starts_with(nullptr_t) const = delete;
+
     /**
      * @brief Checks if the referenced string ends with the given prefix.
      * @param value Single character.
@@ -276,21 +280,156 @@ public:
 
     /**
      * @brief Checks if the referenced string ends with the given prefix.
-     * @param other Another string_view.
+     * @param view string_view to check.
      * @return `true` if the referenced string ends with the given prefix; `false` otherwise.
      */
-    [[nodiscard]] constexpr bool ends_with(const string_view& other) const
+    [[nodiscard]] constexpr bool ends_with(const string_view& view) const
     {
         size_type this_size = size();
-        size_type other_size = other.size();
+        size_type view_size = view.size();
 
-        if(this_size < other_size)
+        if(this_size < view_size)
         {
             return false;
         }
 
-        return equal(_data + this_size - other_size, _data + this_size, other.data());
+        return equal(_data + this_size - view_size, _data + this_size, view.data());
     }
+
+    /**
+     * @brief Checks if the referenced string ends with the given prefix.
+     * @param char_array_ptr Pointer to null-terminated characters array.
+     * @return `true` if the referenced string ends with the given prefix; `false` otherwise.
+     */
+    [[nodiscard]] constexpr bool ends_with(const_pointer char_array_ptr) const
+    {
+        return ends_with(string_view(char_array_ptr));
+    }
+
+    [[nodiscard]] constexpr bool ends_with(nullptr_t) const = delete;
+
+    /**
+     * @brief Checks if the referenced string contains the given character.
+     * @param value Single character.
+     * @return `true` if the referenced string contains the given character; `false` otherwise.
+     */
+    [[nodiscard]] constexpr bool contains(value_type value) const
+    {
+        return find(value) != npos;
+    }
+
+    /**
+     * @brief Checks if the referenced string contains the given substring.
+     * @param view string_view to check.
+     * @return `true` if the referenced string contains the given substring; `false` otherwise.
+     */
+    [[nodiscard]] constexpr bool contains(const string_view& view) const
+    {
+        return find(view) != npos;
+    }
+
+    /**
+     * @brief Checks if the referenced string contains the given substring.
+     * @param char_array_ptr Pointer to null-terminated characters array.
+     * @return `true` if the referenced string contains the given substring; `false` otherwise.
+     */
+    [[nodiscard]] constexpr bool contains(const_pointer char_array_ptr) const
+    {
+        return find(char_array_ptr) != npos;
+    }
+
+    [[nodiscard]] constexpr bool contains(nullptr_t) const = delete;
+
+    /**
+     * @brief Finds the first substring equal to the given character.
+     * @param value Single character.
+     * @return Position of the first character of the found substring, or npos if no such substring is found.
+     */
+    [[nodiscard]] constexpr size_type find(value_type value) const
+    {
+        for(size_type index = 0, limit = size(); index < limit; ++index)
+        {
+            if(_data[index] == value)
+            {
+                return index;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @brief Finds the first substring equal to the given character sequence.
+     * @param view string_view to search.
+     * @return Position of the first character of the found substring, or npos if no such substring is found.
+     */
+    [[nodiscard]] constexpr size_type find(const string_view& view) const
+    {
+        size_type this_size = size();
+        size_type view_size = view.size();
+
+        if(view_size > this_size)
+        {
+            return npos;
+        }
+
+        const_pointer this_data = data();
+        const_pointer view_data = view.data();
+
+        if(this_data == view_data)
+        {
+            return 0;
+        }
+
+        for(size_type index = 0, limit = this_size - view_size; index <= limit; ++index)
+        {
+            if(equal(this_data, this_data + view_size, view_data))
+            {
+                return index;
+            }
+
+            ++this_data;
+        }
+
+        return npos;
+    }
+
+    /**
+     * @brief Finds the first substring equal to the given character sequence.
+     * @param char_array_ptr Pointer to null-terminated characters array.
+     * @return Position of the first character of the found substring, or npos if no such substring is found.
+     */
+    [[nodiscard]] constexpr size_type find(const_pointer char_array_ptr) const
+    {
+        size_type this_size = size();
+        size_type other_size = string_view(char_array_ptr).size();
+
+        if(other_size > this_size)
+        {
+            return npos;
+        }
+
+        const_pointer this_data = data();
+
+        if(this_data == char_array_ptr)
+        {
+            return 0;
+        }
+
+        for(size_type index = 0, limit = this_size - other_size; index <= limit; ++index)
+        {
+            if(equal(this_data, this_data + other_size, char_array_ptr))
+            {
+                return index;
+            }
+
+            ++this_data;
+        }
+
+        return npos;
+    }
+
+    [[nodiscard]] constexpr size_type find(nullptr_t) const = delete;
 
     /**
      * @brief Replaces the contents of the istring.
@@ -300,6 +439,37 @@ public:
     constexpr istring& assign(const istring_base& other)
     {
         _assign(other.data(), other.size());
+        return *this;
+    }
+
+    /**
+     * @brief Replaces the contents of the istring.
+     * @param other istring_base replacement.
+     * @param position Starting character index.
+     * @return Reference to this.
+     */
+    constexpr istring& assign(const istring_base& other, size_type position)
+    {
+        size_type other_size = other.size();
+        BN_ASSERT(position >= 0 && position <= other_size, "Invalid position: ", position, " - ", other_size);
+
+        _assign(other.data() + position, other_size - position);
+        return *this;
+    }
+
+    /**
+     * @brief Replaces the contents of the istring.
+     * @param other istring_base replacement.
+     * @param position Starting character index.
+     * @param count Number of characters to assign.
+     * @return Reference to this.
+     */
+    constexpr istring& assign(const istring_base& other, size_type position, size_type count)
+    {
+        BN_ASSERT(position >= 0 && position <= other.size(), "Invalid position: ", position, " - ", other.size());
+        BN_ASSERT(count >= 0 && count <= other.size() - position, "Invalid count: ", count, " - ", other.size());
+
+        _assign(other.data() + position, count);
         return *this;
     }
 
@@ -325,6 +495,37 @@ public:
     constexpr istring& assign(const string_view& view)
     {
         _assign(view.data(), view.size());
+        return *this;
+    }
+
+    /**
+     * @brief Replaces the contents of the istring.
+     * @param view string_view replacement.
+     * @param position Starting character index.
+     * @return Reference to this.
+     */
+    constexpr istring& assign(const string_view& view, size_type position)
+    {
+        size_type view_size = view.size();
+        BN_ASSERT(position >= 0 && position <= view_size, "Invalid position: ", position, " - ", view_size);
+
+        _assign(view.data() + position, view_size - position);
+        return *this;
+    }
+
+    /**
+     * @brief Replaces the contents of the istring.
+     * @param view string_view replacement.
+     * @param position Starting character index.
+     * @param count Number of characters to assign.
+     * @return Reference to this.
+     */
+    constexpr istring& assign(const string_view& view, size_type position, size_type count)
+    {
+        BN_ASSERT(position >= 0 && position <= view.size(), "Invalid position: ", position, " - ", view.size());
+        BN_ASSERT(count >= 0 && count <= view.size() - position, "Invalid count: ", count, " - ", view.size());
+
+        _assign(view.data() + position, count);
         return *this;
     }
 
@@ -418,6 +619,37 @@ public:
     }
 
     /**
+     * @brief Appends additional characters to the istring.
+     * @param other istring_base to append.
+     * @param position Starting character index.
+     * @return Reference to this.
+     */
+    constexpr istring& append(const istring_base& other, size_type position)
+    {
+        size_type other_size = other.size();
+        BN_ASSERT(position >= 0 && position <= other_size, "Invalid position: ", position, " - ", other_size);
+
+        _append(other.data() + position, other_size - position);
+        return *this;
+    }
+
+    /**
+     * @brief Appends additional characters to the istring.
+     * @param other istring_base to append.
+     * @param position Starting character index.
+     * @param count Number of characters to append.
+     * @return Reference to this.
+     */
+    constexpr istring& append(const istring_base& other, size_type position, size_type count)
+    {
+        BN_ASSERT(position >= 0 && position <= other.size(), "Invalid position: ", position, " - ", other.size());
+        BN_ASSERT(count >= 0 && count <= other.size() - position, "Invalid count: ", count, " - ", other.size());
+
+        _append(other.data() + position, count);
+        return *this;
+    }
+
+    /**
      * @brief Appends an additional character to the istring.
      * @param value Character to append.
      * @return Reference to this.
@@ -436,6 +668,37 @@ public:
     constexpr istring& append(const string_view& view)
     {
         _append(view.data(), view.size());
+        return *this;
+    }
+
+    /**
+     * @brief Appends additional characters to the istring.
+     * @param view string_view to append.
+     * @param position Starting character index.
+     * @return Reference to this.
+     */
+    constexpr istring& append(const string_view& view, size_type position)
+    {
+        size_type view_size = view.size();
+        BN_ASSERT(position >= 0 && position <= view_size, "Invalid position: ", position, " - ", view_size);
+
+        _append(view.data() + position, view_size - position);
+        return *this;
+    }
+
+    /**
+     * @brief Appends additional characters to the istring.
+     * @param view string_view to append.
+     * @param position Starting character index.
+     * @param count Number of characters to append.
+     * @return Reference to this.
+     */
+    constexpr istring& append(const string_view& view, size_type position, size_type count)
+    {
+        BN_ASSERT(position >= 0 && position <= view.size(), "Invalid position: ", position, " - ", view.size());
+        BN_ASSERT(count >= 0 && count <= view.size() - position, "Invalid count: ", count, " - ", view.size());
+
+        _append(view.data() + position, count);
         return *this;
     }
 
@@ -674,6 +937,74 @@ public:
         return *this;
     }
 
+    /**
+     * @brief Equal operator.
+     * @param a istring_base to compare.
+     * @param b char array to compare.
+     * @return `true` if the istring_base is equal to the char array, otherwise `false`.
+     */
+    [[nodiscard]] constexpr friend bool operator==(const istring_base& a, const_pointer b)
+    {
+        const_pointer a_data = a.data();
+
+        if(a_data == b)
+        {
+            return true;
+        }
+
+        BN_BASIC_ASSERT(b, "Null char array ptr");
+
+        return equal(a_data, a_data + a.size() + 1, b);
+    }
+
+    /**
+     * @brief Less than operator.
+     * @param a istring_base to compare.
+     * @param b char array to compare.
+     * @return `true` if the istring_base is lexicographically less than the char array,
+     * otherwise `false`.
+     */
+    [[nodiscard]] constexpr friend bool operator<(const istring_base& a, const_pointer b)
+    {
+        return a < string_view(b);
+    }
+
+    /**
+     * @brief Greater than operator.
+     * @param a istring_base to compare.
+     * @param b char array to compare.
+     * @return `true` if the istring_base is lexicographically greater than the char array,
+     * otherwise `false`.
+     */
+    [[nodiscard]] constexpr friend bool operator>(const istring_base& a, const_pointer b)
+    {
+        return a > string_view(b);
+    }
+
+    /**
+     * @brief Less than or equal operator.
+     * @param a istring_base to compare.
+     * @param b char array to compare.
+     * @return `true` if the istring_base is lexicographically less than or equal to the char array,
+     * otherwise `false`.
+     */
+    [[nodiscard]] constexpr friend bool operator<=(const istring_base& a, const_pointer b)
+    {
+        return a <= string_view(b);
+    }
+
+    /**
+     * @brief Greater than or equal operator.
+     * @param a istring_base to compare.
+     * @param b char array to compare.
+     * @return `true` if the istring_base is lexicographically greater than or equal to the char array,
+     * otherwise `false`.
+     */
+    [[nodiscard]] constexpr friend bool operator>=(const istring_base& a, const_pointer b)
+    {
+        return a >= string_view(b);
+    }
+
 protected:
     /// @cond DO_NOT_DOCUMENT
 
@@ -726,7 +1057,7 @@ public:
     /**
      * @brief Default constructor.
      */
-    constexpr string() :
+    string() :
         istring(_buffer, 0, MaxSize)
     {
         _data[0] = 0;
@@ -736,7 +1067,7 @@ public:
      * @brief Copy constructor.
      * @param other string to copy.
      */
-    constexpr string(const string& other) :
+    string(const string& other) :
         string()
     {
         assign(other);
@@ -746,7 +1077,7 @@ public:
      * @brief Copy constructor.
      * @param other istring_base to copy.
      */
-    constexpr string(const istring_base& other) :
+    string(const istring_base& other) :
         string()
     {
         assign(other);
@@ -754,9 +1085,32 @@ public:
 
     /**
      * @brief Copy constructor.
+     * @param other istring_base to copy.
+     * @param position Starting character index.
+     */
+    string(const istring_base& other, size_type position) :
+        string()
+    {
+        assign(other, position);
+    }
+
+    /**
+     * @brief Copy constructor.
+     * @param other istring_base to copy.
+     * @param position Starting character index.
+     * @param count Number of characters to copy.
+     */
+    string(const istring_base& other, size_type position, size_type count) :
+        string()
+    {
+        assign(other, position, count);
+    }
+
+    /**
+     * @brief Copy constructor.
      * @param view string_view to copy.
      */
-    constexpr string(const string_view& view) :
+    string(const string_view& view) :
         string()
     {
         assign(view);
@@ -766,7 +1120,7 @@ public:
      * @brief Copy constructor.
      * @param char_array_ptr Pointer to null-terminated characters array.
      */
-    constexpr string(const_pointer char_array_ptr) :
+    string(const_pointer char_array_ptr) :
         string()
     {
         assign(char_array_ptr);
@@ -777,7 +1131,7 @@ public:
      * @param char_array_ptr Pointer to characters array.
      * @param char_array_size Characters count of the characters array.
      */
-    constexpr string(const_pointer char_array_ptr, size_type char_array_size) :
+    string(const_pointer char_array_ptr, size_type char_array_size) :
         string()
     {
         assign(char_array_ptr, char_array_size);
@@ -788,7 +1142,7 @@ public:
      * @param count Number of characters to assign.
      * @param value Character to assign.
      */
-    constexpr string(size_type count, value_type value) :
+    string(size_type count, value_type value) :
         string()
     {
         assign(count, value);
@@ -799,18 +1153,20 @@ public:
      * @param first First element of the range.
      * @param last Last element of the range.
      */
-    constexpr string(const_iterator first, const_iterator last) :
+    string(const_iterator first, const_iterator last) :
         string()
     {
         assign(first, last);
     }
+
+    string(nullptr_t) = delete;
 
     /**
      * @brief Copy assignment operator.
      * @param other string to copy.
      * @return Reference to this.
      */
-    constexpr string& operator=(const string& other)
+    string& operator=(const string& other)
     {
         assign(other);
         return *this;
@@ -821,7 +1177,7 @@ public:
      * @param other istring_base to copy.
      * @return Reference to this.
      */
-    constexpr string& operator=(const istring_base& other)
+    string& operator=(const istring_base& other)
     {
         assign(other);
         return *this;
@@ -832,7 +1188,7 @@ public:
      * @param view string_view to copy.
      * @return Reference to this.
      */
-    constexpr string& operator=(const string_view& view)
+    string& operator=(const string_view& view)
     {
         assign(view);
         return *this;
@@ -843,10 +1199,57 @@ public:
      * @param char_array_ptr Pointer to null-terminated characters array.
      * @return Reference to this.
      */
-    constexpr string& operator=(const_pointer char_array_ptr)
+    string& operator=(const_pointer char_array_ptr)
     {
         assign(char_array_ptr);
         return *this;
+    }
+
+    string& operator=(nullptr_t) = delete;
+
+    /**
+     * @brief Returns a copy of this.
+     */
+    [[nodiscard]] string substr() const
+    {
+        return *this;
+    }
+
+    /**
+     * @brief Returns the substring [position, size() - position).
+     */
+    [[nodiscard]] string substr(size_type position) const
+    {
+        BN_ASSERT(position >= 0, "Invalid position: ", position);
+
+        size_type this_size = size();
+        string result;
+
+        if(position < this_size)
+        {
+            result.assign(_buffer + position, this_size - position);
+        }
+
+        return result;
+    }
+
+    /**
+     * @brief Returns the substring [position, position + count).
+     */
+    [[nodiscard]] string substr(size_type position, size_type count) const
+    {
+        BN_ASSERT(position >= 0, "Invalid position: ", position);
+        BN_ASSERT(count >= 0, "Invalid count: ", count);
+
+        size_type this_size = size();
+        string result;
+
+        if(position < this_size)
+        {
+            result.assign(_buffer + position, min(count, this_size - position));
+        }
+
+        return result;
     }
 
     /**
@@ -855,7 +1258,7 @@ public:
      * @param b Second istring_base to concatenate.
      * @return string containing characters from a followed by the characters from b.
      */
-    [[nodiscard]] constexpr friend string operator+(const string& a, const istring_base& b)
+    [[nodiscard]] friend string operator+(const string& a, const istring_base& b)
     {
         string result = a;
         result.append(b);
@@ -868,7 +1271,7 @@ public:
      * @param b Second character to concatenate.
      * @return string containing characters from a followed by b.
      */
-    [[nodiscard]] constexpr friend string operator+(const string& a, value_type b)
+    [[nodiscard]] friend string operator+(const string& a, value_type b)
     {
         string result = a;
         result.append(b);
@@ -881,7 +1284,7 @@ public:
      * @param b Second string_view to concatenate.
      * @return string containing characters from a followed by the characters from b.
      */
-    [[nodiscard]] constexpr friend string operator+(const string& a, const string_view& b)
+    [[nodiscard]] friend string operator+(const string& a, const string_view& b)
     {
         string result = a;
         result.append(b);
@@ -894,7 +1297,7 @@ public:
      * @param b Second pointer to null-terminated characters array to concatenate.
      * @return string containing characters from a followed by the characters from b.
      */
-    [[nodiscard]] constexpr friend string operator+(const string& a, const_pointer b)
+    [[nodiscard]] friend string operator+(const string& a, const_pointer b)
     {
         string result = a;
         result.append(b);
@@ -902,7 +1305,7 @@ public:
     }
 
 private:
-    alignas(int) char _buffer[MaxSize + 1];
+    alignas(int) value_type _buffer[MaxSize + 1];
 };
 
 
@@ -914,7 +1317,7 @@ private:
  * @ingroup string
  */
 template<int MaxSize>
-[[nodiscard]] constexpr string<MaxSize - 1> make_string(const char (&char_array)[MaxSize])
+[[nodiscard]] string<MaxSize - 1> make_string(const char (&char_array)[MaxSize])
 {
     return string<MaxSize - 1>(char_array, MaxSize - 1);
 }
@@ -970,7 +1373,7 @@ struct hash<string<MaxSize>>
     /**
      * @brief Returns the hash of the given string.
      */
-    [[nodiscard]] constexpr unsigned operator()(const string<MaxSize>& value) const
+    [[nodiscard]] unsigned operator()(const string<MaxSize>& value) const
     {
         return hash<istring_base>()(value);
     }

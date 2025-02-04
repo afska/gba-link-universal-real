@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -139,6 +139,13 @@ public:
      * @param palette_item sprite_palette_item which references the colors to copy to this palette.
      */
     void set_colors(const sprite_palette_item& palette_item);
+
+    /**
+     * @brief Sets a single color in this palette.
+     * @param color_index Index of the color to set in the palette.
+     * @param color New color to set.
+     */
+    void set_color(int color_index, color color);
 
     /**
      * @brief Returns the bits per pixel of this palette.

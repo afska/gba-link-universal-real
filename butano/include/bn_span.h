@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -409,17 +409,6 @@ public:
         }
 
         return equal(a_data, a_data + a_size, b_data);
-    }
-
-    /**
-     * @brief Not equal operator.
-     * @param a First span to compare.
-     * @param b Second span to compare.
-     * @return `true` if the first span is not equal to the second one, otherwise `false`.
-     */
-    [[nodiscard]] constexpr friend bool operator!=(const span& a, const span& b)
-    {
-        return ! (a == b);
     }
 
     /**

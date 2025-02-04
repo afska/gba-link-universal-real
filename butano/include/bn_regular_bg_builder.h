@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -14,6 +14,7 @@
  */
 
 #include "bn_camera_ptr.h"
+#include "bn_green_swap_mode.h"
 #include "bn_regular_bg_item.h"
 #include "bn_regular_bg_map_ptr.h"
 
@@ -162,6 +163,57 @@ public:
     }
 
     /**
+     * @brief Returns the horizontal top-left position of the regular backgrounds to generate
+     * (relative to their camera, if they are going to have one).
+     */
+    [[nodiscard]] fixed top_left_x() const;
+
+    /**
+     * @brief Sets the horizontal top-left position of the regular backgrounds to generate
+     * (relative to their camera, if they are going to have one).
+     * @param top_left_x Horizontal top-left position of the regular backgrounds to generate.
+     * @return Reference to this.
+     */
+    regular_bg_builder& set_top_left_x(fixed top_left_x);
+
+    /**
+     * @brief Returns the vertical top-left position of the regular backgrounds to generate
+     * (relative to their camera, if they are going to have one).
+     */
+    [[nodiscard]] fixed top_left_y() const;
+
+    /**
+     * @brief Sets the vertical top-left position of the regular backgrounds to generate
+     * (relative to their camera, if they are going to have one).
+     * @param top_left_y Vertical top-left position of the regular backgrounds to generate.
+     * @return Reference to this.
+     */
+    regular_bg_builder& set_top_left_y(fixed top_left_y);
+
+    /**
+     * @brief Returns the top-left position of the regular backgrounds to generate
+     * (relative to their camera, if they are going to have one).
+     */
+    [[nodiscard]] fixed_point top_left_position() const;
+
+    /**
+     * @brief Sets the top-left position of the regular backgrounds to generate
+     * (relative to their camera, if they are going to have one).
+     * @param top_left_x Horizontal top-left position of the regular backgrounds to generate.
+     * @param top_left_y Vertical top-left position of the regular backgrounds to generate.
+     * @return Reference to this.
+     */
+    regular_bg_builder& set_top_left_position(fixed top_left_x, fixed top_left_y);
+
+    /**
+     * @brief Sets the top-left position of the regular backgrounds to generate
+     * (relative to their camera, if they are going to have one).
+     * @param top_left_position Top-left position of the regular backgrounds to generate.
+     * @return Reference to this.
+     */
+    regular_bg_builder& set_top_left_position(const fixed_point& top_left_position);
+
+    /**
      * @brief Returns the priority of the regular backgrounds to generate relative to sprites and other backgrounds.
      *
      * Backgrounds with higher priority are drawn first
@@ -292,6 +344,25 @@ public:
     }
 
     /**
+     * @brief Indicates how the regular backgrounds to generate must be displayed when green swap is enabled.
+     */
+    [[nodiscard]] bn::green_swap_mode green_swap_mode() const
+    {
+        return _green_swap_mode;
+    }
+
+    /**
+     * @brief Sets how the regular backgrounds to generate must be displayed when green swap is enabled.
+     * @param green_swap_mode Green swap mode.
+     * @return Reference to this.
+     */
+    regular_bg_builder& set_green_swap_mode(bn::green_swap_mode green_swap_mode)
+    {
+        _green_swap_mode = green_swap_mode;
+        return *this;
+    }
+
+    /**
      * @brief Indicates if the regular backgrounds to generate must be committed to the GBA or not.
      */
     [[nodiscard]] bool visible() const
@@ -375,10 +446,7 @@ public:
     /**
      * @brief Releases and returns the camera_ptr to attach to the regular backgrounds to generate (if any).
      */
-    [[nodiscard]] optional<camera_ptr> release_camera()
-    {
-        return move(_camera);
-    }
+    [[nodiscard]] optional<camera_ptr> release_camera();
 
     /**
      * @brief Generates and returns a regular_bg_ptr without releasing the acquired resources.
@@ -388,7 +456,7 @@ public:
     /**
      * @brief Generates and returns a regular_bg_ptr releasing the acquired resources.
      *
-     * This method must be called once at most.
+     * regular_bg_ptr generation after calling this method may stop working.
      */
     [[nodiscard]] regular_bg_ptr release_build();
 
@@ -402,7 +470,7 @@ public:
      * @brief Generates and returns a regular_bg_ptr releasing the acquired resources if it could be allocated;
      * bn::nullopt otherwise.
      *
-     * This method must be called once at most.
+     * regular_bg_ptr generation after calling this method may stop working.
      */
     [[nodiscard]] optional<regular_bg_ptr> release_build_optional();
 
@@ -420,7 +488,7 @@ public:
     /**
      * @brief Generates and returns a regular_bg_map_ptr releasing the acquired resources.
      *
-     * This method must be called once at most.
+     * regular_bg_ptr generation after calling this method may stop working.
      */
     [[nodiscard]] regular_bg_map_ptr release_map();
 
@@ -428,7 +496,7 @@ public:
      * @brief Generates and returns a regular_bg_map_ptr releasing the acquired resources
      * if it could be allocated; bn::nullopt otherwise.
      *
-     * This method must be called once at most.
+     * regular_bg_ptr generation after calling this method may stop working.
      */
     [[nodiscard]] optional<regular_bg_map_ptr> release_map_optional();
 
@@ -436,14 +504,17 @@ private:
     optional<regular_bg_item> _item;
     fixed_point _position;
     int _map_index = 0;
-    int _priority = 3;
     int _z_order = 0;
     optional<regular_bg_map_ptr> _map;
     optional<camera_ptr> _camera;
+    bn::green_swap_mode _green_swap_mode = green_swap_mode::DEFAULT;
+    uint8_t _priority = 3;
     bool _mosaic_enabled = false;
     bool _blending_top_enabled = false;
     bool _blending_bottom_enabled = true;
     bool _visible = true;
+
+    [[nodiscard]] size _dimensions() const;
 };
 
 }

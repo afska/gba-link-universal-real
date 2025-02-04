@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -86,6 +86,8 @@ namespace bn::display_manager
     [[nodiscard]] fixed blending_intensity_alpha();
 
     void set_blending_intensity_alpha(fixed intensity_alpha);
+
+    void set_blending_transparency_and_intensity_alpha(fixed transparency_alpha, fixed intensity_alpha);
 
     [[nodiscard]] fixed blending_transparency_top_weight();
 

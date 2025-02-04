@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -38,7 +38,7 @@ namespace
 
 best_fit_allocator::~best_fit_allocator() noexcept
 {
-    BN_BASIC_ASSERT(empty(), "Allocator is not empty");
+    BN_BASIC_ASSERT(_skip_empty_check_on_destructor || empty(), "Allocator is not empty");
 }
 
 void* best_fit_allocator::alloc(size_type bytes)

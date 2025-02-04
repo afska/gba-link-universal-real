@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -28,6 +28,14 @@ namespace bn::timers
     [[nodiscard]] constexpr int ticks_per_frame()
     {
         return hw::timers::ticks_per_frame();
+    }
+
+    /**
+     * @brief Returns the number of ticks elapsed in a second.
+     */
+    [[nodiscard]] constexpr int ticks_per_second()
+    {
+        return hw::timers::ticks_per_second();
     }
 
     /**

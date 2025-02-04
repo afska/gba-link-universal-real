@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -18,7 +18,7 @@ class regular_bg_vertical_position_hbe_handler
 public:
     static void setup_target(intptr_t, void* target_last_value)
     {
-        new(target_last_value) int(0);
+        ::new(static_cast<void*>(target_last_value)) int(0);
     }
 
     [[nodiscard]] static bool target_visible(intptr_t target_id)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -29,7 +29,8 @@
  * so you don't have to test in real hardware each change you make in your project.
  *
  * For developing GBA games, <a href="https://mgba.io">mGBA</a>,
- * <a href="https://github.com/nba-emu/NanoBoyAdvance">NanoBoyAdvance</a> and the debug version of
+ * <a href="https://github.com/nba-emu/NanoBoyAdvance">NanoBoyAdvance</a>,
+ * <a href="https://github.com/SourMesen/Mesen2">Mesen</a> and the debug version of
  * <a href="https://problemkaputt.de/gba.htm">No$gba</a> are recommended.
  *
  *
@@ -45,7 +46,8 @@
  *   * To build a devkitARM example, open the system console, `cd` to the folder of the example you want to build
  *     and type `make -j8` if your CPU has 8 cores, `make -j16` if it has 16 and so on.
  *   * In particular, you should build and run the Maxmod example located in
- *     `/path/to/devkitpro/examples/gba/audio/maxmod` before going on.
+ *     `/path/to/devkitpro/examples/gba/audio/maxmod` before going on. Maybe you're going to need
+ *     to copy the example folder to another place to avoid having permission issues when building it.
  *
  * @image html devkitpro.png
  *

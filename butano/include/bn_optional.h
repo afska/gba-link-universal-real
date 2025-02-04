@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -554,14 +554,6 @@ public:
     }
 
     /**
-     * @brief Not equal operator.
-     */
-    [[nodiscard]] constexpr friend bool operator!=(const optional& a, const optional& b)
-    {
-        return ! (a == b);
-    }
-
-    /**
      * @brief Less than operator.
      */
     [[nodiscard]] constexpr friend bool operator<(const optional& a, const optional& b)
@@ -658,15 +650,6 @@ public:
     [[nodiscard]] constexpr friend bool operator==(const optional& a, const OtherType& b)
     {
         return a._valid ? a._value == b : false;
-    }
-
-    /**
-     * @brief Not equal operator.
-     */
-    template<typename OtherType>
-    [[nodiscard]] constexpr friend bool operator!=(const optional& a, const OtherType& b)
-    {
-        return ! (a == b);
     }
 
     /**

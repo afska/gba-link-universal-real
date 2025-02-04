@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -71,10 +71,13 @@ public:
         using size_type = ilist::size_type; //!< Size type alias.
         using difference_type = ilist::difference_type; //!< Difference type alias.
         using reference = ilist::reference; //!< Reference alias.
-        using const_reference = ilist::const_reference; //!< Const reference alias.
         using pointer = ilist::pointer; //!< Pointer alias.
-        using const_pointer = ilist::const_pointer; //!< Const pointer alias.
         using iterator_category = bidirectional_iterator_tag; //!< Iterator category alias.
+
+        /**
+         * @brief Default constructor.
+         */
+        iterator() = default;
 
         /**
          * @brief Increments the position.
@@ -84,6 +87,17 @@ public:
         {
             _node = _node->next;
             return *this;
+        }
+
+        /**
+         * @brief Increments the position.
+         * @return The iterator before being incremented.
+         */
+        iterator operator++(int)
+        {
+            iterator copy(*this);
+            _node = _node->next;
+            return copy;
         }
 
         /**
@@ -97,33 +111,28 @@ public:
         }
 
         /**
-         * @brief Returns a const reference to the pointed value.
+         * @brief Decrements the position.
+         * @return The iterator before being decremented.
          */
-        [[nodiscard]] const_reference operator*() const
+        iterator operator--(int)
         {
-            return static_cast<const value_node_type*>(_node)->value;
+            iterator copy(*this);
+            _node = _node->prev;
+            return copy;
         }
 
         /**
          * @brief Returns a reference to the pointed value.
          */
-        [[nodiscard]] reference operator*()
+        [[nodiscard]] reference operator*() const
         {
             return static_cast<value_node_type*>(_node)->value;
         }
 
         /**
-         * @brief Returns a const pointer to the pointed value.
-         */
-        const_pointer operator->() const
-        {
-            return &static_cast<const value_node_type*>(_node)->value;
-        }
-
-        /**
          * @brief Returns a pointer to the pointed value.
          */
-        pointer operator->()
+        pointer operator->() const
         {
             return &static_cast<value_node_type*>(_node)->value;
         }
@@ -153,17 +162,19 @@ public:
 
     public:
         using value_type = ilist::value_type; //!< Value type alias.
-
         using size_type = ilist::size_type; //!< Size type alias.
         using difference_type = ilist::difference_type; //!< Difference type alias.
-        using reference = ilist::reference; //!< Reference type alias.
-        using const_reference = ilist::const_reference; //!< Const reference alias.
-        using pointer = ilist::pointer; //!< Pointer alias.
-        using const_pointer = ilist::const_pointer; //!< Const pointer alias.
+        using reference = ilist::const_reference; //!< Reference type alias.
+        using pointer = ilist::const_pointer; //!< Pointer alias.
         using iterator_category = bidirectional_iterator_tag; //!< Iterator category alias.
 
         /**
-         * @brief Public constructor.
+         * @brief Default constructor.
+         */
+        const_iterator() = default;
+
+        /**
+         * @brief Constructor.
          * @param it Non const iterator.
          */
         const_iterator(iterator it) :
@@ -182,6 +193,17 @@ public:
         }
 
         /**
+         * @brief Increments the position.
+         * @return The iterator before being incremented.
+         */
+        const_iterator operator++(int)
+        {
+            const_iterator copy(*this);
+            _node = _node->next;
+            return copy;
+        }
+
+        /**
          * @brief Decrements the position.
          * @return Reference to this.
          */
@@ -189,6 +211,17 @@ public:
         {
             _node = _node->prev;
             return *this;
+        }
+
+        /**
+         * @brief Decrements the position.
+         * @return The iterator before being decremented.
+         */
+        const_iterator operator--(int)
+        {
+            const_iterator copy(*this);
+            _node = _node->prev;
+            return copy;
         }
 
         /**
@@ -804,17 +837,6 @@ public:
         }
 
         return equal(a.begin(), a.end(), b.begin());
-    }
-
-    /**
-     * @brief Not equal operator.
-     * @param a First ilist to compare.
-     * @param b Second ilist to compare.
-     * @return `true` if the first ilist is not equal to the second one, otherwise `false`.
-     */
-    [[nodiscard]] friend bool operator!=(const ilist& a, const ilist& b)
-    {
-        return ! (a == b);
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -40,12 +40,12 @@ public:
     };
 
     /**
-     * @brief Default class constructor.
+     * @brief Default constructor.
      */
     constexpr utf8_characters_map_ref() = default;
 
     /**
-     * @brief Class constructor.
+     * @brief Constructor.
      * @param items_ref Reference to a list of map items.
      *
      * Map items are not copied but referenced, so they should outlive the utf8_characters_map_ref
@@ -60,7 +60,7 @@ public:
         _characters_count(characters_count)
     {
         BN_ASSERT(power_of_two(items_count), "Items count must be a power of two: ", items_count);
-        BN_ASSERT(characters_count > 0 && characters_count <= items_count,
+        BN_ASSERT(characters_count >= 0 && characters_count <= items_count,
                   "Invalid characters count: ", characters_count, " - ", items_count);
     }
 

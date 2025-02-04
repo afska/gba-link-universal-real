@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -31,6 +31,16 @@ affine_bg_item affine_bg_item::decompress(
     return decompress(decompressed_tiles_ref, decompressed_colors_ref, decompressed_cells_span);
 }
 
+affine_bg_ptr affine_bg_item::create_bg() const
+{
+    return affine_bg_ptr::create(*this);
+}
+
+affine_bg_ptr affine_bg_item::create_bg(int map_index) const
+{
+    return affine_bg_ptr::create(*this, map_index);
+}
+
 affine_bg_ptr affine_bg_item::create_bg(fixed x, fixed y) const
 {
     return affine_bg_ptr::create(x, y, *this);
@@ -49,6 +59,16 @@ affine_bg_ptr affine_bg_item::create_bg(const fixed_point& position) const
 affine_bg_ptr affine_bg_item::create_bg(const fixed_point& position, int map_index) const
 {
     return affine_bg_ptr::create(position, *this, map_index);
+}
+
+optional<affine_bg_ptr> affine_bg_item::create_bg_optional() const
+{
+    return affine_bg_ptr::create_optional(*this);
+}
+
+optional<affine_bg_ptr> affine_bg_item::create_bg_optional(int map_index) const
+{
+    return affine_bg_ptr::create_optional(*this, map_index);
 }
 
 optional<affine_bg_ptr> affine_bg_item::create_bg_optional(fixed x, fixed y) const
@@ -93,12 +113,12 @@ affine_bg_map_ptr affine_bg_item::create_map(int map_index) const
 
 affine_bg_map_ptr affine_bg_item::create_new_map() const
 {
-    return affine_bg_map_ptr::create_new(*this);
+    return create_map();
 }
 
 affine_bg_map_ptr affine_bg_item::create_new_map(int map_index) const
 {
-    return affine_bg_map_ptr::create_new(*this, map_index);
+    return create_map(map_index);
 }
 
 optional<affine_bg_map_ptr> affine_bg_item::create_map_optional() const
@@ -113,12 +133,12 @@ optional<affine_bg_map_ptr> affine_bg_item::create_map_optional(int map_index) c
 
 optional<affine_bg_map_ptr> affine_bg_item::create_new_map_optional() const
 {
-    return affine_bg_map_ptr::create_new_optional(*this);
+    return create_map_optional();
 }
 
 optional<affine_bg_map_ptr> affine_bg_item::create_new_map_optional(int map_index) const
 {
-    return affine_bg_map_ptr::create_new_optional(*this, map_index);
+    return create_map_optional(map_index);
 }
 
 }

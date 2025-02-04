@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -33,7 +33,7 @@ void _check_items_on_screen(intrusive_list<sorted_sprites::layer>& layers)
                     }
                 }
 
-                if(item.on_screen != on_screen) [[unlikely]]
+                if(item.on_screen != on_screen)
                 {
                     item.on_screen = on_screen;
 

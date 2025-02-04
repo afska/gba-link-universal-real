@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -46,6 +46,8 @@ public:
     using reverse_iterator = bn::reverse_iterator<iterator>; //!< Reverse iterator alias.
     using const_reverse_iterator = bn::reverse_iterator<const_iterator>; //!< Const reverse iterator alias.
 
+    static constexpr size_type npos = -1; //!< Exact meaning depends on context.
+
     /**
      * @brief Default constructor.
      */
@@ -66,16 +68,16 @@ public:
      * @param char_array_ptr Pointer to null-terminated characters array.
      */
     constexpr string_view(const_pointer char_array_ptr) :
-        _begin(char_array_ptr),
-        _end(char_array_ptr)
+        _begin(char_array_ptr)
     {
-        if(char_array_ptr)
+        BN_BASIC_ASSERT(char_array_ptr, "Null char array ptr");
+
+        while(*char_array_ptr)
         {
-            while(*char_array_ptr++)
-            {
-                ++_end;
-            }
+            ++char_array_ptr;
         }
+
+        _end = char_array_ptr;
     }
 
     /**
@@ -84,11 +86,15 @@ public:
      * @param char_array_size Characters count of the characters array.
      */
     constexpr string_view(const_pointer char_array_ptr, size_type char_array_size) :
-        _begin(char_array_ptr),
-        _end(char_array_ptr + char_array_size)
+        _begin(char_array_ptr)
     {
+        BN_BASIC_ASSERT(char_array_ptr, "Null char array ptr");
         BN_ASSERT(char_array_size >= 0, "Invalid char array size: ", char_array_size);
+
+        _end = char_array_ptr + char_array_size;
     }
+
+    constexpr string_view(nullptr_t) = delete;
 
     /**
      * @brief Returns a const reference to the first character.
@@ -245,12 +251,12 @@ public:
     {
         BN_ASSERT(position >= 0, "Invalid position: ", position);
 
-        size_type sz = size();
+        size_type this_size = size();
         string_view view;
 
-        if(position < sz)
+        if(position < this_size)
         {
-            view = string_view(_begin + position, sz - position);
+            view = string_view(_begin + position, this_size - position);
         }
 
         return view;
@@ -261,39 +267,38 @@ public:
      */
     [[nodiscard]] constexpr string_view substr(size_type position, size_type count) const
     {
-        BN_ASSERT(count >= 0, "Invalid count: ", count);
         BN_ASSERT(position >= 0, "Invalid position: ", position);
+        BN_ASSERT(count >= 0, "Invalid count: ", count);
 
-        size_type sz = size();
+        size_type this_size = size();
         string_view view;
 
-        if(position < sz)
+        if(position < this_size)
         {
-            size_type n = min(count, sz - position);
-            view = string_view(_begin + position, n);
+            view = string_view(_begin + position, min(count, this_size - position));
         }
 
         return view;
     }
 
     /**
-     * @brief Shrinks the string_view by moving its start forward by n characters.
+     * @brief Shrinks the string_view by moving its start forward by count characters.
      */
-    constexpr void remove_prefix(size_type n)
+    constexpr void remove_prefix(size_type count)
     {
-        BN_ASSERT(n <= size(), "Invalid n: ", n, " - ", size());
+        BN_ASSERT(count >= 0 && count <= size(), "Invalid count: ", count, " - ", size());
 
-        _begin += n;
+        _begin += count;
     }
 
     /**
-     * @brief Shrinks the string_view by moving its end backward by n characters.
+     * @brief Shrinks the string_view by moving its end backward by count characters.
      */
-    constexpr void remove_suffix(size_type n)
+    constexpr void remove_suffix(size_type count)
     {
-        BN_ASSERT(n <= size(), "Invalid n: ", n, " - ", size());
+        BN_ASSERT(count >= 0 && count <= size(), "Invalid count: ", count, " - ", size());
 
-        _end -= n;
+        _end -= count;
     }
 
     /**
@@ -338,10 +343,7 @@ public:
      */
     [[nodiscard]] constexpr bool starts_with(const_pointer char_array_ptr) const
     {
-        if(! char_array_ptr)
-        {
-            return true;
-        }
+        BN_BASIC_ASSERT(char_array_ptr, "Null char array ptr");
 
         const_pointer this_char_array_ptr = _begin;
 
@@ -371,6 +373,8 @@ public:
         return *char_array_ptr == 0;
     }
 
+    [[nodiscard]] constexpr bool starts_with(nullptr_t) const = delete;
+
     /**
      * @brief Checks if the referenced string ends with the given prefix.
      * @param value Single character.
@@ -398,6 +402,116 @@ public:
 
         return equal(_begin + this_size - other_size, _end, other._begin);
     }
+
+    /**
+     * @brief Checks if the referenced string ends with the given prefix.
+     * @param char_array_ptr Pointer to null-terminated characters array.
+     * @return `true` if the referenced string ends with the given prefix; `false` otherwise.
+     */
+    [[nodiscard]] constexpr bool ends_with(const_pointer char_array_ptr) const
+    {
+        return ends_with(string_view(char_array_ptr));
+    }
+
+    [[nodiscard]] constexpr bool ends_with(nullptr_t) const = delete;
+
+    /**
+     * @brief Checks if the referenced string contains the given character.
+     * @param value Single character.
+     * @return `true` if the referenced string contains the given character; `false` otherwise.
+     */
+    [[nodiscard]] constexpr bool contains(value_type value) const
+    {
+        return find(value) != npos;
+    }
+
+    /**
+     * @brief Checks if the referenced string contains the given substring.
+     * @param other Another string_view.
+     * @return `true` if the referenced string contains the given substring; `false` otherwise.
+     */
+    [[nodiscard]] constexpr bool contains(const string_view& other) const
+    {
+        return find(other) != npos;
+    }
+
+    /**
+     * @brief Checks if the referenced string contains the given substring.
+     * @param char_array_ptr Pointer to null-terminated characters array.
+     * @return `true` if the referenced string contains the given substring; `false` otherwise.
+     */
+    [[nodiscard]] constexpr bool contains(const_pointer char_array_ptr) const
+    {
+        return find(char_array_ptr) != npos;
+    }
+
+    [[nodiscard]] constexpr bool contains(nullptr_t) const = delete;
+
+    /**
+     * @brief Finds the first substring equal to the given character.
+     * @param value Single character.
+     * @return Position of the first character of the found substring, or npos if no such substring is found.
+     */
+    [[nodiscard]] constexpr size_type find(value_type value) const
+    {
+        for(size_type index = 0, limit = size(); index < limit; ++index)
+        {
+            if(_begin[index] == value)
+            {
+                return index;
+            }
+        }
+
+        return npos;
+    }
+
+    /**
+     * @brief Finds the first substring equal to the given character sequence.
+     * @param other Another string_view.
+     * @return Position of the first character of the found substring, or npos if no such substring is found.
+     */
+    [[nodiscard]] constexpr size_type find(const string_view& other) const
+    {
+        size_type this_size = size();
+        size_type other_size = other.size();
+
+        if(other_size > this_size)
+        {
+            return npos;
+        }
+
+        const_pointer this_data = data();
+        const_pointer other_data = other.data();
+
+        if(this_data == other_data)
+        {
+            return 0;
+        }
+
+        for(size_type index = 0, limit = this_size - other_size; index <= limit; ++index)
+        {
+            if(equal(this_data, this_data + other_size, other_data))
+            {
+                return index;
+            }
+
+            ++this_data;
+        }
+
+        return npos;
+    }
+
+    /**
+     * @brief Finds the first substring equal to the given character sequence.
+     * @param char_array_ptr Pointer to null-terminated characters array.
+     * @return Position of the first character of the found substring, or npos if no such substring is found.
+     */
+    [[nodiscard]] constexpr size_type find(const_pointer char_array_ptr) const
+    {
+        return find(string_view(char_array_ptr));
+    }
+
+    [[nodiscard]] constexpr size_type find(nullptr_t) const = delete;
 
     /**
      * @brief Exchanges the contents of this string_view with those of the other one.
@@ -443,17 +557,6 @@ public:
         }
 
         return equal(a_data, a_data + a_size, b_data);
-    }
-
-    /**
-     * @brief Not equal operator.
-     * @param a First string_view to compare.
-     * @param b Second string_view to compare.
-     * @return `true` if the first string_view is not equal to the second one, otherwise `false`.
-     */
-    [[nodiscard]] constexpr friend bool operator!=(const string_view& a, const string_view& b)
-    {
-        return ! (a == b);
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -22,6 +22,8 @@ namespace bn
 
 namespace
 {
+    constexpr int hash_colors = 6;
+
     void copy_colors(const color* source, int count, color* destination)
     {
         auto int_source = reinterpret_cast<const unsigned*>(source);
@@ -32,6 +34,8 @@ namespace
 
 uint16_t palettes_bank::colors_hash(const span<const color>& colors)
 {
+    static_assert(hash_colors == 6);
+
     const color* colors_data = colors.data();
     BN_ASSERT(aligned<4>(colors_data), "Colors are not aligned");
 
@@ -170,11 +174,11 @@ int palettes_bank::create_bpp_4(const span<const color>& colors, uint16_t hash, 
             log_status();
 
             BN_ERROR("BPP4 palette create failed. Colors count: ", colors_count,
-                     "\n\nThere's no more available colors.",
+                     "\n\nThere are no more available colors.",
                      "\nPalettes manager status has been logged.");
         #else
             BN_ERROR("BPP4 palette create failed. Colors count: ", colors_count,
-                     "\n\nThere's no more available colors.");
+                     "\n\nThere are no more available colors.");
         #endif
     }
 
@@ -259,11 +263,11 @@ int palettes_bank::create_bpp_8(const span<const color>& colors, compression_typ
             log_status();
 
             BN_ERROR("BPP8 palette create failed. Colors count: ", colors_count,
-                     "\n\nThere's no more available colors.",
+                     "\n\nThere are no more available colors.",
                      "\nPalettes manager status has been logged.");
         #else
             BN_ERROR("BPP8 palette create failed. Colors count: ", colors_count,
-                     "\n\nThere's no more available colors.");
+                     "\n\nThere are no more available colors.");
         #endif
     }
 
@@ -283,14 +287,14 @@ void palettes_bank::decrease_usages(int id)
 
     if(! pal.usages) [[unlikely]]
     {
-        for(int slot = 0, slots_count = pal.slots_count; slot < slots_count; ++slot)
+        for(int slot = pal.slots_count - 1; slot >= 0; --slot)
         {
             _palettes[id + slot].locked = false;
         }
 
         if(! pal.bpp_8)
         {
-            _bpp_4_indexes_map.erase(pal.hash);
+            _erase_bpp_4_indexes_map_index(pal.hash);
         }
 
         pal = palette();
@@ -313,7 +317,7 @@ span<const color> palettes_bank::colors(int id) const
 void palettes_bank::set_colors(int id, const span<const color>& colors)
 {
     BN_BASIC_ASSERT(colors.size() == colors_count(id),
-                    "Colors count mismatch: ", colors.size(), " - ", colors_count(id));
+                    "Different colors count: ", colors.size(), " - ", colors_count(id));
 
     palette& pal = _palettes[id];
 
@@ -328,13 +332,44 @@ void palettes_bank::set_colors(int id, const span<const color>& colors)
 
         if(old_hash != new_hash)
         {
-            _bpp_4_indexes_map.erase(old_hash);
+            _erase_bpp_4_indexes_map_index(old_hash);
             _bpp_4_indexes_map.insert_or_assign(new_hash, int16_t(id));
             pal.hash = new_hash;
         }
     }
 
     _set_colors_bpp_impl(id, colors);
+}
+
+void palettes_bank::set_color(int id, int color_index, color color)
+{
+    palette& pal = _palettes[id];
+    int colors_per_palette = hw::palettes::colors_per_palette();
+    int colors_count = colors_per_palette * pal.slots_count;
+    BN_ASSERT(color_index >= 0 && color_index < colors_count,
+              "Invalid color index: ", color_index, " - ", colors_count);
+
+    bn::color* colors_data = _initial_colors + (id * colors_per_palette);
+
+    if(color != colors_data[color_index])
+    {
+        colors_data[color_index] = color;
+        pal.update = true;
+        _update = true;
+
+        if(! pal.bpp_8 && color_index < hash_colors)
+        {
+            uint16_t old_hash = pal.hash;
+            uint16_t new_hash = colors_hash(span<const bn::color>(colors_data, colors_count));
+
+            if(old_hash != new_hash)
+            {
+                _erase_bpp_4_indexes_map_index(old_hash);
+                _bpp_4_indexes_map.insert_or_assign(new_hash, int16_t(id));
+                pal.hash = new_hash;
+            }
+        }
+    }
 }
 
 void palettes_bank::set_inverted(int id, bool inverted)
@@ -791,7 +826,7 @@ void palettes_bank::_update_palette(int id)
     copy_colors(initial_pal_colors_ptr, pal_colors_count, final_pal_colors_ptr);
     pal.apply_effects(pal_colors_count, final_pal_colors_ptr);
 
-    if(int rotate_count = pal.rotate_count)
+    if(int rotate_count = pal.rotate_count) [[unlikely]]
     {
         auto unsigned_final_pal_colors_ptr = reinterpret_cast<const unsigned*>(final_pal_colors_ptr);
         unsigned unsigned_temp_buffer[hw::palettes::colors() / 2];

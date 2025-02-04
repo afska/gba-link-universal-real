@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -28,7 +28,8 @@
  * so you don't have to test in real hardware each change you make in your project.
  *
  * For developing GBA games, <a href="https://mgba.io">mGBA</a>,
- * <a href="https://github.com/nba-emu/NanoBoyAdvance">NanoBoyAdvance</a> and the debug version of
+ * <a href="https://github.com/nba-emu/NanoBoyAdvance">NanoBoyAdvance</a>,
+ * <a href="https://github.com/SourMesen/Mesen2">Mesen</a> and the debug version of
  * <a href="https://problemkaputt.de/gba.htm">No$gba</a> are recommended.
  *
  *
@@ -47,10 +48,12 @@
  *
  * @code{.cpp}
  * pacman -S make
+ * wf-pacman -Syu wf-tools
+ * wf-pacman -Syu wf-tools
+ * wf-config repo enable blocksds
  * wf-pacman -Syu
- * wf-pacman -S toolchain-gcc-arm-none-eabi
- * wf-pacman -S thirdparty-blocksds-toolchain
  * wf-pacman -S target-gba
+ * wf-pacman -S blocksds-toolchain
  * @endcode
  *
  * @image html wt_pacman.png

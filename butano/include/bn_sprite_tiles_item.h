@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -313,17 +313,6 @@ public:
     {
         return a._tiles_ref.data() == b._tiles_ref.data() && a._tiles_ref.size() == b._tiles_ref.size() &&
                 a._graphics_count == b._graphics_count;
-    }
-
-    /**
-     * @brief Not equal operator.
-     * @param a First sprite_tiles_item to compare.
-     * @param b Second sprite_tiles_item to compare.
-     * @return `true` if the first sprite_tiles_item is not equal to the second one, otherwise `false`.
-     */
-    [[nodiscard]] constexpr friend bool operator!=(const sprite_tiles_item& a, const sprite_tiles_item& b)
-    {
-        return ! (a == b);
     }
 
 private:

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -64,7 +64,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to copy.
-     * @param duration_updates How much times the action has to be updated to toggle
+     * @param duration_updates How many times the action has to be updated to toggle
      * if the given sprite_ptr must be committed to the GBA or not.
      */
     sprite_visible_toggle_action(const sprite_ptr& sprite, int duration_updates) :
@@ -75,7 +75,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to move.
-     * @param duration_updates How much times the action has to be updated to toggle
+     * @param duration_updates How many times the action has to be updated to toggle
      * if the given sprite_ptr must be committed to the GBA or not.
      */
     sprite_visible_toggle_action(sprite_ptr&& sprite, int duration_updates) :
@@ -285,7 +285,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to copy.
-     * @param duration_updates How much times the action has to be updated
+     * @param duration_updates How many times the action has to be updated
      * before changing the direction of the position delta.
      * @param final_x When the horizontal position of the given sprite_ptr is equal to this parameter,
      * it goes back to its initial state and vice versa.
@@ -300,7 +300,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to move.
-     * @param duration_updates How much times the action has to be updated
+     * @param duration_updates How many times the action has to be updated
      * before changing the direction of the position delta.
      * @param final_x When the horizontal position of the given sprite_ptr is equal to this parameter,
      * it goes back to its initial state and vice versa.
@@ -315,7 +315,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to copy.
-     * @param duration_updates How much times the action has to be updated
+     * @param duration_updates How many times the action has to be updated
      * before changing the direction of the position delta.
      * @param final_position When the position of the given sprite_ptr is equal to this parameter,
      * it goes back to its initial state and vice versa.
@@ -328,7 +328,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to move.
-     * @param duration_updates How much times the action has to be updated
+     * @param duration_updates How many times the action has to be updated
      * before changing the direction of the position delta.
      * @param final_position When the position of the given sprite_ptr is equal to this parameter,
      * it goes back to its initial state and vice versa.
@@ -371,7 +371,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to copy.
-     * @param duration_updates How much times the action has to be updated
+     * @param duration_updates How many times the action has to be updated
      * to change the position of the given sprite_ptr.
      * @param new_x New horizontal position when the action is updated duration_updates times.
      * @param new_y New vertical position when the action is updated duration_updates times.
@@ -384,7 +384,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to move.
-     * @param duration_updates How much times the action has to be updated
+     * @param duration_updates How many times the action has to be updated
      * to change the position of the given sprite_ptr.
      * @param new_x New horizontal position when the action is updated duration_updates times.
      * @param new_y New vertical position when the action is updated duration_updates times.
@@ -397,7 +397,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to copy.
-     * @param duration_updates How much times the action has to be updated
+     * @param duration_updates How many times the action has to be updated
      * to change the position of the given sprite_ptr.
      * @param new_position New position when the action is updated duration_updates times.
      */
@@ -409,7 +409,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to move.
-     * @param duration_updates How much times the action has to be updated
+     * @param duration_updates How many times the action has to be updated
      * to change the position of the given sprite_ptr.
      * @param new_position New position when the action is updated duration_updates times.
      */
@@ -430,6 +430,301 @@ public:
      * @brief Returns the position of the given sprite_ptr when the action is updated the given number of times.
      */
     [[nodiscard]] const fixed_point& new_position() const
+    {
+        return new_property();
+    }
+};
+
+
+// top_left_position
+
+/**
+ * @brief Manages the top-left position of a sprite_ptr.
+ *
+ * @ingroup sprite
+ * @ingroup action
+ */
+class sprite_top_left_position_manager
+{
+
+public:
+    /**
+     * @brief Returns the top-left position of the given sprite_ptr.
+     */
+    [[nodiscard]] static fixed_point get(const sprite_ptr& sprite)
+    {
+        return sprite.top_left_position();
+    }
+
+    /**
+     * @brief Sets the top-left position of the given sprite_ptr.
+     */
+    static void set(const fixed_point& top_left_position, sprite_ptr& sprite)
+    {
+        sprite.set_top_left_position(top_left_position);
+    }
+};
+
+
+/**
+ * @brief Modifies the top-left position of a sprite_ptr until it has a given state.
+ *
+ * @ingroup sprite
+ * @ingroup action
+ */
+class sprite_top_left_move_to_action :
+        public to_value_template_action<sprite_ptr, fixed_point, sprite_top_left_position_manager>
+{
+
+public:
+    /**
+     * @brief Constructor.
+     * @param sprite sprite_ptr to copy.
+     * @param duration_updates Number of times that the action must be updated
+     * until the top-left position of the given sprite_ptr is equal to (final_x, final_y).
+     * @param final_top_left_x Horizontal top-left position of the given sprite_ptr
+     * when the action is updated duration_updates times.
+     * @param final_top_left_y Vertical top-left position of the given sprite_ptr
+     * when the action is updated duration_updates times.
+     */
+    sprite_top_left_move_to_action(
+            const sprite_ptr& sprite, int duration_updates, fixed final_top_left_x, fixed final_top_left_y) :
+        to_value_template_action(sprite, duration_updates, fixed_point(final_top_left_x, final_top_left_y))
+    {
+    }
+
+    /**
+     * @brief Constructor.
+     * @param sprite sprite_ptr to move.
+     * @param duration_updates Number of times that the action must be updated
+     * until the top-left position of the given sprite_ptr is equal to (final_x, final_y).
+     * @param final_top_left_x Horizontal top-left position of the given sprite_ptr
+     * when the action is updated duration_updates times.
+     * @param final_top_left_y Vertical top-left position of the given sprite_ptr
+     * when the action is updated duration_updates times.
+     */
+    sprite_top_left_move_to_action(
+            sprite_ptr&& sprite, int duration_updates, fixed final_top_left_x, fixed final_top_left_y) :
+        to_value_template_action(move(sprite), duration_updates, fixed_point(final_top_left_x, final_top_left_y))
+    {
+    }
+
+    /**
+     * @brief Constructor.
+     * @param sprite sprite_ptr to copy.
+     * @param duration_updates Number of times that the action must be updated
+     * until the top-left position of the given sprite_ptr is equal to final_top_left_position.
+     * @param final_top_left_position Top-left position of the given sprite_ptr
+     * when the action is updated duration_updates times.
+     */
+    sprite_top_left_move_to_action(
+            const sprite_ptr& sprite, int duration_updates, const fixed_point& final_top_left_position) :
+        to_value_template_action(sprite, duration_updates, final_top_left_position)
+    {
+    }
+
+    /**
+     * @brief Constructor.
+     * @param sprite sprite_ptr to move.
+     * @param duration_updates Number of times that the action must be updated
+     * until the top-left position of the given sprite_ptr is equal to final_top_left_position.
+     * @param final_top_left_position Top-left position of the given sprite_ptr
+     * when the action is updated duration_updates times.
+     */
+    sprite_top_left_move_to_action(
+            sprite_ptr&& sprite, int duration_updates, const fixed_point& final_top_left_position) :
+        to_value_template_action(move(sprite), duration_updates, final_top_left_position)
+    {
+    }
+
+    /**
+     * @brief Returns the sprite_ptr to modify.
+     */
+    [[nodiscard]] const sprite_ptr& sprite() const
+    {
+        return value();
+    }
+
+    /**
+     * @brief Returns the top-left position of the given sprite_ptr
+     * when the action is updated the given number of times.
+     */
+    [[nodiscard]] const fixed_point& final_top_left_position() const
+    {
+        return final_property();
+    }
+};
+
+
+/**
+ * @brief Modifies the top-left position of a sprite_ptr from a minimum to a maximum.
+ * When the top-left position is equal to the given final state, it goes back to its initial state and vice versa.
+ *
+ * @ingroup sprite
+ * @ingroup action
+ */
+class sprite_top_left_move_loop_action :
+        public loop_value_template_action<sprite_ptr, fixed_point, sprite_top_left_position_manager>
+{
+
+public:
+    /**
+     * @brief Constructor.
+     * @param sprite sprite_ptr to copy.
+     * @param duration_updates How many times the action has to be updated
+     * before changing the direction of the top-left position delta.
+     * @param final_top_left_x When the horizontal top-left position of the given sprite_ptr
+     * is equal to this parameter, it goes back to its initial state and vice versa.
+     * @param final_top_left_y When the vertical top-left position of the given sprite_ptr
+     * is equal to this parameter, it goes back to its initial state and vice versa.
+     */
+    sprite_top_left_move_loop_action(
+            const sprite_ptr& sprite, int duration_updates, fixed final_top_left_x, fixed final_top_left_y) :
+        loop_value_template_action(sprite, duration_updates, fixed_point(final_top_left_x, final_top_left_y))
+    {
+    }
+
+    /**
+     * @brief Constructor.
+     * @param sprite sprite_ptr to move.
+     * @param duration_updates How many times the action has to be updated
+     * before changing the direction of the top-left position delta.
+     * @param final_top_left_x When the horizontal top-left position of the given sprite_ptr
+     * is equal to this parameter, it goes back to its initial state and vice versa.
+     * @param final_top_left_y When the vertical top-left position of the given sprite_ptr
+     * is equal to this parameter, it goes back to its initial state and vice versa.
+     */
+    sprite_top_left_move_loop_action(
+            sprite_ptr&& sprite, int duration_updates, fixed final_top_left_x, fixed final_top_left_y) :
+        loop_value_template_action(move(sprite), duration_updates, fixed_point(final_top_left_x, final_top_left_y))
+    {
+    }
+
+    /**
+     * @brief Constructor.
+     * @param sprite sprite_ptr to copy.
+     * @param duration_updates How many times the action has to be updated
+     * before changing the direction of the top-left position delta.
+     * @param final_top_left_position When the top-left position of the given sprite_ptr is equal to this parameter,
+     * it goes back to its initial state and vice versa.
+     */
+    sprite_top_left_move_loop_action(
+            const sprite_ptr& sprite, int duration_updates, const fixed_point& final_top_left_position) :
+        loop_value_template_action(sprite, duration_updates, final_top_left_position)
+    {
+    }
+
+    /**
+     * @brief Constructor.
+     * @param sprite sprite_ptr to move.
+     * @param duration_updates How many times the action has to be updated
+     * before changing the direction of the top-left position delta.
+     * @param final_top_left_position When the top-left position of the given sprite_ptr is equal to this parameter,
+     * it goes back to its initial state and vice versa.
+     */
+    sprite_top_left_move_loop_action(
+            sprite_ptr&& sprite, int duration_updates, const fixed_point& final_top_left_position) :
+        loop_value_template_action(move(sprite), duration_updates, final_top_left_position)
+    {
+    }
+
+    /**
+     * @brief Returns the sprite_ptr to modify.
+     */
+    [[nodiscard]] const sprite_ptr& sprite() const
+    {
+        return value();
+    }
+
+    /**
+     * @brief When the top-left position of the given sprite_ptr is equal to this returned parameter,
+     * it goes back to its initial state and vice versa.
+     */
+    [[nodiscard]] const fixed_point& final_top_left_position() const
+    {
+        return final_property();
+    }
+};
+
+
+/**
+ * @brief Changes the top-left position of a sprite_ptr when the action is updated a given number of times.
+ *
+ * @ingroup sprite
+ * @ingroup action
+ */
+class sprite_top_left_move_toggle_action :
+        public toggle_value_template_action<sprite_ptr, fixed_point, sprite_top_left_position_manager>
+{
+
+public:
+    /**
+     * @brief Constructor.
+     * @param sprite sprite_ptr to copy.
+     * @param duration_updates How many times the action has to be updated
+     * to change the top-left position of the given sprite_ptr.
+     * @param new_top_left_x New horizontal top-left position when the action is updated duration_updates times.
+     * @param new_top_left_y New vertical top-left position when the action is updated duration_updates times.
+     */
+    sprite_top_left_move_toggle_action(
+            const sprite_ptr& sprite, int duration_updates, fixed new_top_left_x, fixed new_top_left_y) :
+        toggle_value_template_action(sprite, duration_updates, fixed_point(new_top_left_x, new_top_left_y))
+    {
+    }
+
+    /**
+     * @brief Constructor.
+     * @param sprite sprite_ptr to move.
+     * @param duration_updates How many times the action has to be updated
+     * to change the top-left position of the given sprite_ptr.
+     * @param new_top_left_x New horizontal top-left position when the action is updated duration_updates times.
+     * @param new_top_left_y New vertical top-left position when the action is updated duration_updates times.
+     */
+    sprite_top_left_move_toggle_action(
+            sprite_ptr&& sprite, int duration_updates, fixed new_top_left_x, fixed new_top_left_y) :
+        toggle_value_template_action(move(sprite), duration_updates, fixed_point(new_top_left_x, new_top_left_y))
+    {
+    }
+
+    /**
+     * @brief Constructor.
+     * @param sprite sprite_ptr to copy.
+     * @param duration_updates How many times the action has to be updated
+     * to change the top-left position of the given sprite_ptr.
+     * @param new_top_left_position New top-left position when the action is updated duration_updates times.
+     */
+    sprite_top_left_move_toggle_action(
+            const sprite_ptr& sprite, int duration_updates, const fixed_point& new_top_left_position) :
+        toggle_value_template_action(sprite, duration_updates, new_top_left_position)
+    {
+    }
+
+    /**
+     * @brief Constructor.
+     * @param sprite sprite_ptr to move.
+     * @param duration_updates How many times the action has to be updated
+     * to change the top-left position of the given sprite_ptr.
+     * @param new_top_left_position New top-left position when the action is updated duration_updates times.
+     */
+    sprite_top_left_move_toggle_action(
+            sprite_ptr&& sprite, int duration_updates, const fixed_point& new_top_left_position) :
+        toggle_value_template_action(move(sprite), duration_updates, new_top_left_position)
+    {
+    }
+
+    /**
+     * @brief Returns the sprite_ptr to modify.
+     */
+    [[nodiscard]] const sprite_ptr& sprite() const
+    {
+        return value();
+    }
+
+    /**
+     * @brief Returns the top-left position of the given sprite_ptr
+     * when the action is updated the given number of times.
+     */
+    [[nodiscard]] const fixed_point& new_top_left_position() const
     {
         return new_property();
     }
@@ -482,7 +777,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to copy.
-     * @param delta_rotation_angle How much degrees to add to the rotation angle of the given sprite_ptr
+     * @param delta_rotation_angle How many degrees to add to the rotation angle of the given sprite_ptr
      * when the action is updated.
      *
      * This rotation angle must be in the range [0..360].
@@ -497,7 +792,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to move.
-     * @param delta_rotation_angle How much degrees to add to the rotation angle of the given sprite_ptr
+     * @param delta_rotation_angle How many degrees to add to the rotation angle of the given sprite_ptr
      * when the action is updated.
      *
      * This rotation angle must be in the range [0..360].
@@ -518,7 +813,7 @@ public:
     }
 
     /**
-     * @brief Returns how much degrees to add to the rotation angle of the given sprite_ptr
+     * @brief Returns how many degrees to add to the rotation angle of the given sprite_ptr
      * when the action is updated.
      */
     [[nodiscard]] fixed delta_rotation_angle() const
@@ -603,7 +898,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to copy.
-     * @param duration_updates How much times the action has to be updated
+     * @param duration_updates How many times the action has to be updated
      * before changing the direction of the rotation angle delta.
      * @param final_rotation_angle When the rotation angle of the given sprite_ptr
      * is equal to this parameter, it goes back to its initial state and vice versa.
@@ -620,7 +915,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to move.
-     * @param duration_updates How much times the action has to be updated
+     * @param duration_updates How many times the action has to be updated
      * before changing the direction of the rotation angle delta.
      * @param final_rotation_angle When the rotation angle of the given sprite_ptr
      * is equal to this parameter, it goes back to its initial state and vice versa.
@@ -666,7 +961,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to copy.
-     * @param duration_updates How much times the action has to be updated to change the rotation angle
+     * @param duration_updates How many times the action has to be updated to change the rotation angle
      * of the given sprite_ptr.
      * @param new_rotation_angle New rotation angle when the action is updated duration_updates times.
      *
@@ -682,7 +977,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to move.
-     * @param duration_updates How much times the action has to be updated to change the rotation angle
+     * @param duration_updates How many times the action has to be updated to change the rotation angle
      * of the given sprite_ptr.
      * @param new_rotation_angle New rotation angle when the action is updated duration_updates times.
      *
@@ -816,7 +1111,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to copy.
-     * @param duration_updates How much times the action has to be updated
+     * @param duration_updates How many times the action has to be updated
      * before changing the direction of the horizontal scale delta.
      * @param final_horizontal_scale When the horizontal scale of the given sprite_ptr
      * is equal to this parameter, it goes back to its initial state and vice versa.
@@ -831,7 +1126,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to move.
-     * @param duration_updates How much times the action has to be updated
+     * @param duration_updates How many times the action has to be updated
      * before changing the direction of the horizontal scale delta.
      * @param final_horizontal_scale When the horizontal scale of the given sprite_ptr
      * is equal to this parameter, it goes back to its initial state and vice versa.
@@ -876,7 +1171,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to copy.
-     * @param duration_updates How much times the action has to be updated to change the horizontal scale
+     * @param duration_updates How many times the action has to be updated to change the horizontal scale
      * of the given sprite_ptr.
      * @param new_horizontal_scale New horizontal scale when the action is updated duration_updates times.
      */
@@ -890,7 +1185,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to move.
-     * @param duration_updates How much times the action has to be updated to change the horizontal scale
+     * @param duration_updates How many times the action has to be updated to change the horizontal scale
      * of the given sprite_ptr.
      * @param new_horizontal_scale New horizontal scale when the action is updated duration_updates times.
      */
@@ -1021,7 +1316,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to copy.
-     * @param duration_updates How much times the action has to be updated
+     * @param duration_updates How many times the action has to be updated
      * before changing the direction of the vertical scale delta.
      * @param final_vertical_scale When the vertical scale of the given sprite_ptr
      * is equal to this parameter, it goes back to its initial state and vice versa.
@@ -1035,7 +1330,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to move.
-     * @param duration_updates How much times the action has to be updated
+     * @param duration_updates How many times the action has to be updated
      * before changing the direction of the vertical scale delta.
      * @param final_vertical_scale When the vertical scale of the given sprite_ptr
      * is equal to this parameter, it goes back to its initial state and vice versa.
@@ -1080,7 +1375,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to copy.
-     * @param duration_updates How much times the action has to be updated to change the vertical scale
+     * @param duration_updates How many times the action has to be updated to change the vertical scale
      * of the given sprite_ptr.
      * @param new_vertical_scale New vertical scale when the action is updated duration_updates times.
      */
@@ -1093,7 +1388,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to move.
-     * @param duration_updates How much times the action has to be updated to change the vertical scale
+     * @param duration_updates How many times the action has to be updated to change the vertical scale
      * of the given sprite_ptr.
      * @param new_vertical_scale New vertical scale when the action is updated duration_updates times.
      */
@@ -1221,7 +1516,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to copy.
-     * @param duration_updates How much times the action has to be updated
+     * @param duration_updates How many times the action has to be updated
      * before changing the direction of the scale delta.
      * @param final_scale When the scale of the given sprite_ptr
      * is equal to this parameter, it goes back to its initial state and vice versa.
@@ -1235,7 +1530,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to move.
-     * @param duration_updates How much times the action has to be updated
+     * @param duration_updates How many times the action has to be updated
      * before changing the direction of the scale delta.
      * @param final_scale When the scale of the given sprite_ptr
      * is equal to this parameter, it goes back to its initial state and vice versa.
@@ -1279,7 +1574,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to copy.
-     * @param duration_updates How much times the action has to be updated to change the scale
+     * @param duration_updates How many times the action has to be updated to change the scale
      * of the given sprite_ptr.
      * @param new_scale New scale when the action is updated duration_updates times.
      */
@@ -1292,7 +1587,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to move.
-     * @param duration_updates How much times the action has to be updated to change the scale
+     * @param duration_updates How many times the action has to be updated to change the scale
      * of the given sprite_ptr.
      * @param new_scale New scale when the action is updated duration_updates times.
      */
@@ -1421,7 +1716,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to copy.
-     * @param duration_updates How much times the action has to be updated
+     * @param duration_updates How many times the action has to be updated
      * before changing the direction of the horizontal shear delta.
      * @param final_horizontal_shear When the horizontal shear of the given sprite_ptr
      * is equal to this parameter, it goes back to its initial state and vice versa.
@@ -1435,7 +1730,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to move.
-     * @param duration_updates How much times the action has to be updated
+     * @param duration_updates How many times the action has to be updated
      * before changing the direction of the horizontal shear delta.
      * @param final_horizontal_shear When the horizontal shear of the given sprite_ptr
      * is equal to this parameter, it goes back to its initial state and vice versa.
@@ -1479,7 +1774,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to copy.
-     * @param duration_updates How much times the action has to be updated to change the horizontal shear
+     * @param duration_updates How many times the action has to be updated to change the horizontal shear
      * of the given sprite_ptr.
      * @param new_horizontal_shear New horizontal shear when the action is updated duration_updates times.
      */
@@ -1492,7 +1787,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to move.
-     * @param duration_updates How much times the action has to be updated to change the horizontal shear
+     * @param duration_updates How many times the action has to be updated to change the horizontal shear
      * of the given sprite_ptr.
      * @param new_horizontal_shear New horizontal shear when the action is updated duration_updates times.
      */
@@ -1620,7 +1915,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to copy.
-     * @param duration_updates How much times the action has to be updated
+     * @param duration_updates How many times the action has to be updated
      * before changing the direction of the vertical shear delta.
      * @param final_vertical_shear When the vertical shear of the given sprite_ptr
      * is equal to this parameter, it goes back to its initial state and vice versa.
@@ -1633,7 +1928,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to move.
-     * @param duration_updates How much times the action has to be updated
+     * @param duration_updates How many times the action has to be updated
      * before changing the direction of the vertical shear delta.
      * @param final_vertical_shear When the vertical shear of the given sprite_ptr
      * is equal to this parameter, it goes back to its initial state and vice versa.
@@ -1677,7 +1972,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to copy.
-     * @param duration_updates How much times the action has to be updated to change the vertical shear
+     * @param duration_updates How many times the action has to be updated to change the vertical shear
      * of the given sprite_ptr.
      * @param new_vertical_shear New vertical shear when the action is updated duration_updates times.
      */
@@ -1689,7 +1984,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to move.
-     * @param duration_updates How much times the action has to be updated to change the vertical shear
+     * @param duration_updates How many times the action has to be updated to change the vertical shear
      * of the given sprite_ptr.
      * @param new_vertical_shear New vertical shear when the action is updated duration_updates times.
      */
@@ -1814,7 +2109,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to copy.
-     * @param duration_updates How much times the action has to be updated
+     * @param duration_updates How many times the action has to be updated
      * before changing the direction of the shear delta.
      * @param final_shear When the shear of the given sprite_ptr
      * is equal to this parameter, it goes back to its initial state and vice versa.
@@ -1827,7 +2122,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to move.
-     * @param duration_updates How much times the action has to be updated
+     * @param duration_updates How many times the action has to be updated
      * before changing the direction of the shear delta.
      * @param final_shear When the shear of the given sprite_ptr
      * is equal to this parameter, it goes back to its initial state and vice versa.
@@ -1870,7 +2165,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to copy.
-     * @param duration_updates How much times the action has to be updated to change the shear
+     * @param duration_updates How many times the action has to be updated to change the shear
      * of the given sprite_ptr.
      * @param new_shear New shear when the action is updated duration_updates times.
      */
@@ -1882,7 +2177,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to move.
-     * @param duration_updates How much times the action has to be updated to change the shear
+     * @param duration_updates How many times the action has to be updated to change the shear
      * of the given sprite_ptr.
      * @param new_shear New shear when the action is updated duration_updates times.
      */
@@ -1955,7 +2250,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to copy.
-     * @param duration_updates How much times the action has to be updated to toggle
+     * @param duration_updates How many times the action has to be updated to toggle
      * if the given sprite_ptr must be flipped in the horizontal axis or not.
      */
     sprite_horizontal_flip_toggle_action(const sprite_ptr& sprite, int duration_updates) :
@@ -1966,7 +2261,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to move.
-     * @param duration_updates How much times the action has to be updated to toggle
+     * @param duration_updates How many times the action has to be updated to toggle
      * if the given sprite_ptr must be flipped in the horizontal axis or not.
      */
     sprite_horizontal_flip_toggle_action(sprite_ptr&& sprite, int duration_updates) :
@@ -2029,7 +2324,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to copy.
-     * @param duration_updates How much times the action has to be updated to toggle
+     * @param duration_updates How many times the action has to be updated to toggle
      * if the given sprite_ptr must be flipped in the vertical axis or not.
      */
     sprite_vertical_flip_toggle_action(const sprite_ptr& sprite, int duration_updates) :
@@ -2040,7 +2335,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to move.
-     * @param duration_updates How much times the action has to be updated to toggle
+     * @param duration_updates How many times the action has to be updated to toggle
      * if the given sprite_ptr must be flipped in the vertical axis or not.
      */
     sprite_vertical_flip_toggle_action(sprite_ptr&& sprite, int duration_updates) :
@@ -2102,7 +2397,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to copy.
-     * @param duration_updates How much times the action has to be updated to toggle
+     * @param duration_updates How many times the action has to be updated to toggle
      * if the mosaic effect must be applied or not.
      */
     sprite_mosaic_toggle_action(const sprite_ptr& sprite, int duration_updates) :
@@ -2113,7 +2408,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to move.
-     * @param duration_updates How much times the action has to be updated to toggle
+     * @param duration_updates How many times the action has to be updated to toggle
      * if the mosaic effect must be applied or not.
      */
     sprite_mosaic_toggle_action(sprite_ptr&& sprite, int duration_updates) :
@@ -2177,7 +2472,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to copy.
-     * @param duration_updates How much times the action has to be updated to toggle
+     * @param duration_updates How many times the action has to be updated to toggle
      * if blending must be applied or not.
      */
     sprite_blending_toggle_action(const sprite_ptr& sprite, int duration_updates) :
@@ -2188,7 +2483,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to move.
-     * @param duration_updates How much times the action has to be updated to toggle
+     * @param duration_updates How many times the action has to be updated to toggle
      * if blending must be applied or not.
      */
     sprite_blending_toggle_action(sprite_ptr&& sprite, int duration_updates) :
@@ -2252,7 +2547,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to copy.
-     * @param duration_updates How much times the action has to be updated to toggle
+     * @param duration_updates How many times the action has to be updated to toggle
      * if the given sprite_ptr must be part of the silhouette of the sprite window or not.
      */
     sprite_window_toggle_action(const sprite_ptr& sprite, int duration_updates) :
@@ -2263,7 +2558,7 @@ public:
     /**
      * @brief Constructor.
      * @param sprite sprite_ptr to move.
-     * @param duration_updates How much times the action has to be updated to toggle
+     * @param duration_updates How many times the action has to be updated to toggle
      * if the given sprite_ptr must be part of the silhouette of the sprite window or not.
      */
     sprite_window_toggle_action(sprite_ptr&& sprite, int duration_updates) :

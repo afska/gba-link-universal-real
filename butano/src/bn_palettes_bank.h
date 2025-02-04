@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -70,6 +70,8 @@ public:
     [[nodiscard]] span<const color> colors(int id) const;
 
     void set_colors(int id, const span<const color>& colors);
+
+    void set_color(int id, int color_index, color color);
 
     [[nodiscard]] bool inverted(int id) const
     {
@@ -267,6 +269,11 @@ private:
     [[nodiscard]] int _bpp_8_slots_count() const;
 
     [[nodiscard]] int _first_bpp_4_palette_index() const;
+
+    __attribute__((noinline)) void _erase_bpp_4_indexes_map_index(uint16_t hash)
+    {
+        _bpp_4_indexes_map.erase(hash);
+    }
 
     void _on_global_effect_updated(bool active);
 

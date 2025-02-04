@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -33,6 +33,7 @@ class affine_bg_tiles_item;
 class affine_bg_attributes;
 class affine_mat_attributes;
 class affine_bg_mat_attributes;
+enum class green_swap_mode : uint8_t;
 
 /**
  * @brief std::shared_ptr like smart pointer that retains shared ownership of an affine background.
@@ -47,6 +48,28 @@ class affine_bg_ptr
 {
 
 public:
+    /**
+     * @brief Creates an affine_bg_ptr from the given affine_bg_item.
+     * @param item affine_bg_item containing the required information to generate the affine background.
+     * @return The requested affine_bg_ptr.
+     */
+    [[nodiscard]] static affine_bg_ptr create(const affine_bg_item& item);
+
+    /**
+     * @brief Creates an affine_bg_ptr from the given affine_bg_item.
+     * @param item affine_bg_item containing the required information to generate the affine background.
+     * @param map_index Index of the map to reference in item.map_item().
+     * @return The requested affine_bg_ptr.
+     */
+    [[nodiscard]] static affine_bg_ptr create(const affine_bg_item& item, int map_index);
+
+    /**
+     * @brief Creates an affine_bg_ptr from the given affine_bg_map_ptr.
+     * @param map affine_bg_map_ptr used by the affine background.
+     * @return The requested affine_bg_ptr.
+     */
+    [[nodiscard]] static affine_bg_ptr create(affine_bg_map_ptr map);
+
     /**
      * @brief Creates an affine_bg_ptr from the given affine_bg_item.
      * @param x Horizontal position of the affine background.
@@ -114,6 +137,28 @@ public:
      * @return The requested affine_bg_ptr.
      */
     [[nodiscard]] static affine_bg_ptr create(affine_bg_builder&& builder);
+
+    /**
+     * @brief Creates an affine_bg_ptr from the given affine_bg_item.
+     * @param item affine_bg_item containing the required information to generate the affine background.
+     * @return The requested affine_bg_ptr if it could be allocated; bn::nullopt otherwise.
+     */
+    [[nodiscard]] static optional<affine_bg_ptr> create_optional(const affine_bg_item& item);
+
+    /**
+     * @brief Creates an affine_bg_ptr from the given affine_bg_item.
+     * @param item affine_bg_item containing the required information to generate the affine background.
+     * @param map_index Index of the map to reference in item.map_item().
+     * @return The requested affine_bg_ptr if it could be allocated; bn::nullopt otherwise.
+     */
+    [[nodiscard]] static optional<affine_bg_ptr> create_optional(const affine_bg_item& item, int map_index);
+
+    /**
+     * @brief Creates an affine_bg_ptr from the given affine_bg_map_ptr.
+     * @param map affine_bg_map_ptr used by the affine background.
+     * @return The requested affine_bg_ptr if it could be allocated; bn::nullopt otherwise.
+     */
+    [[nodiscard]] static optional<affine_bg_ptr> create_optional(affine_bg_map_ptr map);
 
     /**
      * @brief Creates an affine_bg_ptr from the given affine_bg_item.
@@ -400,6 +445,43 @@ public:
     void set_position(const fixed_point& position);
 
     /**
+     * @brief Returns the horizontal top-left position of the affine background (relative to its camera, if it has one).
+     */
+    [[nodiscard]] fixed top_left_x() const;
+
+    /**
+     * @brief Sets the horizontal top-left position of the affine background (relative to its camera, if it has one).
+     */
+    void set_top_left_x(fixed top_left_x);
+
+    /**
+     * @brief Returns the vertical top-left position of the affine background (relative to its camera, if it has one).
+     */
+    [[nodiscard]] fixed top_left_y() const;
+
+    /**
+     * @brief Sets the vertical top-left position of the affine background (relative to its camera, if it has one).
+     */
+    void set_top_left_y(fixed top_left_y);
+
+    /**
+     * @brief Returns the top-left position of the affine background (relative to its camera, if it has one).
+     */
+    [[nodiscard]] fixed_point top_left_position() const;
+
+    /**
+     * @brief Sets the top-left position of the affine background (relative to its camera, if it has one).
+     * @param top_left_x Horizontal top-left position of the affine background (relative to its camera, if it has one).
+     * @param top_left_y Vertical top-left position of the affine background (relative to its camera, if it has one).
+     */
+    void set_top_left_position(fixed top_left_x, fixed top_left_y);
+
+    /**
+     * @brief Sets the top-left position of the affine background (relative to its camera, if it has one).
+     */
+    void set_top_left_position(const fixed_point& top_left_position);
+
+    /**
      * @brief Returns the rotation angle in degrees of the affine background.
      */
     [[nodiscard]] fixed rotation_angle() const;
@@ -409,6 +491,12 @@ public:
      * @param rotation_angle Rotation angle in degrees, in the range [0..360].
      */
     void set_rotation_angle(fixed rotation_angle);
+
+    /**
+     * @brief Sets the rotation angle in degrees of the affine background.
+     * @param rotation_angle Rotation angle in degrees, in any range.
+     */
+    void set_rotation_angle_safe(fixed rotation_angle);
 
     /**
      * @brief Returns the horizontal scale of the affine background.
@@ -649,6 +737,16 @@ public:
      * @brief Sets if this affine background is part of the blending bottom layer or not.
      */
     void set_blending_bottom_enabled(bool blending_bottom_enabled);
+
+    /**
+     * @brief Indicates how this affine background must be displayed when green swap is enabled.
+     */
+    [[nodiscard]] bn::green_swap_mode green_swap_mode() const;
+
+    /**
+     * @brief Sets how this affine background must be displayed when green swap is enabled.
+     */
+    void set_green_swap_mode(bn::green_swap_mode green_swap_mode);
 
     /**
      * @brief Indicates if this affine background must be committed to the GBA or not.

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -8,6 +8,7 @@
 #include "bn_sprites.h"
 #include "bn_sprite_ptr.h"
 #include "bn_sprite_builder.h"
+#include "bn_top_left_utils.h"
 #include "../hw/include/bn_hw_sprite_tiles.h"
 
 namespace bn
@@ -15,6 +16,16 @@ namespace bn
 
 namespace
 {
+    void _setup_builder(const sprite_text_generator& generator, sprite_builder& builder)
+    {
+        builder.set_bg_priority(generator.bg_priority());
+        builder.set_z_order(generator.z_order());
+        builder.set_mosaic_enabled(generator.mosaic_enabled());
+        builder.set_blending_enabled(generator.blending_enabled());
+        builder.set_visible(generator.visible());
+        builder.set_camera(generator.camera());
+    }
+
     template<sprite_size size>
     [[nodiscard]] tile* _build_sprite_optional(
         const sprite_text_generator& generator, const sprite_palette_ptr& palette,
@@ -40,8 +51,7 @@ namespace
 
         sprite_builder builder(shape_size, move(*tiles_ptr), palette);
         builder.set_position(current_position);
-        builder.set_bg_priority(generator.bg_priority());
-        builder.set_z_order(generator.z_order());
+        _setup_builder(generator, builder);
 
         optional<sprite_ptr> sprite = sprite_ptr::create_optional(move(builder));
         sprite_ptr* sprite_ptr = sprite.get();
@@ -70,8 +80,7 @@ namespace
 
         sprite_builder builder(shape_size, move(tiles_ptr), palette);
         builder.set_position(current_position);
-        builder.set_bg_priority(generator.bg_priority());
-        builder.set_z_order(generator.z_order());
+        _setup_builder(generator, builder);
         output_sprites.push_back(sprite_ptr::create(move(builder)));
         return tiles_vram->data();
     }
@@ -86,6 +95,21 @@ namespace
         }
 
         return _build_sprite_assert<size>(generator, palette, current_position, output_sprites);
+    }
+
+    void _fix_top_left_position(int num_old_output_sprites, ivector<sprite_ptr>& output_sprites)
+    {
+        sprite_ptr* output_sprites_data = output_sprites.data();
+
+        for(int index = num_old_output_sprites, limit = output_sprites.size(); index < limit; ++index)
+        {
+            sprite_ptr& output_sprite = output_sprites_data[index];
+            fixed_point position = output_sprite.position();
+            size dimensions = output_sprite.dimensions();
+            fixed x = from_top_left_x(position.x(), dimensions.width()) - (dimensions.width() / 2);
+            fixed y = from_top_left_y(position.y(), dimensions.height());
+            output_sprite.set_position(x, y);
+        }
     }
 
 
@@ -308,8 +332,7 @@ namespace
 
             sprite_builder builder(item.shape_size(), move(*source_tiles), _palette);
             builder.set_position(_current_position);
-            builder.set_bg_priority(_generator.bg_priority());
-            builder.set_z_order(_generator.z_order());
+            _setup_builder(_generator, builder);
 
             if(allow_failure)
             {
@@ -407,8 +430,7 @@ namespace
 
                 sprite_builder builder(item.shape_size(), move(*source_tiles), _palette);
                 builder.set_position(_current_position);
-                builder.set_bg_priority(_generator.bg_priority());
-                builder.set_z_order(_generator.z_order());
+                _setup_builder(_generator, builder);
 
                 if(allow_failure)
                 {
@@ -1017,7 +1039,7 @@ namespace
 
         if(allow_failure)
         {
-            palette = generator.palette_item().create_palette_optional();
+            palette = sprite_palette_ptr::create_optional(generator.palette_item());
             palette_ptr = palette.get();
 
             if(! palette_ptr)
@@ -1027,7 +1049,7 @@ namespace
         }
         else
         {
-            palette = generator.palette_item().create_palette();
+            palette = sprite_palette_ptr::create(generator.palette_item());
             palette_ptr = palette.get();
         }
 
@@ -1179,6 +1201,13 @@ void sprite_text_generator::set_z_order(int z_order)
     _z_order = int8_t(z_order);
 }
 
+optional<camera_ptr> sprite_text_generator::release_camera()
+{
+    optional<camera_ptr> result = move(_camera);
+    _camera.reset();
+    return result;
+}
+
 int sprite_text_generator::width(const string_view& text) const
 {
     const span<const int8_t>& character_widths = _font.character_widths_ref();
@@ -1216,6 +1245,13 @@ int sprite_text_generator::width(const string_view& text) const
     }
 }
 
+void sprite_text_generator::generate(const string_view& text, ivector<sprite_ptr>& output_sprites) const
+{
+    bool one_sprite_per_character = _one_sprite_per_character || _font_one_sprite_per_character;
+    _generate<false>(*this, fixed_point(), text, _font.utf8_characters_ref(), _max_character_width,
+                     _character_height, one_sprite_per_character, output_sprites);
+}
+
 void sprite_text_generator::generate(fixed x, fixed y, const string_view& text,
                                      ivector<sprite_ptr>& output_sprites) const
 {
@@ -1230,6 +1266,21 @@ void sprite_text_generator::generate(const fixed_point& position, const string_v
     bool one_sprite_per_character = _one_sprite_per_character || _font_one_sprite_per_character;
     _generate<false>(*this, position, text, _font.utf8_characters_ref(), _max_character_width,
                      _character_height, one_sprite_per_character, output_sprites);
+}
+
+void sprite_text_generator::generate_top_left(
+        const fixed_point& top_left_position, const string_view& text, ivector<sprite_ptr>& output_sprites) const
+{
+    int num_old_output_sprites = output_sprites.size();
+    generate(top_left_position, text, output_sprites);
+    _fix_top_left_position(num_old_output_sprites, output_sprites);
+}
+
+bool sprite_text_generator::generate_optional(const string_view& text, ivector<sprite_ptr>& output_sprites) const
+{
+    bool one_sprite_per_character = _one_sprite_per_character || _font_one_sprite_per_character;
+    return _generate<true>(*this, fixed_point(), text, _font.utf8_characters_ref(), _max_character_width,
+                           _character_height, one_sprite_per_character, output_sprites);
 }
 
 bool sprite_text_generator::generate_optional(fixed x, fixed y, const string_view& text,
@@ -1248,17 +1299,32 @@ bool sprite_text_generator::generate_optional(const fixed_point& position, const
                            _character_height, one_sprite_per_character, output_sprites);
 }
 
+bool sprite_text_generator::generate_top_left_optional(
+        const fixed_point& top_left_position, const string_view& text, ivector<sprite_ptr>& output_sprites) const
+{
+    int num_old_output_sprites = output_sprites.size();
+    bool success = generate_optional(top_left_position, text, output_sprites);
+
+    if(success)
+    {
+        _fix_top_left_position(num_old_output_sprites, output_sprites);
+    }
+
+    return success;
+}
+
 void sprite_text_generator::_init()
 {
     const sprite_shape_size& shape_size = _font.item().shape_size();
     int width = shape_size.width();
     int height = shape_size.height();
+    int space_between_characters = _font.space_between_characters();
     _max_character_width = int8_t(width);
     _character_height = int8_t(height);
 
     if(_font.character_widths_ref().empty())
     {
-        if(_font.space_between_characters() || height > 16)
+        if(space_between_characters || height > 16)
         {
             _font_one_sprite_per_character = true;
         }
@@ -1275,8 +1341,15 @@ void sprite_text_generator::_init()
     }
     else
     {
-        bool vwf = (width == 8 && height == 8) || (width == 8 && height == 16) || (width == 16 && height == 16);
-        _font_one_sprite_per_character = ! vwf;
+        if(space_between_characters >= width)
+        {
+            _font_one_sprite_per_character = true;
+        }
+        else
+        {
+            bool vwf = (width == 8 && height == 8) || (width == 8 && height == 16) || (width == 16 && height == 16);
+            _font_one_sprite_per_character = ! vwf;
+        }
     }
 }
 

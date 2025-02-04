@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -18,6 +18,7 @@
 #include "bn_utility.h"
 #include "bn_iterator.h"
 #include "bn_algorithm.h"
+#include "bn_type_traits.h"
 #include "bn_power_of_two.h"
 #include "bn_deque_fwd.h"
 
@@ -48,10 +49,13 @@ public:
         using size_type = ideque::size_type; //!< Size type alias.
         using difference_type = ideque::difference_type; //!< Difference type alias.
         using reference = ideque::reference; //!< Reference alias.
-        using const_reference = ideque::const_reference; //!< Const reference alias.
         using pointer = ideque::pointer; //!< Pointer alias.
-        using const_pointer = ideque::const_pointer; //!< Const pointer alias.
         using iterator_category = random_access_iterator_tag; //!< Iterator category alias.
+
+        /**
+         * @brief Default constructor.
+         */
+        iterator() = default;
 
         /**
          * @brief Increments the position.
@@ -61,6 +65,17 @@ public:
         {
             ++_index;
             return *this;
+        }
+
+        /**
+         * @brief Increments the position.
+         * @return The iterator before being incremented.
+         */
+        iterator operator++(int)
+        {
+            iterator copy(*this);
+            ++_index;
+            return copy;
         }
 
         /**
@@ -85,6 +100,17 @@ public:
         }
 
         /**
+         * @brief Decrements the position.
+         * @return The iterator before being decremented.
+         */
+        iterator operator--(int)
+        {
+            iterator copy(*this);
+            --_index;
+            return copy;
+        }
+
+        /**
          * @brief Decrements the position the given number of times.
          * @param value Number of positions to decrement.
          * @return Reference to this.
@@ -96,51 +122,61 @@ public:
         }
 
         /**
-         * @brief Returns a const reference to the pointed value.
-         */
-        [[nodiscard]] const_reference operator*() const
-        {
-            return _deque->_value(_index);
-        }
-
-        /**
          * @brief Returns a reference to the pointed value.
          */
-        [[nodiscard]] reference operator*()
+        [[nodiscard]] reference operator*() const
         {
             return _deque->_value(_index);
-        }
-
-        /**
-         * @brief Returns a const pointer to the pointed value.
-         */
-        const_pointer operator->() const
-        {
-            return &_deque->_value(_index);
         }
 
         /**
          * @brief Returns a pointer to the pointed value.
          */
-        pointer operator->()
+        pointer operator->() const
         {
             return &_deque->_value(_index);
         }
 
         /**
-         * @brief Returns a incremented b times.
+         * @brief Returns a reference to the pointed value by this iterator incremented offset times.
          */
-        [[nodiscard]] friend iterator operator+(const iterator& a, size_type b)
+        [[nodiscard]] reference operator[](size_type offset) const
         {
-            return iterator(&a._deque, a._index + b);
+            iterator result(*this);
+            result += offset;
+            return *result;
         }
 
         /**
-         * @brief Returns a decremented b times.
+         * @brief Returns the iterator it incremented offset times.
          */
-        [[nodiscard]] friend iterator operator-(const iterator& a, size_type b)
+        [[nodiscard]] friend iterator operator+(const iterator& it, size_type offset)
         {
-            return iterator(&a._deque, a._index - b);
+            return iterator(&it._deque, it._index + offset);
+        }
+
+        /**
+         * @brief Returns the iterator it incremented offset times.
+         */
+        [[nodiscard]] friend iterator operator+(size_type offset, const iterator& it)
+        {
+            return iterator(&it._deque, it._index + offset);
+        }
+
+        /**
+         * @brief Returns the iterator it decremented offset times.
+         */
+        [[nodiscard]] friend iterator operator-(const iterator& it, size_type offset)
+        {
+            return iterator(&it._deque, it._index - offset);
+        }
+
+        /**
+         * @brief Returns the iterator it decremented offset times.
+         */
+        [[nodiscard]] friend iterator operator-(size_type offset, const iterator& it)
+        {
+            return iterator(&it._deque, it._index - offset);
         }
 
         /**
@@ -178,7 +214,7 @@ public:
          */
         [[nodiscard]] friend bool operator!=(const iterator& a, const iterator& b)
         {
-            return ! (a == b);
+            return a._index != b._index;
         }
 
         /**
@@ -202,7 +238,7 @@ public:
          */
         [[nodiscard]] friend bool operator>(const iterator& a, const iterator& b)
         {
-            return b < a;
+            return a._index > b._index;
         }
 
         /**
@@ -214,7 +250,7 @@ public:
          */
         [[nodiscard]] friend bool operator<=(const iterator& a, const iterator& b)
         {
-            return ! (a > b);
+            return a._index <= b._index;
         }
 
         /**
@@ -226,15 +262,15 @@ public:
          */
         [[nodiscard]] friend bool operator>=(const iterator& a, const iterator& b)
         {
-            return ! (a < b);
+            return a._index >= b._index;
         }
 
     private:
         friend class ideque;
         friend class const_iterator;
 
-        ideque* _deque;
-        size_type _index;
+        ideque* _deque = nullptr;
+        size_type _index = 0;
 
         iterator(ideque& deque, size_type index) :
             _deque(&deque),
@@ -253,14 +289,17 @@ public:
         using value_type = ideque::value_type; //!< Value type alias.
         using size_type = ideque::size_type; //!< Size type alias.
         using difference_type = ideque::difference_type; //!< Difference type alias.
-        using reference = ideque::reference; //!< Reference alias.
-        using const_reference = ideque::const_reference; //!< Const reference alias.
-        using pointer = ideque::pointer; //!< Pointer alias.
-        using const_pointer = ideque::const_pointer; //!< Const pointer alias.
+        using reference = ideque::const_reference; //!< Reference alias.
+        using pointer = ideque::const_pointer; //!< Pointer alias.
         using iterator_category = random_access_iterator_tag; //!< Iterator category alias.
 
         /**
-         * @brief Public constructor.
+         * @brief Default constructor.
+         */
+        const_iterator() = default;
+
+        /**
+         * @brief Constructor.
          * @param it Non const iterator.
          */
         const_iterator(const iterator& it) :
@@ -277,6 +316,17 @@ public:
         {
             ++_index;
             return *this;
+        }
+
+        /**
+         * @brief Increments the position.
+         * @return The iterator before being incremented.
+         */
+        const_iterator operator++(int)
+        {
+            const_iterator copy(*this);
+            ++_index;
+            return copy;
         }
 
         /**
@@ -298,6 +348,17 @@ public:
         {
             --_index;
             return *this;
+        }
+
+        /**
+         * @brief Decrements the position.
+         * @return The iterator before being decremented.
+         */
+        const_iterator operator--(int)
+        {
+            const_iterator copy(*this);
+            --_index;
+            return copy;
         }
 
         /**
@@ -328,19 +389,45 @@ public:
         }
 
         /**
-         * @brief Returns a incremented b times.
+         * @brief Returns a const reference to the pointed value by this iterator incremented offset times.
          */
-        [[nodiscard]] friend const_iterator operator+(const const_iterator& a, size_type b)
+        [[nodiscard]] const_reference operator[](size_type offset) const
         {
-            return const_iterator(&a._deque, a._index + b);
+            const_iterator result(*this);
+            result += offset;
+            return *result;
         }
 
         /**
-         * @brief Returns a decremented b times.
+         * @brief Returns the iterator it incremented offset times.
          */
-        [[nodiscard]] friend const_iterator operator-(const const_iterator& a, size_type b)
+        [[nodiscard]] friend const_iterator operator+(const const_iterator& it, size_type offset)
         {
-            return const_iterator(&a._deque, a._index - b);
+            return const_iterator(&it._deque, it._index + offset);
+        }
+
+        /**
+         * @brief Returns the iterator it incremented offset times.
+         */
+        [[nodiscard]] friend const_iterator operator+(size_type offset, const const_iterator& it)
+        {
+            return const_iterator(&it._deque, it._index + offset);
+        }
+
+        /**
+         * @brief Returns the iterator it decremented offset times.
+         */
+        [[nodiscard]] friend const_iterator operator-(const const_iterator& it, size_type offset)
+        {
+            return const_iterator(&it._deque, it._index - offset);
+        }
+
+        /**
+         * @brief Returns the iterator it decremented offset times.
+         */
+        [[nodiscard]] friend const_iterator operator-(size_type offset, const const_iterator& it)
+        {
+            return const_iterator(&it._deque, it._index - offset);
         }
 
         /**
@@ -378,7 +465,7 @@ public:
          */
         [[nodiscard]] friend bool operator!=(const const_iterator& a, const const_iterator& b)
         {
-            return ! (a == b);
+            return a._index != b._index;
         }
 
         /**
@@ -402,7 +489,7 @@ public:
          */
         [[nodiscard]] friend bool operator>(const const_iterator& a, const const_iterator& b)
         {
-            return b < a;
+            return a._index > b._index;
         }
 
         /**
@@ -414,7 +501,7 @@ public:
          */
         [[nodiscard]] friend bool operator<=(const const_iterator& a, const const_iterator& b)
         {
-            return ! (a > b);
+            return a._index <= b._index;
         }
 
         /**
@@ -426,14 +513,14 @@ public:
          */
         [[nodiscard]] friend bool operator>=(const const_iterator& a, const const_iterator& b)
         {
-            return ! (a < b);
+            return a._index >= b._index;
         }
 
     private:
         friend class ideque;
 
-        const ideque* _deque;
-        size_type _index;
+        const ideque* _deque = nullptr;
+        size_type _index = 0;
 
         const_iterator(const ideque& deque, size_type index) :
             _deque(&deque),
@@ -722,7 +809,7 @@ public:
         BN_BASIC_ASSERT(! full(), "Deque is full");
 
         _push_front();
-        new(_data + _begin) value_type(value);
+        ::new(static_cast<void*>(_data + _begin)) value_type(value);
     }
 
     /**
@@ -734,7 +821,7 @@ public:
         BN_BASIC_ASSERT(! full(), "Deque is full");
 
         _push_front();
-        new(_data + _begin) value_type(move(value));
+        ::new(static_cast<void*>(_data + _begin)) value_type(move(value));
     }
 
     /**
@@ -750,7 +837,7 @@ public:
         _push_front();
 
         Type* result = _data + _begin;
-        new(result) value_type(forward<Args>(args)...);
+        ::new(static_cast<void*>(result)) value_type(forward<Args>(args)...);
         return *result;
     }
 
@@ -762,7 +849,7 @@ public:
     {
         BN_BASIC_ASSERT(! full(), "Deque is full");
 
-        new(_data + _real_index(_size)) value_type(value);
+        ::new(static_cast<void*>(_data + _real_index(_size))) value_type(value);
         ++_size;
     }
 
@@ -774,7 +861,7 @@ public:
     {
         BN_BASIC_ASSERT(! full(), "Deque is full");
 
-        new(_data + _real_index(_size)) value_type(move(value));
+        ::new(static_cast<void*>(_data + _real_index(_size))) value_type(move(value));
         ++_size;
     }
 
@@ -789,7 +876,7 @@ public:
         BN_BASIC_ASSERT(! full(), "Deque is full");
 
         Type* result = _data + _real_index(_size);
-        new(result) value_type(forward<Args>(args)...);
+        ::new(static_cast<void*>(result)) value_type(forward<Args>(args)...);
         ++_size;
         return *result;
     }
@@ -827,7 +914,7 @@ public:
 
         if(index == 0)
         {
-            new(_data + _begin) value_type(value);
+            ::new(static_cast<void*>(_data + _begin)) value_type(value);
             _push_front();
         }
         else
@@ -838,7 +925,7 @@ public:
             pointer data = _data;
             size_type last = _size;
             size_type last_real_index = _real_index(last);
-            new(data + last_real_index) value_type(value);
+            ::new(static_cast<void*>(data + last_real_index)) value_type(value);
             reference last_value = data[last_real_index];
 
             for(; index != last; ++index)
@@ -865,7 +952,7 @@ public:
         if(index == 0)
         {
             _push_front();
-            new(_data + _begin) value_type(move(value));
+            ::new(static_cast<void*>(_data + _begin)) value_type(move(value));
         }
         else
         {
@@ -875,7 +962,7 @@ public:
             pointer data = _data;
             size_type last = _size;
             size_type last_real_index = _real_index(last);
-            new(data + last_real_index) value_type(move(value));
+            ::new(static_cast<void*>(data + last_real_index)) value_type(move(value));
             reference last_value = data[last_real_index];
 
             for(; index != last; ++index)
@@ -903,7 +990,7 @@ public:
         if(index == 0)
         {
             _push_front();
-            new(_data + _begin) value_type(forward<Args>(args)...);
+            ::new(static_cast<void*>(_data + _begin)) value_type(forward<Args>(args)...);
         }
         else
         {
@@ -913,7 +1000,7 @@ public:
             pointer data = _data;
             size_type last = _size;
             size_type last_real_index = _real_index(last);
-            new(_data + last_real_index) value_type(forward<Args>(args)...);
+            ::new(static_cast<void*>(_data + last_real_index)) value_type(forward<Args>(args)...);
             reference last_value = data[last_real_index];
 
             for(; index != last; ++index)
@@ -977,10 +1064,10 @@ public:
     {
         size_type first_index = first._index;
         size_type size = _size;
-        BN_ASSERT(first_index >= 0 && first_index < size, "Invalid first: ", first_index, " - ", size);
+        BN_ASSERT(first_index >= 0, "Invalid first: ", first_index, " - ", size);
 
         size_type last_index = last._index;
-        BN_ASSERT(last_index >= 0 && last_index < size, "Invalid last: ", last_index, " - ", size);
+        BN_ASSERT(last_index <= size, "Invalid last: ", last_index, " - ", size);
 
         size_type delete_count = last_index - first_index;
         BN_ASSERT(delete_count >= 0 && delete_count <= size, "Invalid delete count: ", delete_count, " - ", size);
@@ -1048,7 +1135,7 @@ public:
         {
             for(size_type index = size; index < count; ++index)
             {
-                new(data + _real_index(index)) value_type();
+                ::new(static_cast<void*>(data + _real_index(index))) value_type();
             }
         }
     }
@@ -1077,7 +1164,7 @@ public:
         {
             for(size_type index = size; index < count; ++index)
             {
-                new(data + _real_index(index)) value_type(value);
+                ::new(static_cast<void*>(data + _real_index(index))) value_type(value);
             }
         }
     }
@@ -1115,7 +1202,7 @@ public:
 
         for(size_type index = 0; index < count; ++index)
         {
-            new(data + index) value_type(value);
+            ::new(static_cast<void*>(data + index)) value_type(value);
         }
     }
 
@@ -1136,7 +1223,7 @@ public:
 
         for(size_type index = 0; index < count; ++index)
         {
-            new(data + index) value_type(*first);
+            ::new(static_cast<void*>(data + index)) value_type(*first);
             ++first;
         }
     }
@@ -1320,7 +1407,7 @@ protected:
 
         for(size_type index = 0; index < other_size; ++index)
         {
-            new(data + index) value_type(other_data[other._real_index(index)]);
+            ::new(static_cast<void*>(data + index)) value_type(other_data[other._real_index(index)]);
         }
     }
 
@@ -1333,7 +1420,7 @@ protected:
 
         for(size_type index = 0; index < other_size; ++index)
         {
-            new(data + index) value_type(move(other_data[other._real_index(index)]));
+            ::new(static_cast<void*>(data + index)) value_type(move(other_data[other._real_index(index)]));
         }
 
         other._size = 0;
@@ -1348,7 +1435,7 @@ protected:
 
         for(size_type index = size; index < count; ++index)
         {
-            new(data + index) value_type();
+            ::new(static_cast<void*>(data + index)) value_type();
         }
     }
 
@@ -1359,7 +1446,7 @@ protected:
 
         for(size_type index = 0; index < count; ++index)
         {
-            new(data + index) value_type(value);
+            ::new(static_cast<void*>(data + index)) value_type(value);
         }
     }
 

@@ -1,20 +1,35 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
 #include "bn_affine_bg_ptr.h"
 
-#include "bn_size.h"
 #include "bn_window.h"
 #include "bn_bgs_manager.h"
 #include "bn_bg_palette_ptr.h"
+#include "bn_top_left_utils.h"
 #include "bn_affine_bg_builder.h"
 #include "bn_affine_bg_tiles_ptr.h"
 #include "bn_affine_bg_attributes.h"
 
 namespace bn
 {
+
+affine_bg_ptr affine_bg_ptr::create(const affine_bg_item& item)
+{
+    return affine_bg_ptr(bgs_manager::create(affine_bg_builder(item)));
+}
+
+affine_bg_ptr affine_bg_ptr::create(const affine_bg_item& item, int map_index)
+{
+    return affine_bg_ptr(bgs_manager::create(affine_bg_builder(item, map_index)));
+}
+
+affine_bg_ptr affine_bg_ptr::create(affine_bg_map_ptr map)
+{
+    return affine_bg_ptr(bgs_manager::create(affine_bg_builder(move(map))));
+}
 
 affine_bg_ptr affine_bg_ptr::create(fixed x, fixed y, const affine_bg_item& item)
 {
@@ -66,6 +81,42 @@ affine_bg_ptr affine_bg_ptr::create(const affine_bg_builder& builder)
 affine_bg_ptr affine_bg_ptr::create(affine_bg_builder&& builder)
 {
     return affine_bg_ptr(bgs_manager::create(move(builder)));
+}
+
+optional<affine_bg_ptr> affine_bg_ptr::create_optional(const affine_bg_item& item)
+{
+    optional<affine_bg_ptr> result;
+
+    if(handle_type handle = bgs_manager::create_optional(affine_bg_builder(item)))
+    {
+        result = affine_bg_ptr(handle);
+    }
+
+    return result;
+}
+
+optional<affine_bg_ptr> affine_bg_ptr::create_optional(const affine_bg_item& item, int map_index)
+{
+    optional<affine_bg_ptr> result;
+
+    if(handle_type handle = bgs_manager::create_optional(affine_bg_builder(item, map_index)))
+    {
+        result = affine_bg_ptr(handle);
+    }
+
+    return result;
+}
+
+optional<affine_bg_ptr> affine_bg_ptr::create_optional(affine_bg_map_ptr map)
+{
+    optional<affine_bg_ptr> result;
+
+    if(handle_type handle = bgs_manager::create_optional(affine_bg_builder(move(map))))
+    {
+        result = affine_bg_ptr(handle);
+    }
+
+    return result;
 }
 
 optional<affine_bg_ptr> affine_bg_ptr::create_optional(fixed x, fixed y, const affine_bg_item& item)
@@ -293,7 +344,8 @@ void affine_bg_ptr::set_map(const affine_bg_map_item& map_item)
         affine_bg_tiles_ptr tiles_copy(current_tiles);
         bg_palette_ptr palette_copy(current_palette);
         bgs_manager::remove_affine_map(_handle);
-        bgs_manager::set_affine_map(_handle, map_item.create_new_map(move(tiles_copy), move(palette_copy)));
+        bgs_manager::set_affine_map(
+                _handle, affine_bg_map_ptr::create(map_item, move(tiles_copy), move(palette_copy)));
     }
 }
 
@@ -313,7 +365,7 @@ void affine_bg_ptr::set_map(const affine_bg_map_item& map_item, int map_index)
         bg_palette_ptr palette_copy(current_palette);
         bgs_manager::remove_affine_map(_handle);
         bgs_manager::set_affine_map(
-                    _handle, map_item.create_new_map(move(tiles_copy), move(palette_copy), map_index));
+                _handle, affine_bg_map_ptr::create(map_item, move(tiles_copy), move(palette_copy), map_index));
     }
 }
 
@@ -336,11 +388,12 @@ void affine_bg_ptr::set_item(const affine_bg_item& item)
         if(affine_bg_tiles_ptr* tiles_ptr = tiles.get())
         {
             bgs_manager::set_affine_map(
-                        _handle, map_item.create_new_map(move(*tiles_ptr), item.palette_item().create_palette()));
+                    _handle, affine_bg_map_ptr::create(
+                            map_item, move(*tiles_ptr), bg_palette_ptr::create(item.palette_item())));
         }
         else
         {
-            bgs_manager::set_affine_map(_handle, item.create_new_map());
+            bgs_manager::set_affine_map(_handle, affine_bg_map_ptr::create(item));
         }
     }
 }
@@ -363,12 +416,13 @@ void affine_bg_ptr::set_item(const affine_bg_item& item, int map_index)
 
         if(affine_bg_tiles_ptr* tiles_ptr = tiles.get())
         {
-            bgs_manager::set_affine_map(_handle, map_item.create_new_map(
-                                            move(*tiles_ptr), item.palette_item().create_palette(), map_index));
+            bgs_manager::set_affine_map(
+                    _handle, affine_bg_map_ptr::create(
+                            map_item, move(*tiles_ptr), bg_palette_ptr::create(item.palette_item()), map_index));
         }
         else
         {
-            bgs_manager::set_affine_map(_handle, item.create_new_map(map_index));
+            bgs_manager::set_affine_map(_handle, affine_bg_map_ptr::create(item, map_index));
         }
     }
 }
@@ -408,6 +462,41 @@ void affine_bg_ptr::set_position(const fixed_point& position)
     bgs_manager::set_affine_position(_handle, position);
 }
 
+fixed affine_bg_ptr::top_left_x() const
+{
+    return to_top_left_x(position().x(), dimensions().width());
+}
+
+void affine_bg_ptr::set_top_left_x(fixed top_left_x)
+{
+    set_x(from_top_left_x(top_left_x, dimensions().width()));
+}
+
+fixed affine_bg_ptr::top_left_y() const
+{
+    return to_top_left_y(position().y(), dimensions().height());
+}
+
+void affine_bg_ptr::set_top_left_y(fixed top_left_y)
+{
+    set_y(from_top_left_y(top_left_y, dimensions().height()));
+}
+
+fixed_point affine_bg_ptr::top_left_position() const
+{
+    return to_top_left_position(position(), dimensions());
+}
+
+void affine_bg_ptr::set_top_left_position(fixed top_left_x, fixed top_left_y)
+{
+    set_position(from_top_left_position(fixed_point(top_left_x, top_left_y), dimensions()));
+}
+
+void affine_bg_ptr::set_top_left_position(const fixed_point& top_left_position)
+{
+    set_position(from_top_left_position(top_left_position, dimensions()));
+}
+
 fixed affine_bg_ptr::rotation_angle() const
 {
     return bgs_manager::rotation_angle(_handle);
@@ -416,6 +505,11 @@ fixed affine_bg_ptr::rotation_angle() const
 void affine_bg_ptr::set_rotation_angle(fixed rotation_angle)
 {
     bgs_manager::set_rotation_angle(_handle, rotation_angle);
+}
+
+void affine_bg_ptr::set_rotation_angle_safe(fixed rotation_angle)
+{
+    bgs_manager::set_rotation_angle(_handle, safe_degrees_angle(rotation_angle));
 }
 
 fixed affine_bg_ptr::horizontal_scale() const
@@ -611,6 +705,16 @@ bool affine_bg_ptr::blending_bottom_enabled() const
 void affine_bg_ptr::set_blending_bottom_enabled(bool blending_bottom_enabled)
 {
     bgs_manager::set_blending_bottom_enabled(_handle, blending_bottom_enabled);
+}
+
+bn::green_swap_mode affine_bg_ptr::green_swap_mode() const
+{
+    return bgs_manager::green_swap_mode(_handle);
+}
+
+void affine_bg_ptr::set_green_swap_mode(bn::green_swap_mode green_swap_mode)
+{
+    bgs_manager::set_green_swap_mode(_handle, green_swap_mode);
 }
 
 bool affine_bg_ptr::visible() const

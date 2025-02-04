@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -186,7 +186,7 @@ public:
         static_assert(sizeof(Type) <= MaxElementSize);
 
         auto result = reinterpret_cast<Type*>(_allocate());
-        new(result) Type(forward<Args>(args)...);
+        ::new(static_cast<void*>(result)) Type(forward<Args>(args)...);
         return *result;
     }
 

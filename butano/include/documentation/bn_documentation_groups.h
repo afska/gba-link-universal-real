@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -42,7 +42,7 @@
  * On the GBA, both sprites and backgrounds have 256 colors organized in blocks of multiples of 16 colors
  * (512 colors in total). Each one of these blocks is called color palette.
  *
- * There's 8 bits per pixel palettes (which can refer to all colors)
+ * There are 8 bits per pixel palettes (which can refer to all colors)
  * and 4 bits per pixel palettes (which can access only to 16 consecutive colors).
  *
  * Butano color palettes system allows to manage individual 4 bits per pixel palettes for sprites and backgrounds,
@@ -328,7 +328,7 @@
  *
  * It can be enabled or disabled by overloading the definition of @ref BN_CFG_ASSERT_ENABLED.
  *
- * Note that these asserts can be used in `constexpr` contexts (`is_constant_evaluated()` returns `true`).
+ * Note that these asserts can be used in `constexpr` contexts (`if consteval` returns `true`).
  */
 
 /**

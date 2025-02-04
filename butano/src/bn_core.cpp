@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 Gustavo Valiente gustavo.valiente@protonmail.com
+ * Copyright (c) 2020-2025 Gustavo Valiente gustavo.valiente@protonmail.com
  * zlib License, see LICENSE file.
  */
 
@@ -11,7 +11,6 @@
 #include "bn_keypad.h"
 #include "bn_memory.h"
 #include "bn_timers.h"
-#include "bn_version.h"
 #include "bn_profiler.h"
 #include "bn_system_font.h"
 #include "bn_bgs_manager.h"
@@ -19,6 +18,7 @@
 #include "bn_link_manager.h"
 #include "bn_gpio_manager.h"
 #include "bn_audio_manager.h"
+#include "bn_config_assert.h"
 #include "bn_keypad_manager.h"
 #include "bn_memory_manager.h"
 #include "bn_display_manager.h"
@@ -30,6 +30,7 @@
 #include "bn_hblank_effects_manager.h"
 #include "../hw/include/bn_hw_irq.h"
 #include "../hw/include/bn_hw_core.h"
+#include "../hw/include/bn_hw_gpio.h"
 #include "../hw/include/bn_hw_sram.h"
 #include "../hw/include/bn_hw_timer.h"
 #include "../hw/include/bn_hw_memory.h"
@@ -131,7 +132,7 @@ namespace
         timer cpu_usage_timer;
         ticks last_ticks;
         bn::system_font system_font;
-        string_view assert_tag = BN_VERSION_STRING " " BN_TOOLCHAIN_TAG;
+        string_view assert_tag = BN_CFG_ASSERT_TAG;
         int skip_frames = 0;
         int last_update_frames = 1;
         int missed_frames = 0;
@@ -169,6 +170,7 @@ namespace
 
         audio_manager::stop();
         hdma_manager::force_stop();
+        hblank_effects_manager::stop();
         palettes_manager::stop();
         bgs_manager::stop();
         display_manager::stop();
@@ -236,6 +238,10 @@ namespace
         BN_BARRIER;
         result.missed_frames = data.missed_frames;
         data.missed_frames = 0;
+
+        BN_PROFILER_ENGINE_DETAILED_START("eng_hblank_fx_commit");
+        hblank_effects_manager::disable();
+        BN_PROFILER_ENGINE_DETAILED_STOP();
 
         BN_PROFILER_ENGINE_DETAILED_START("eng_audio_commands");
         audio_manager::execute_commands();
@@ -325,7 +331,7 @@ void init(const string_view& keypad_commands)
 
 void init(const optional<color>& transparent_color, const string_view& keypad_commands)
 {
-    new(&data) static_data();
+    ::new(static_cast<void*>(&data)) static_data();
 
     // Initial wait:
     hw::core::init();
@@ -350,7 +356,10 @@ void init(const optional<color>& transparent_color, const string_view& keypad_co
     data.slow_game_pak = hw::game_pak::init();
     hw::memory::init();
 
-    [[maybe_unused]] const char* sram_type = hw::sram::init();
+    [[maybe_unused]] const char* sram_string = hw::sram::init();
+
+    // Init gpio:
+    [[maybe_unused]] const char* rtc_string = hw::gpio::init();
 
     // Init display:
     display_manager::init();
@@ -441,7 +450,6 @@ void on_vblank()
     }
 }
 
-
 void sleep(keypad::key_type wake_up_key)
 {
     const keypad::key_type wake_up_keys[] = { wake_up_key };
@@ -450,7 +458,7 @@ void sleep(keypad::key_type wake_up_key)
 
 void sleep(const span<const keypad::key_type>& wake_up_keys)
 {
-    BN_ASSERT(! wake_up_keys.empty(), "There's no wake up keys");
+    BN_BASIC_ASSERT(! wake_up_keys.empty(), "There are no keys");
 
     // Force at least one update:
     update();
