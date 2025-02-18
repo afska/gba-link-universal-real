@@ -12,8 +12,8 @@
 
 #define NUM_EXPLOSIONS 6
 
-VideoScene::VideoScene(const GBFS_FILE* _fs)
-    : Scene(_fs),
+VideoScene::VideoScene()
+    : Scene(),
       horse(bn::unique_ptr{new Horse({0, 0})}),
       textGenerator(common_fixed_8x16_sprite_font),
       textGeneratorAccent(common_fixed_8x16_sprite_font_accent),

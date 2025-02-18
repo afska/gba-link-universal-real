@@ -5,7 +5,6 @@
 
 #include "scenes/MultibootScene.h"
 #include "scenes/StartScene.h"
-#include "utils/gbfs/gbfs.h"
 
 #include "../butano/hw/include/bn_hw_irq.h"
 
@@ -13,7 +12,6 @@ LinkUniversal* linkUniversal = nullptr;
 LinkCableMultiboot::Async* linkCableMultibootAsync = nullptr;
 LinkWirelessMultiboot::Async* linkWirelessMultibootAsync = nullptr;
 
-static const GBFS_FILE* fs = find_first_gbfs_file(0);
 bn::optional<bn::unique_ptr<Scene>> scene;
 
 void ISR_VBLANK();
@@ -45,8 +43,8 @@ int main() {
 
   // Disable DMA
   bn::memory::set_dma_enabled(false);
-  // ^^^ DMA screws up interrupts and might cause packet loss!
-  // ^^^ Most audio players also use DMA but it's not too terrible.
+  // ^^^ DMA stops interrupts and might cause packet loss!
+  // ^^^ Most audio players also use DMA but it shouldn't affect LinkUniversal.
 
   // Add the required interrupt service routines
   bn::core::set_vblank_callback(ISR_VBLANK);
@@ -55,12 +53,8 @@ int main() {
   bn::hw::irq::set_isr(bn::hw::irq::id::TIMER1, ISR_TIMER);
   bn::hw::irq::enable(bn::hw::irq::id::TIMER1);
 
-  // Ensure the GBFS file exists
-  BN_ASSERT(fs != NULL,
-            "GBFS file not found.\nUse the ROM that ends with .out.gba!");
-
   // Initialize scene
-  scene = bn::unique_ptr{(Scene*)new StartScene(fs)};
+  scene = bn::unique_ptr{(Scene*)new StartScene()};
   scene->get()->init();
 
   // Main loop
@@ -130,16 +124,16 @@ void transitionToNextScene() {
 bn::unique_ptr<Scene> setNextScene(Screen nextScreen) {
   switch (nextScreen) {
     case Screen::MAIN:
-      return bn::unique_ptr{(Scene*)new StartScene(fs)};
+      return bn::unique_ptr{(Scene*)new StartScene()};
     case Screen::MULTIBOOT_CABLE:
       return bn::unique_ptr{
-          (Scene*)new MultibootScene(MultibootScene::Mode::CABLE, fs)};
+          (Scene*)new MultibootScene(MultibootScene::Mode::CABLE)};
     case Screen::MULTIBOOT_WIRELESS:
       return bn::unique_ptr{
-          (Scene*)new MultibootScene(MultibootScene::Mode::WIRELESS, fs)};
+          (Scene*)new MultibootScene(MultibootScene::Mode::WIRELESS)};
     default: {
       BN_ERROR("Next screen not found?");
-      return bn::unique_ptr{(Scene*)new StartScene(fs)};
+      return bn::unique_ptr{(Scene*)new StartScene()};
     }
   }
 }

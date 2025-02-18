@@ -2,14 +2,13 @@
 
 #include "bn_keypad.h"
 
-#define FILE_NAME "LinkUniversal_fullmb.gba"
+#include "LinkUniversal_fullmb_bin.h"
 
 using u32 = Link::u32;
 using u16 = Link::u16;
 using u8 = Link::u8;
 
-MultibootScene::MultibootScene(Mode _mode, const GBFS_FILE* _fs)
-    : VideoScene(_fs), mode(_mode) {}
+MultibootScene::MultibootScene(Mode _mode) : VideoScene(), mode(_mode) {}
 
 void MultibootScene::init() {
   VideoScene::init();
@@ -97,8 +96,8 @@ Link::AsyncMultiboot* MultibootScene::instance() {
 }
 
 void MultibootScene::sendRomViaCable(bool normalMode) {
-  unsigned long romSize;
-  const u8* romToSend = (const u8*)gbfs_get_obj(fs, FILE_NAME, &romSize);
+  unsigned long romSize = LinkUniversal_fullmb_bin_size;
+  const u8* romToSend = LinkUniversal_fullmb_bin;
 
   // Send ROM (cable)
   linkCableMultibootAsync->config.waitForReadySignal = bn::keypad::start_held();
@@ -109,8 +108,8 @@ void MultibootScene::sendRomViaCable(bool normalMode) {
 }
 
 void MultibootScene::sendRomViaWirelessAdapter() {
-  unsigned long romSize;
-  const u8* romToSend = (const u8*)gbfs_get_obj(fs, FILE_NAME, &romSize);
+  unsigned long romSize = LinkUniversal_fullmb_bin_size;
+  const u8* romToSend = LinkUniversal_fullmb_bin;
 
   // Send ROM (wireless)
   linkWirelessMultibootAsync->config.waitForReadySignal =
@@ -131,8 +130,8 @@ void MultibootScene::printInstructions() {
 }
 
 void MultibootScene::launch() {
-  unsigned long romSize;
-  const u8* romToSend = (const u8*)gbfs_get_obj(fs, FILE_NAME, &romSize);
+  unsigned long romSize = LinkUniversal_fullmb_bin_size;
+  const u8* romToSend = LinkUniversal_fullmb_bin;
 
   Link::_REG_IME = 0;
   *((volatile u16*)0x04000082) = 0;  // (clear SOUNDCNT_H)

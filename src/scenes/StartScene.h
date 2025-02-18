@@ -5,8 +5,6 @@
 
 class StartScene : public VideoScene {
  public:
-  StartScene(const GBFS_FILE* _fs);
-
   void init() override;
   void destroy() override;
   void update() override;

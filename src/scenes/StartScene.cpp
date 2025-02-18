@@ -7,8 +7,6 @@
 
 #include "bn_music_items.h"
 
-StartScene::StartScene(const GBFS_FILE* _fs) : VideoScene(_fs) {}
-
 void StartScene::init() {
   linkUniversal->activate();  // << enable LinkUniversal
 

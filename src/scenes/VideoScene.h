@@ -12,7 +12,7 @@
 
 class VideoScene : public Scene {
  public:
-  VideoScene(const GBFS_FILE* _fs);
+  VideoScene();
 
   void init() override;
   void update() override;

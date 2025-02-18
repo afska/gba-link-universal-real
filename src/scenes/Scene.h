@@ -1,8 +1,6 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-#include "../utils/gbfs/gbfs.h"
-
 #include "bn_affine_bg_ptr.h"
 #include "bn_bg_palettes.h"
 #include "bn_bgs_mosaic.h"
@@ -35,7 +33,7 @@ enum Screen {
 
 class Scene {
  public:
-  Scene(const GBFS_FILE* _fs) : fs(_fs) {}
+  Scene() {}
 
   virtual void init() = 0;
   virtual void destroy() = 0;
@@ -47,7 +45,6 @@ class Scene {
   Screen getNextScreen() { return nextScreen; }
 
  protected:
-  const GBFS_FILE* fs;
   Screen nextScreen = Screen::NO;
 
   void setNextScreen(Screen screen) { nextScreen = screen; }

@@ -42,7 +42,7 @@ SOURCES     	:=  src \
 					src/utils/gba-link-connection/iwram_code \
 					src/utils/gbfs
 INCLUDES    	:=  include
-DATA        	:=
+DATA        	:=  data
 GRAPHICS    	:=  graphics
 AUDIO       	:=  audio
 DMGAUDIO    	:=  dmg_audio

@@ -10,7 +10,7 @@ class MultibootScene : public VideoScene {
  public:
   enum class Mode { CABLE, WIRELESS };
 
-  MultibootScene(Mode mode, const GBFS_FILE* _fs);
+  MultibootScene(Mode mode);
 
   void init() override;
   void destroy() override;
