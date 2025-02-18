@@ -1,4 +1,4 @@
-# gba-link-universal-real
+# LinkUniversal_real
 
 This is a test ROM (based on [BeatBeast](https://github.com/afska/beat-beast)) that checks how the [LinkUniversal](https://github.com/afska/gba-link-connection?tab=readme-ov-file#-LinkUniversal) library behaves in the context of a 2-player game, with an audio player (in Direct Sound DMA mode) playing music, a background video, text and sprites.
 

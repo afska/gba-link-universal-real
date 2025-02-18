@@ -39,6 +39,7 @@ SOURCES     	:=  src \
 					src/objects \
 					src/utils \
 					src/utils/gba-link-connection \
+					src/utils/gba-link-connection/iwram_code \
 					src/utils/gbfs
 INCLUDES    	:=  include
 DATA        	:=

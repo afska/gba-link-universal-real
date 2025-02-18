@@ -207,6 +207,9 @@ class LinkCable {
    */
   template <typename F>
   bool waitFor(u8 playerId, F cancel) {
+    if (!isEnabled)
+      return false;
+
     sync();
 
     while (isConnected() && !canRead(playerId) && !cancel()) {
@@ -253,8 +256,8 @@ class LinkCable {
    * returned.
    */
   bool send(u16 data) {
-    if (data == LINK_CABLE_DISCONNECTED || data == LINK_CABLE_NO_DATA ||
-        !canSend())
+    if (!isEnabled || data == LINK_CABLE_DISCONNECTED ||
+        data == LINK_CABLE_NO_DATA || !canSend())
       return false;
 
     _state.outgoingMessages.syncPush(data);
@@ -262,7 +265,7 @@ class LinkCable {
   }
 
   /**
-   * @brief Returns if a `send(...)` call would fail due to the queue being
+   * @brief Returns whether a `send(...)` call would fail due to the queue being
    * full.
    */
   bool canSend() { return !_state.outgoingMessages.isFull(); }
@@ -448,7 +451,6 @@ class LinkCable {
     volatile bool isResetTimeoutPending = false;
   };
 
-  LinkRawCable linkRawCable;
   ExternalState state;
   InternalState _state;
   volatile bool isEnabled = false;
@@ -503,12 +505,12 @@ class LinkCable {
 
   void stop() {
     stopTimer();
-    linkRawCable.deactivate();
+    LinkRawCable::setGeneralPurposeMode();
   }
 
   void start() {
     startTimer();
-    linkRawCable.activate(config.baudRate);
+    LinkRawCable::setMultiPlayMode(config.baudRate);
     LinkRawCable::setInterruptsOn();
   }
 
