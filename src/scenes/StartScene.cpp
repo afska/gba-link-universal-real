@@ -186,7 +186,7 @@ void StartScene::hideCredits() {
 void StartScene::printCredits() {
   creditsSprites.clear();
   textGenerator.generate({0, -70 - 4}, "github.com/afska/", creditsSprites);
-  textGeneratorAccent.generate({0, -60 - 4}, "gba-link-universal-test",
+  textGeneratorAccent.generate({0, -60 - 4}, "gba-link-universal-real",
                                creditsSprites);
 
   textGenerator.generate({0, -40 - 4}, "Game engine:", creditsSprites);
