@@ -61,7 +61,7 @@
 // #define LINK_RAW_WIRELESS_ENABLE_LOGGING
 #endif
 
-LINK_VERSION_TAG LINK_RAW_WIRELESS_VERSION = "vLinkRawWireless/v8.0.3";
+LINK_VERSION_TAG LINK_RAW_WIRELESS_VERSION = "vLinkRawWireless/v8.0.4";
 
 #define LINK_RAW_WIRELESS_MAX_PLAYERS 5
 #define LINK_RAW_WIRELESS_MAX_COMMAND_RESPONSE_LENGTH 30
@@ -75,7 +75,7 @@ LINK_VERSION_TAG LINK_RAW_WIRELESS_VERSION = "vLinkRawWireless/v8.0.3";
   (1 + LINK_RAW_WIRELESS_BROADCAST_LENGTH)
 #define LINK_RAW_WIRELESS_MAX_SERVERS              \
   (LINK_RAW_WIRELESS_MAX_COMMAND_RESPONSE_LENGTH / \
-   LINK_RAW_WIRELESS_BROADCAST_LENGTH)
+   LINK_RAW_WIRELESS_BROADCAST_RESPONSE_LENGTH)
 
 #ifdef LINK_RAW_WIRELESS_ENABLE_LOGGING
 #include <string>
@@ -313,7 +313,7 @@ class LinkRawWireless {
   /**
    * @brief Calls the Setup (`0x17`) command.
    * @param maxPlayers `(2~5)` Maximum players in hosted rooms. Clients should
-   * set this to `0`.
+   * set this to `5`.
    * @param maxTransmissions Number of transmissions before marking a player as
    * disconnected. `0` means infinite retransmissions.
    * @param waitTimeout Timeout of the *waiting commands*, in frames (16.6ms).
@@ -1707,7 +1707,7 @@ class LinkRawWireless {
         asyncCommand.result.data[asyncCommand.sentParameters++] = newData;
 
         _LRWLOG_("param " + std::to_string(asyncCommand.sentParameters + 1) +
-                 "/" + std::to_string(asyncCommand.totalParameters) + ":");
+                 "/" + std::to_string(asyncCommand.result.dataSize) + ":");
         _LRWLOG_("<< " + toHex(newData));
 
         if (asyncCommand.sentParameters < asyncCommand.result.dataSize)

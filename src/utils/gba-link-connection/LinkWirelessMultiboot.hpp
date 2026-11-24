@@ -14,7 +14,7 @@
 //         romLength, // in bytes
 //         "Multiboot", // game name
 //         "Test", // user name
-//         0xFFFF, // game ID
+//         0x7FFF, // game ID
 //         2, // number of players
 //         [](LinkWirelessMultiboot::MultibootProgress progress) {
 //           // check progress.[state,connectedClients,percentage]
@@ -74,7 +74,7 @@
 #endif
 
 LINK_VERSION_TAG LINK_WIRELESS_MULTIBOOT_VERSION =
-    "vLinkWirelessMultiboot/v8.0.3";
+    "vLinkWirelessMultiboot/v8.0.4";
 
 #define LINK_WIRELESS_MULTIBOOT_MIN_ROM_SIZE (0x100 + 0xC0)
 #define LINK_WIRELESS_MULTIBOOT_MAX_ROM_SIZE (256 * 1024)
@@ -921,19 +921,26 @@ class LinkWirelessMultiboot {
      * \warning This is internal API!
      */
     void _onSerial() {
-      if (state == State::STOPPED || interrupt)
+      if (state == State::STOPPED)
         return;
 
 #ifndef LINK_WIRELESS_MULTIBOOT_ASYNC_DISABLE_NESTED_IRQ
+      if (interrupt)
+        return;
+
       interrupt = true;
 #endif
+
       if (linkRawWireless._onSerial() > 0) {
         auto response = linkRawWireless._getAsyncCommandResultRef();
+
 #ifndef LINK_WIRELESS_MULTIBOOT_ASYNC_DISABLE_NESTED_IRQ
         Link::_REG_IME = 1;
 #endif
+
         processResponse(response);
       }
+
 #ifndef LINK_WIRELESS_MULTIBOOT_ASYNC_DISABLE_NESTED_IRQ
       interrupt = false;
 #endif
@@ -944,8 +951,13 @@ class LinkWirelessMultiboot {
      * \warning This is internal API!
      */
     void _onTimer() {
-      if (state != State::SENDING_ROM_PART || interrupt)
+      if (state != State::SENDING_ROM_PART)
         return;
+
+#ifndef LINK_WIRELESS_MULTIBOOT_ASYNC_DISABLE_NESTED_IRQ
+      if (interrupt)
+        return;
+#endif
 
       state = State::ENSURING_CLIENTS_ALIVE;
       checkClientsAlive();
@@ -965,7 +977,8 @@ class LinkWirelessMultiboot {
 
     /**
      * @brief LinkWirelessMultiboot::Async configuration.
-     * \warning `deactivate()` first, change the config, and `activate()` again!
+     * \warning If you change it, the changes won't be applied until the next
+     * `sendRom(...)` call.
      */
     Config config;
 
@@ -1017,6 +1030,7 @@ class LinkWirelessMultiboot {
     LinkWirelessOpenSDK::MultiTransfer<MAX_INFLIGHT_PACKETS> multiTransfer;
     volatile State state = State::STOPPED;
     volatile Result result = Result::NONE;
+
 #ifndef LINK_WIRELESS_MULTIBOOT_ASYNC_DISABLE_NESTED_IRQ
     volatile bool interrupt = false;
 #endif
@@ -1027,8 +1041,8 @@ class LinkWirelessMultiboot {
       if (dynamicData.irqTimeout >= MAX_IRQ_TIMEOUT_FRAMES) {
 #ifndef LINK_WIRELESS_MULTIBOOT_ASYNC_DISABLE_NESTED_IRQ
         if (!interrupt)
-          stop(Result::IRQ_TIMEOUT);
 #endif
+          stop(Result::IRQ_TIMEOUT);
         return;
       }
 
@@ -1428,6 +1442,7 @@ class LinkWirelessMultiboot {
 #ifndef LINK_WIRELESS_MULTIBOOT_ASYNC_DISABLE_NESTED_IRQ
       Link::_REG_IME = 0;
 #endif
+
       linkRawWireless.sendCommandAsync(type, params, length, invertsClock);
     }
 

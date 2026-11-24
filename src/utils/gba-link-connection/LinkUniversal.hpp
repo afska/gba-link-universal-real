@@ -69,7 +69,7 @@
 #define LINK_UNIVERSAL_GAME_ID_FILTER 0
 #endif
 
-LINK_VERSION_TAG LINK_UNIVERSAL_VERSION = "vLinkUniversal/v8.0.3";
+LINK_VERSION_TAG LINK_UNIVERSAL_VERSION = "vLinkUniversal/v8.0.4";
 
 #define LINK_UNIVERSAL_DISCONNECTED LINK_CABLE_DISCONNECTED
 #define LINK_UNIVERSAL_NO_DATA LINK_CABLE_NO_DATA
@@ -307,7 +307,7 @@ class LinkUniversal {
    * or `false` on disconnection.
    * @param playerId ID of player to wait data from.
    * @param cancel A function that will be continuously invoked. If it returns
-   * `true`, the wait be aborted.
+   * `true`, the wait will be aborted.
    */
   template <typename F>
   bool waitFor(u8 playerId, F cancel) {

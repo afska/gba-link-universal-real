@@ -129,7 +129,7 @@
 #endif
 //---
 
-LINK_VERSION_TAG LINK_WIRELESS_VERSION = "vLinkWireless/v8.0.3";
+LINK_VERSION_TAG LINK_WIRELESS_VERSION = "vLinkWireless/v8.0.4";
 
 #define LINK_WIRELESS_MAX_PLAYERS LINK_RAW_WIRELESS_MAX_PLAYERS
 #define LINK_WIRELESS_MIN_PLAYERS 2
@@ -317,6 +317,8 @@ class LinkWireless {
    * avoid a reconnection. Returns whether the restoration was successful.
    * On success, the state should be either `SERVING` or `CONNECTED`.
    * \warning This should be used as a replacement for `activate()`.
+   * \warning This only works if no packets had been sent or all devices restore
+   * the connection at the same time.
    */
   bool restoreExistingConnection() {
     LINK_BARRIER;
@@ -845,6 +847,7 @@ class LinkWireless {
                ? 0
                : sessionState.outgoingMessages.peek().packetId;
   }
+
 #ifdef LINK_RAW_WIRELESS_ENABLE_LOGGING
   /**
    * @brief Sets a logger function.
@@ -959,9 +962,25 @@ class LinkWireless {
    */
   Config config;
 
+  /**
+   * Returns whether the current multiboot ROM has started wirelessly or not.
+   */
+  [[nodiscard]] static bool isWirelessMultibootRom() {
+    const vu8* ewram = (const vu8*)0x02000000;
+    static const u8 header[12] = {0x52, 0x46, 0x55, 0x2D, 0x4D, 0x42,
+                                  0x4F, 0x4F, 0x54, 0x00, 0x00, 0x00};
+
+    for (unsigned i = 0; i < 12; ++i)
+      if (ewram[4 + i] != header[i])
+        return false;
+
+    return true;
+  }
+
 #ifndef LINK_WIRELESS_DEBUG_MODE
  private:
 #endif
+
   using MessageQueue = Link::Queue<Message, LINK_WIRELESS_QUEUE_SIZE>;
 
   struct SignalLevel {
@@ -1009,7 +1028,7 @@ class LinkWireless {
     //   * << ack=3
     //   * >> 4, 5, 6
     //   This wastes bandwidth but reduces latency, since waiting for a
-    //   retransmission until not receiving an ACK takes time, and games usually
+    //   retransmission after not receiving an ACK takes time, and games usually
     //   care more about latency than bandwidth.
     // - The first message can be in the header itself (bits 0~15) when:
     //   * (there *is* something to send) && (it's from a client)
@@ -1028,8 +1047,9 @@ class LinkWireless {
     unsigned int ack1 : 6;        // server: player 1 ACK
                                   // clients: server ACK
     unsigned int hasLastMsg : 1;  // there's a msg in last word's high part
-    unsigned int
-        hasPlayerBitMap : 1;         // server: next halfword is a PlayerBitMap
+    unsigned int hasPlayerBitMap : 1;
+    //                               server: next halfword is a PlayerBitMap
+    //                               clients: need first packet (ACKs not valid)
     unsigned int firstPacketId : 6;  // next packets are assumed consecutive
                                      // clients only use 4 bits here!
                                      // `hasFirstMsg` is an imaginary flag
@@ -1348,8 +1368,12 @@ class LinkWireless {
     // fully used all words
     transferHeader.hasLastMsg = msgCount > 0 && !highPart;
 
-    // the transfer contains player bitmaps if there are forwarded messages
-    transferHeader.hasPlayerBitMap = sessionState.forwardedCount > 0;
+    // server: the transfer contains player bitmaps if there are forwarded msgs
+    // clients: report whether we still need to receive our first packet
+    //   (our ACKs are not valid yet!)
+    transferHeader.hasPlayerBitMap =
+        isServer ? sessionState.forwardedCount > 0
+                 : !sessionState.didReceiveFirstPacketFromServer;
 
     // `ack1` is used by both server and clients
     transferHeader.ack1 = isServer ? sessionState.lastPacketIdFromClients[1]
@@ -1430,7 +1454,8 @@ class LinkWireless {
       // ACKs found in the header
       if (config.retransmission) {
         if (isServer) {
-          sessionState.lastAckFromClients[i] = header.ack1;
+          if (!header.hasPlayerBitMap)
+            sessionState.lastAckFromClients[i] = header.ack1;
         } else {
           u32 currentPlayerId = linkRawWireless.sessionState.currentPlayerId;
           sessionState.lastAckFromServer = currentPlayerId == 1   ? header.ack1
@@ -1528,6 +1553,13 @@ class LinkWireless {
       (playerId, data, currentPacketId, playerBitMap, playerBitMapCount),
       {
         // (irq only)
+
+        // ignore server packets until the server knows we've joined
+        if (playerId == 0 && !sessionState.didReceiveFirstPacketFromServer &&
+            linkRawWireless.sessionState.playerCount <=
+                linkRawWireless.sessionState.currentPlayerId)
+          return;
+
         // store the packet ID and increment (msgs are consecutive inside
         // transfers)
         u32 packetId = currentPacketId;
@@ -1616,22 +1648,23 @@ class LinkWireless {
     for (u32 i = 1; i < linkRawWireless.sessionState.playerCount; i++) {
       u32 ack = sessionState.lastAckFromClients[i];
 
-      // ignore clients that didn't confirm anything yet
+      // if a client didn't confirm anything yet, abort, it's not safe to remove
       if (ack == NO_ACK_RECEIVED_YET)
-        continue;
+        return;
 
       if (ringMinAck == 0xFFFFFFFF) {
         // on first time, we set `ringMinAck`
         ringMinAck = ack;
       } else {
         // we compare `ringMinAck` vs `ack` in circular space
-        // (0..MAX_PACKET_IDS_CLIENT-1):
+        // (0..MAX_PACKET_IDS_SERVER-1):
         //   -> how many steps it is from `ringMinAck` down to `ack`?
-        u32 dist = (ringMinAck - ack) & (MAX_PACKET_IDS_CLIENT - 1);
+        u32 distance = (ringMinAck - ack) & (MAX_PACKET_IDS_SERVER - 1);
 
-        // if dist >= MAX_INFLIGHT_PACKETS_CLIENT => `ack` is "behind"
-        // `ringMinAck`, so we replace it!
-        if (dist >= MAX_INFLIGHT_PACKETS_CLIENT)
+        // two ACKs can never be more than (MAX_IDS / 2 - 1) packets apart
+        // if distance <= MAX_INFLIGHT_PACKETS_SERVER =>
+        //   `ack` is before `ringMinAck`, so we replace it!
+        if (distance <= MAX_INFLIGHT_PACKETS_SERVER)
           ringMinAck = ack;
       }
     }
@@ -1656,8 +1689,9 @@ class LinkWireless {
 
       // we release the packet if it was confirmed (aka inside the send window)
       // example with maxPacketIds=16, maxInflightPackets=7, ack=4:
-      //   => we would be releasing packets 4,3,2,1,15,14,13
-      if (((ack - packetId) & (maxPacketIds - 1)) <= maxInflightPackets) {
+      //   => we would be releasing packets 4,3,2,1,0,15,14
+      u32 distance = (ack - packetId) & (maxPacketIds - 1);
+      if (distance < maxInflightPackets) {
         auto message = sessionState.outgoingMessages.pop();
         sessionState.inflightCount--;
         if (maxPacketIds == MAX_PACKET_IDS_SERVER && message.playerId > 0)

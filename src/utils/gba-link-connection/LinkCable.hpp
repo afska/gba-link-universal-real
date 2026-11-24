@@ -15,7 +15,7 @@
 // - 3) Initialize the library with:
 //       linkCable->activate();
 // - 4) Sync:
-//       linkUniversal->sync();
+//       linkCable->sync();
 //       // (put this line at the start of your game loop)
 // - 5) Send/read messages by using:
 //       bool isConnected = linkCable->isConnected();
@@ -63,7 +63,7 @@
 #define LINK_CABLE_QUEUE_SIZE 15
 #endif
 
-LINK_VERSION_TAG LINK_CABLE_VERSION = "vLinkCable/v8.0.3";
+LINK_VERSION_TAG LINK_CABLE_VERSION = "vLinkCable/v8.0.4";
 
 #define LINK_CABLE_MAX_PLAYERS LINK_RAW_CABLE_MAX_PLAYERS
 #define LINK_CABLE_DEFAULT_TIMEOUT 3
@@ -203,7 +203,7 @@ class LinkCable {
    * or `false` on disconnection.
    * @param playerId ID of player to wait data from.
    * @param cancel A function that will be continuously invoked. If it returns
-   * `true`, the wait be aborted.
+   * `true`, the wait will be aborted.
    */
   template <typename F>
   bool waitFor(u8 playerId, F cancel) {
@@ -434,6 +434,7 @@ class LinkCable {
 #ifndef LINK_CABLE_DEBUG_MODE
  private:
 #endif
+
   struct ExternalState {
     U16Queue syncedIncomingMessages[LINK_CABLE_MAX_PLAYERS];
     vu8 playerCount = 1;

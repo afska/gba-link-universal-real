@@ -16,7 +16,7 @@
 
 #include "LinkRawWireless.hpp"
 
-LINK_VERSION_TAG LINK_WIRELESS_OPEN_SDK_VERSION = "LinkWirelessOpenSDK/v8.0.3";
+LINK_VERSION_TAG LINK_WIRELESS_OPEN_SDK_VERSION = "vLinkWirelessOpenSDK/v8.0.4";
 
 /**
  * @brief An open-source implementation of the "official" Wireless Adapter
@@ -596,7 +596,7 @@ class LinkWirelessOpenSDK {
    public:
     /**
      * @brief Constructs a new MultiTransfer object.
-     * @param linkWirelessOpenSDK An pointer to a `LinkWirelessOpenSDK`.
+     * @param linkWirelessOpenSDK A pointer to a `LinkWirelessOpenSDK`.
      */
     explicit MultiTransfer(LinkWirelessOpenSDK* linkWirelessOpenSDK) {
       this->linkWirelessOpenSDK = linkWirelessOpenSDK;
